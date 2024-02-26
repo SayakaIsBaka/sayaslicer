@@ -54,7 +54,7 @@ void ShowExampleMenuFile(sf::SoundBuffer &buffer)
     if (ImGui::MenuItem("New")) {}
     if (ImGui::MenuItem("Open", "Ctrl+O")) {
         if (!OpenAudioFile(buffer))
-            ;
+            puts("Error opening file");
     }
     if (ImGui::BeginMenu("Open Recent"))
     {
@@ -201,6 +201,8 @@ void PlayKeysound(sf::Sound &sound, sf::SoundBuffer &buffer, sf::SoundBuffer& bu
 }
 
 void WriteKeysounds(sf::SoundBuffer& buffer, std::list<double> markers) {
+    if (!selection)
+        return;
     auto samples = buffer.getSamples();
     markers.sort();
     unsigned long long keyStart = 0;
