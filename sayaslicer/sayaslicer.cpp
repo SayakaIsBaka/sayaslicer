@@ -19,7 +19,7 @@ using namespace std;
 static int offset = 0;
 static int waveformReso = 192;
 static double cursorPos = 0.0;
-static int bpm = 120;
+static float bpm = 120.0;
 static int snapping = 4;
 static double samplesPerSnap = 0.0;
 
@@ -128,7 +128,8 @@ void DisplayWaveform(sf::SoundBuffer& buffer, std::list<double> &markers) {
         ImPlot::SetupAxisLimits(ImAxis_Y1, -32768, 32768);
         ImPlot::SetupAxisLimits(ImAxis_X1, cursorPos, cursorPos + 2000.0, ImPlotCond_Always);
         ImPlot::SetupAxis(ImAxis_Y1, "", ImPlotAxisFlags_NoGridLines | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Lock | ImPlotAxisFlags_NoTickMarks);
-        
+        ImPlot::SetupAxis(ImAxis_X1, "", ImPlotAxisFlags_Foreground);
+
         //ImPlot::SetupAxisZoomConstraints(ImAxis_X1, 2000, 2000);
 
         auto sampleCount = buffer.getSampleCount();
@@ -138,8 +139,8 @@ void DisplayWaveform(sf::SoundBuffer& buffer, std::list<double> &markers) {
         double samplesPerBeat = sampleRate ? 60.0 / (double)bpm * ((double)sampleRate / (double)waveformReso * (double)numChannels) : 1.0;
         samplesPerSnap = samplesPerBeat / (double)snapping * 4.0;
         double lastTick = sampleCount / waveformReso + samplesPerBeat - fmod((sampleCount / waveformReso), samplesPerBeat);
-        double nbTicksToDraw = (lastTick / samplesPerBeat) * (double)snapping / 4.0;
-        ImPlot::SetupAxisTicks(ImAxis_X1, 0, lastTick, nbTicksToDraw + 1.0); // Account for last tick
+        int nbTicksToDraw = (lastTick / samplesPerBeat) * snapping / 4;
+        ImPlot::SetupAxisTicks(ImAxis_X1, 0, lastTick, nbTicksToDraw + 1); // Account for last tick
 
         if (sampleCount > 0) {
             ImPlot::SetupAxisLimitsConstraints(ImAxis_X1, 0, sampleCount / waveformReso - offset);
@@ -205,7 +206,7 @@ int main() {
             ImGui::SeparatorText("General");
             ImGui::DragInt("Offset", &offset, 1, 0, 1000);
             ImGui::DragScalar("Position", ImGuiDataType_Double, &cursorPos, 1, 0, 0);
-            ImGui::DragInt("BPM", &bpm, 1, 10, 10000);
+            ImGui::DragFloat("BPM", &bpm, 1, 10, 10000);
             ImGui::DragInt("Snapping", &snapping, 1, 1, 192);
         }
         ImGui::End();
