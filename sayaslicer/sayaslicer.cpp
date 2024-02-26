@@ -113,15 +113,16 @@ void PlayKeysound(sf::Sound &sound, sf::SoundBuffer &buffer, sf::SoundBuffer& bu
     markers.sort();
     unsigned long long keyStart = 0;
     unsigned long long keyEnd = 0;
+    unsigned long long offsetSamples = (long long)offset * (long long)waveformReso;
     for (int i = 0; i < markers.size(); i++) {
         if (i + 1.0 >= markers.size()) {
-            keyStart = get(markers, i);
+            keyStart = get(markers, i) + offsetSamples;
             keyEnd = buffer.getSampleCount();
             break;
         }
         else if (cursorPos < get(markers, i + 1)) {
-            keyStart = get(markers, i);
-            keyEnd = get(markers, i + 1);
+            keyStart = get(markers, i) + offsetSamples;
+            keyEnd = get(markers, i + 1) + offsetSamples;
             break;
         }
     }
@@ -131,7 +132,7 @@ void PlayKeysound(sf::Sound &sound, sf::SoundBuffer &buffer, sf::SoundBuffer& bu
     sound.setBuffer(buffer2);
     sound.play();
     if (keyEnd != buffer.getSampleCount())
-        cursorPos = keyEnd;
+        cursorPos = keyEnd - offsetSamples;
 }
 
 void WriteKeysounds(sf::SoundBuffer& buffer, std::list<double> markers) {
@@ -141,15 +142,16 @@ void WriteKeysounds(sf::SoundBuffer& buffer, std::list<double> markers) {
     markers.sort();
     unsigned long long keyStart = 0;
     unsigned long long keyEnd = 0;
+    unsigned long long offsetSamples = (long long)offset * (long long)waveformReso;
     std::filesystem::path p = selection;
     p.replace_extension("");
     for (int i = 0; i < markers.size(); i++) {
-        keyStart = get(markers, i);
+        keyStart = get(markers, i) + offsetSamples;
         if (i + 1.0 >= markers.size()) {
             keyEnd = buffer.getSampleCount();
         }
         else {
-            keyEnd = get(markers, i + 1);
+            keyEnd = get(markers, i + 1) + offsetSamples;
         }
         printf("exporting keysound with range start: %llu, range end: %llu\n", keyStart, keyEnd);
         auto bufsize = keyEnd - keyStart;
