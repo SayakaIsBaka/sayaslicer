@@ -13,6 +13,7 @@
 #include <SFML/Audio.hpp>
 #include <tinyfiledialogs/tinyfiledialogs.h>
 #include <list>
+#include <filesystem>
 
 using namespace std;
 
@@ -22,11 +23,12 @@ static double cursorPos = 0.0;
 static float bpm = 120.0;
 static int snapping = 4;
 static double samplesPerSnap = 0.0;
+static char* selection = NULL;
 
 bool OpenAudioFile(sf::SoundBuffer &buffer)
 {
     char const* lFilterPatterns[2] = { "*.wav", "*.ogg" };
-    char const* selection = tinyfd_openFileDialog( // there is also a wchar_t version
+    selection = tinyfd_openFileDialog( // there is also a wchar_t version
         "Select file", // title
         0, // optional initial directory
         2, // number of filter patterns
@@ -203,6 +205,8 @@ void WriteKeysounds(sf::SoundBuffer& buffer, std::list<double> markers) {
     markers.sort();
     unsigned long long keyStart = 0;
     unsigned long long keyEnd = 0;
+    std::filesystem::path p = selection;
+    p.replace_extension("");
     for (int i = 0; i < markers.size(); i++) {
         keyStart = get(markers, i);
         if (i + 1.0 >= markers.size()) {
@@ -215,7 +219,8 @@ void WriteKeysounds(sf::SoundBuffer& buffer, std::list<double> markers) {
         auto bufsize = keyEnd - keyStart;
         sf::OutputSoundFile file;
         char filename[4096];
-        sprintf_s(filename, 4096, "%s_%03d.wav", "test", i);
+        sprintf_s(filename, 4096, "%s_%03d.wav", p.string().c_str(), i);
+        puts(filename);
         if (!file.openFromFile(filename, buffer.getSampleRate(), buffer.getChannelCount())) {
             puts("Error opening file for writing");
         }
