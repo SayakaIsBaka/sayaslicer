@@ -126,7 +126,7 @@ int MeterFormatter(double value, char* buff, int size, void* data) {
 void DisplayWaveform(sf::SoundBuffer& buffer, std::list<double> &markers) {
     if (ImPlot::BeginPlot("##lines", ImVec2(-1, 200), ImPlotFlags_NoBoxSelect | ImPlotFlags_NoLegend)) {
         ImPlot::SetupAxisLimits(ImAxis_Y1, -32768, 32768);
-        ImPlot::SetupAxisLimits(ImAxis_X1, cursorPos, cursorPos + 2000.0, ImPlotCond_Always);
+        ImPlot::SetupAxisLimits(ImAxis_X1, cursorPos / waveformReso, cursorPos / waveformReso + 2000.0, ImPlotCond_Always);
         ImPlot::SetupAxis(ImAxis_Y1, "", ImPlotAxisFlags_NoGridLines | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Lock | ImPlotAxisFlags_NoTickMarks);
         ImPlot::SetupAxis(ImAxis_X1, "", ImPlotAxisFlags_Foreground);
 
@@ -136,11 +136,19 @@ void DisplayWaveform(sf::SoundBuffer& buffer, std::list<double> &markers) {
         auto sampleRate = buffer.getSampleRate();
         auto numChannels = buffer.getChannelCount();
 
-        double samplesPerBeat = sampleRate ? 60.0 / (double)bpm * ((double)sampleRate / (double)waveformReso * (double)numChannels) : 1.0;
+        double samplesPerBeat = sampleRate ? 60.0 / (double)bpm * ((double)sampleRate * (double)numChannels) : 1.0;
         samplesPerSnap = samplesPerBeat / (double)snapping * 4.0;
-        double lastTick = sampleCount / waveformReso + samplesPerBeat - fmod((sampleCount / waveformReso), samplesPerBeat);
+        double lastTick = sampleCount + samplesPerBeat - fmod((sampleCount), samplesPerBeat);
+        double remainder = fmod(lastTick, samplesPerBeat * 4);
+        int extraBeats = 0;
+        if ((int)remainder != 0) {
+            lastTick = lastTick - remainder + samplesPerBeat * 4;
+        }
         int nbTicksToDraw = (lastTick / samplesPerBeat) * snapping / 4;
-        ImPlot::SetupAxisTicks(ImAxis_X1, 0, lastTick, nbTicksToDraw + 1); // Account for last tick
+        printf("samplesPerBeat: %f\n", samplesPerBeat);
+        printf("lastTick: %f\n", lastTick);
+        printf("nbTicksToDraw: %d\n", nbTicksToDraw);
+        ImPlot::SetupAxisTicks(ImAxis_X1, 0, lastTick / waveformReso, nbTicksToDraw + 1); // Account for last tick
 
         if (sampleCount > 0) {
             ImPlot::SetupAxisLimitsConstraints(ImAxis_X1, 0, sampleCount / waveformReso - offset);
@@ -148,7 +156,8 @@ void DisplayWaveform(sf::SoundBuffer& buffer, std::list<double> &markers) {
             auto samples = buffer.getSamples();
             ImPlot::PlotLine("Waveform", samples, sampleCount / waveformReso, 1.0, 0, 0, offset, waveformReso * numChannels); // Buffer stores samples as [channel1_i, channel2_i, channel1_i+1, etc.]
             for (double m : markers) {
-                ImPlot::DragLineX(0, &m, ImVec4(1, 1, 1, 1), 1, ImPlotDragToolFlags_NoInputs);
+                double mTmp = m / waveformReso;
+                ImPlot::DragLineX(0, &mTmp, ImVec4(1, 1, 1, 1), 1, ImPlotDragToolFlags_NoInputs);
             }
         }
         ImPlot::EndPlot();
@@ -257,7 +266,7 @@ int main() {
                     for (double m : markers) {
                         ImGui::TableNextRow();
                         ImGui::TableSetColumnIndex(0);
-                        ImGui::Text("%g", m);
+                        ImGui::Text("%f", m);
                     }
                 }
                 ImGui::EndTable();
