@@ -1,0 +1,6 @@
+out
+vcpkg_installed
+*.wav
+CMakeUserPresets.json
+.vs
+vcpkg-configuration.json

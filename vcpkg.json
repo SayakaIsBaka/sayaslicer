@@ -1,0 +1,14 @@
+{
+  "dependencies": [
+    {
+      "name": "imgui",
+      "features": [
+        "docking-experimental"
+      ]
+    },
+    "imgui-sfml",
+    "implot",
+    "sfml",
+    "tinyfiledialogs"
+  ]
+}
