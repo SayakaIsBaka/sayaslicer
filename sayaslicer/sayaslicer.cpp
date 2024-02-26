@@ -124,7 +124,7 @@ int MeterFormatter(double value, char* buff, int size, void* data) {
 }
 
 void DisplayWaveform(sf::SoundBuffer& buffer, std::list<double> &markers) {
-    if (ImPlot::BeginPlot("##lines", ImVec2(-1, 0), ImPlotFlags_NoBoxSelect | ImPlotFlags_NoLegend)) {
+    if (ImPlot::BeginPlot("##lines", ImVec2(-1, 200), ImPlotFlags_NoBoxSelect | ImPlotFlags_NoLegend)) {
         ImPlot::SetupAxisLimits(ImAxis_Y1, -32768, 32768);
         ImPlot::SetupAxisLimits(ImAxis_X1, cursorPos, cursorPos + 2000.0, ImPlotCond_Always);
         ImPlot::SetupAxis(ImAxis_Y1, "", ImPlotAxisFlags_NoGridLines | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Lock | ImPlotAxisFlags_NoTickMarks);
@@ -156,7 +156,7 @@ void DisplayWaveform(sf::SoundBuffer& buffer, std::list<double> &markers) {
 }
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(800, 400), "sayaslicer");
+    sf::RenderWindow window(sf::VideoMode(800, 421), "sayaslicer");
     window.setFramerateLimit(60);
     ImGui::SFML::Init(window);
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
@@ -215,7 +215,10 @@ int main() {
             cursorPos += samplesPerSnap;
         }
         else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_LeftArrow)) && cursorPos > 0.0) {
-            cursorPos -= samplesPerSnap;
+            if (cursorPos - samplesPerSnap < 0.0)
+                cursorPos = 0.0;
+            else
+                cursorPos -= samplesPerSnap;
         }
         if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_UpArrow)) && snapping < 192) {
             snapping += 1;
@@ -237,6 +240,28 @@ int main() {
         {
             ImGui::SeparatorText("Waveform");
             DisplayWaveform(buffer, markers);
+
+            ImGui::SeparatorText("Markers");
+            ImVec2 outer_size = ImVec2(0.0f, ImGui::GetTextLineHeightWithSpacing() * 8);
+            if (ImGui::BeginTable("markerstable", 1, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY, outer_size))
+            {
+                ImGui::TableSetupScrollFreeze(0, 1);
+                ImGui::TableSetupColumn("Marker", ImGuiTableColumnFlags_WidthFixed);
+                ImGui::TableHeadersRow();
+                if (markers.size() == 0) {
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("No markers set...");
+                }
+                else {
+                    for (double m : markers) {
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text("%g", m);
+                    }
+                }
+                ImGui::EndTable();
+            }
         }
         ImGui::End();
 
