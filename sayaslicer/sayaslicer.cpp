@@ -145,9 +145,9 @@ void DisplayWaveform(sf::SoundBuffer& buffer, std::list<double> &markers) {
             lastTick = lastTick - remainder + samplesPerBeat * 4;
         }
         int nbTicksToDraw = (lastTick / samplesPerBeat) * snapping / 4;
-        printf("samplesPerBeat: %f\n", samplesPerBeat);
-        printf("lastTick: %f\n", lastTick);
-        printf("nbTicksToDraw: %d\n", nbTicksToDraw);
+        //printf("samplesPerBeat: %f\n", samplesPerBeat);
+        //printf("lastTick: %f\n", lastTick);
+        //printf("nbTicksToDraw: %d\n", nbTicksToDraw);
         ImPlot::SetupAxisTicks(ImAxis_X1, 0, lastTick / waveformReso, nbTicksToDraw + 1); // Account for last tick
 
         if (sampleCount > 0) {
@@ -263,10 +263,23 @@ int main() {
                     ImGui::Text("No markers set...");
                 }
                 else {
+                    markers.sort();
+                    double toRemove = -1.0;
                     for (double m : markers) {
                         ImGui::TableNextRow();
                         ImGui::TableSetColumnIndex(0);
-                        ImGui::Text("%f", m);
+                        char buf[64];
+                        sprintf(buf, "%f", m);
+                        ImGui::Selectable(buf);
+                        if (ImGui::IsItemClicked(0)) {
+                            cursorPos = m;
+                        }
+                        else if (ImGui::IsItemClicked(1)) {
+                            toRemove = m;
+                        }
+                    }
+                    if (toRemove != -1) {
+                        markers.remove(toRemove);
                     }
                 }
                 ImGui::EndTable();
