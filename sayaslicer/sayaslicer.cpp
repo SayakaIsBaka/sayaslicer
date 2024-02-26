@@ -2,10 +2,12 @@
 //
 
 #include "sayaslicer.h"
+#include "bmseclipboard.hpp"
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <imgui-SFML.h>
 #include <implot.h>
+#include <clipboardxx.hpp>
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Clock.hpp>
@@ -193,6 +195,19 @@ void ShowMainMenuBar(sf::SoundBuffer& buffer, std::list<double> markers, sf::Ren
     }
 }
 
+void AddMarkersFromBMSEClipboad(BMSEClipboard objs, sf::SoundBuffer& buffer, std::list<double> &markers) {
+    if (buffer.getSampleCount() > 0) {
+        auto sampleRate = buffer.getSampleRate();
+        auto numChannels = buffer.getChannelCount();
+        for (BMSEClipboardObject o : objs.objects) {
+            double m = o.toSamplePosition(bpm, sampleRate, numChannels);
+            if (std::find(markers.begin(), markers.end(), m) == markers.end()) {
+                markers.push_back(m);
+            }
+        }
+    }
+}
+
 int main() {
     sf::RenderWindow window(sf::VideoMode(800, 421), "sayaslicer");
     window.setFramerateLimit(60);
@@ -200,6 +215,7 @@ int main() {
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     ImGui::StyleColorsDark();
     ImPlot::CreateContext();
+    clipboardxx::clipboard clipboard;
     sf::SoundBuffer buffer;
     sf::SoundBuffer buffer2;
     sf::Sound sound;
@@ -276,11 +292,17 @@ int main() {
         if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_P))) {
             PlayKeysound(sound, buffer, buffer2, markers);
         }
-        if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_M))) {
+        if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_M), false)) {
             WriteKeysounds(buffer, markers);
         }
         if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_O), false)) {
             OpenAudioFile(buffer);
+        }
+        if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_B), false)) {
+            std::string cb;
+            cb = clipboard.paste();
+            BMSEClipboard objs(cb);
+            AddMarkersFromBMSEClipboad(objs, buffer, markers);
         }
              
         ImGui::SetNextWindowClass(&window_class);

@@ -11,5 +11,7 @@ find_package(imgui CONFIG REQUIRED)
 find_package(implot CONFIG REQUIRED)
 find_package(tinyfiledialogs CONFIG REQUIRED)
 
+include_directories("include")
+
 # Incluez les sous-projets.
 add_subdirectory ("sayaslicer")
