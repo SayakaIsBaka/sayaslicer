@@ -175,8 +175,8 @@ double get(std::list<double> _list, int _i) {
 void PlayKeysound(sf::Sound &sound, sf::SoundBuffer &buffer, sf::SoundBuffer& buffer2, std::list<double> markers) {
     auto samples = buffer.getSamples();
     markers.sort();
-    unsigned long keyStart = 0;
-    unsigned long keyEnd = 0;
+    unsigned long long keyStart = 0;
+    unsigned long long keyEnd = 0;
     for (int i = 0; i < markers.size(); i++) {
         if (i + 1.0 >= markers.size()) {
             keyStart = get(markers, i);
@@ -189,13 +189,38 @@ void PlayKeysound(sf::Sound &sound, sf::SoundBuffer &buffer, sf::SoundBuffer& bu
             break;
         }
     }
-    printf("range start: %d, range end: %d\n", keyStart, keyEnd);
+    printf("playing keysound with range start: %llu, range end: %llu\n", keyStart, keyEnd);
     auto bufsize = keyEnd - keyStart;
     buffer2.loadFromSamples(&samples[keyStart], bufsize, buffer.getChannelCount(), buffer.getSampleRate());
     sound.setBuffer(buffer2);
     sound.play();
     if (keyEnd != buffer.getSampleCount())
         cursorPos = keyEnd;
+}
+
+void WriteKeysounds(sf::SoundBuffer& buffer, std::list<double> markers) {
+    auto samples = buffer.getSamples();
+    markers.sort();
+    unsigned long long keyStart = 0;
+    unsigned long long keyEnd = 0;
+    for (int i = 0; i < markers.size(); i++) {
+        keyStart = get(markers, i);
+        if (i + 1.0 >= markers.size()) {
+            keyEnd = buffer.getSampleCount();
+        }
+        else {
+            keyEnd = get(markers, i + 1);
+        }
+        printf("exporting keysound with range start: %llu, range end: %llu\n", keyStart, keyEnd);
+        auto bufsize = keyEnd - keyStart;
+        sf::OutputSoundFile file;
+        char filename[4096];
+        sprintf_s(filename, 4096, "%s_%03d.wav", "test", i);
+        if (!file.openFromFile(filename, buffer.getSampleRate(), buffer.getChannelCount())) {
+            puts("Error opening file for writing");
+        }
+        file.write(&samples[keyStart], bufsize);
+    }
 }
 
 int main() {
@@ -282,6 +307,9 @@ int main() {
         if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_P))) {
             PlayKeysound(sound, buffer, buffer2, markers);
         }
+        if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_M))) {
+            WriteKeysounds(buffer, markers);
+        }
 
         ImGui::SetNextWindowClass(&window_class);
         ImGui::Begin("Waveform");
@@ -308,7 +336,7 @@ int main() {
                         ImGui::TableNextRow();
                         ImGui::TableSetColumnIndex(0);
                         char buf[64];
-                        sprintf(buf, "%f", m);
+                        sprintf_s(buf, 64, "%f", m);
                         ImGui::Selectable(buf);
                         if (ImGui::IsItemClicked(0)) {
                             cursorPos = m;
