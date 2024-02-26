@@ -46,77 +46,9 @@ bool OpenAudioFile(sf::SoundBuffer &buffer)
         std::cout << "sample count: " << buffer.getSampleCount() << std::endl;
         return res;
     }
-    else return false;
-}
-
-void ShowExampleMenuFile(sf::SoundBuffer &buffer)
-{
-    if (ImGui::MenuItem("New")) {}
-    if (ImGui::MenuItem("Open", "Ctrl+O")) {
-        if (!OpenAudioFile(buffer))
-            puts("Error opening file");
-    }
-    if (ImGui::BeginMenu("Open Recent"))
-    {
-        ImGui::MenuItem("fish_hat.c");
-        ImGui::MenuItem("fish_hat.inl");
-        ImGui::MenuItem("fish_hat.h");
-        if (ImGui::BeginMenu("More.."))
-        {
-            ImGui::MenuItem("Hello");
-            ImGui::MenuItem("Sailor");
-            if (ImGui::BeginMenu("Recurse.."))
-            {
-                ShowExampleMenuFile(buffer);
-                ImGui::EndMenu();
-            }
-            ImGui::EndMenu();
-        }
-        ImGui::EndMenu();
-    }
-    if (ImGui::MenuItem("Save", "Ctrl+S")) {}
-    if (ImGui::MenuItem("Save As..")) {}
-
-    ImGui::Separator();
-    if (ImGui::BeginMenu("Options"))
-    {
-        static bool enabled = true;
-        ImGui::MenuItem("Enabled", "", &enabled);
-        ImGui::BeginChild("child", ImVec2(0, 60), ImGuiChildFlags_Border);
-        for (int i = 0; i < 10; i++)
-            ImGui::Text("Scrolling Text %d", i);
-        ImGui::EndChild();
-        static float f = 0.5f;
-        static int n = 0;
-        ImGui::SliderFloat("Value", &f, 0.0f, 1.0f);
-        ImGui::InputFloat("Input", &f, 0.1f);
-        ImGui::Combo("Combo", &n, "Yes\0No\0Maybe\0\0");
-        ImGui::EndMenu();
-    }
-    ImGui::Separator();
-    if (ImGui::MenuItem("Quit", "Alt+F4")) {}
-}
-
-void ShowExampleAppMainMenuBar(sf::SoundBuffer &buffer)
-{
-    if (ImGui::BeginMainMenuBar())
-    {
-        if (ImGui::BeginMenu("File"))
-        {
-            ShowExampleMenuFile(buffer);
-            ImGui::EndMenu();
-        }
-        if (ImGui::BeginMenu("Edit"))
-        {
-            if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
-            if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
-            ImGui::Separator();
-            if (ImGui::MenuItem("Cut", "CTRL+X")) {}
-            if (ImGui::MenuItem("Copy", "CTRL+C")) {}
-            if (ImGui::MenuItem("Paste", "CTRL+V")) {}
-            ImGui::EndMenu();
-        }
-        ImGui::EndMainMenuBar();
+    else {
+        selection = NULL;
+        return false;
     }
 }
 
@@ -175,6 +107,8 @@ double get(std::list<double> _list, int _i) {
 }
 
 void PlayKeysound(sf::Sound &sound, sf::SoundBuffer &buffer, sf::SoundBuffer& buffer2, std::list<double> markers) {
+    if (buffer.getSampleCount() == 0)
+        return;
     auto samples = buffer.getSamples();
     markers.sort();
     unsigned long long keyStart = 0;
@@ -230,6 +164,33 @@ void WriteKeysounds(sf::SoundBuffer& buffer, std::list<double> markers) {
     }
 }
 
+void ShowMenuFile(sf::SoundBuffer& buffer, std::list<double> markers, sf::RenderWindow &window)
+{
+    if (ImGui::MenuItem("Open", "O")) {
+        OpenAudioFile(buffer);
+    }
+    if (ImGui::MenuItem("Export keysounds", "M")) {
+        WriteKeysounds(buffer, markers);
+    }
+    ImGui::Separator();
+    if (ImGui::MenuItem("Quit", "Alt+F4")) {
+        window.close();
+    }
+}
+
+void ShowMainMenuBar(sf::SoundBuffer& buffer, std::list<double> markers, sf::RenderWindow &window)
+{
+    if (ImGui::BeginMainMenuBar())
+    {
+        if (ImGui::BeginMenu("File"))
+        {
+            ShowMenuFile(buffer, markers, window);
+            ImGui::EndMenu();
+        }
+        ImGui::EndMainMenuBar();
+    }
+}
+
 int main() {
     sf::RenderWindow window(sf::VideoMode(800, 421), "sayaslicer");
     window.setFramerateLimit(60);
@@ -237,7 +198,6 @@ int main() {
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     ImGui::StyleColorsDark();
     ImPlot::CreateContext();
-
     sf::SoundBuffer buffer;
     sf::SoundBuffer buffer2;
     sf::Sound sound;
@@ -273,12 +233,12 @@ int main() {
             ImGui::DockBuilderFinish(dockspace_id);
         }
 
-        ShowExampleAppMainMenuBar(buffer);
+        ShowMainMenuBar(buffer, markers, window);
 
         ImGuiWindowClass window_class;
         window_class.DockNodeFlagsOverrideSet = ImGuiDockNodeFlags_NoTabBar;
         ImGui::SetNextWindowClass(&window_class);
-        ImGui::Begin("Settings");
+        if (ImGui::Begin("Settings"));
         {
             ImGui::SeparatorText("General");
             ImGui::DragInt("Offset", &offset, 1, 0, 1000);
@@ -317,9 +277,12 @@ int main() {
         if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_M))) {
             WriteKeysounds(buffer, markers);
         }
-
+        if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_O), false)) {
+            OpenAudioFile(buffer);
+        }
+             
         ImGui::SetNextWindowClass(&window_class);
-        ImGui::Begin("Waveform");
+        if (ImGui::Begin("Waveform"));
         {
             ImGui::SeparatorText("Waveform");
             DisplayWaveform(buffer, markers);
