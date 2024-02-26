@@ -164,6 +164,40 @@ void DisplayWaveform(sf::SoundBuffer& buffer, std::list<double> &markers) {
     }
 }
 
+double get(std::list<double> _list, int _i) {
+    std::list<double>::iterator it = _list.begin();
+    for (int i = 0; i < _i; i++) {
+        ++it;
+    }
+    return *it;
+}
+
+void PlayKeysound(sf::Sound &sound, sf::SoundBuffer &buffer, sf::SoundBuffer& buffer2, std::list<double> markers) {
+    auto samples = buffer.getSamples();
+    markers.sort();
+    unsigned long keyStart = 0;
+    unsigned long keyEnd = 0;
+    for (int i = 0; i < markers.size(); i++) {
+        if (i + 1.0 >= markers.size()) {
+            keyStart = get(markers, i);
+            keyEnd = buffer.getSampleCount();
+            break;
+        }
+        else if (cursorPos < get(markers, i + 1)) {
+            keyStart = get(markers, i);
+            keyEnd = get(markers, i + 1);
+            break;
+        }
+    }
+    printf("range start: %d, range end: %d\n", keyStart, keyEnd);
+    auto bufsize = keyEnd - keyStart;
+    buffer2.loadFromSamples(&samples[keyStart], bufsize, buffer.getChannelCount(), buffer.getSampleRate());
+    sound.setBuffer(buffer2);
+    sound.play();
+    if (keyEnd != buffer.getSampleCount())
+        cursorPos = keyEnd;
+}
+
 int main() {
     sf::RenderWindow window(sf::VideoMode(800, 421), "sayaslicer");
     window.setFramerateLimit(60);
@@ -173,7 +207,9 @@ int main() {
     ImPlot::CreateContext();
 
     sf::SoundBuffer buffer;
-    std::list<double> markers;
+    sf::SoundBuffer buffer2;
+    sf::Sound sound;
+    std::list<double> markers = { 0.0 };
 
     window.resetGLStates();
     sf::Clock deltaClock;
@@ -242,6 +278,9 @@ int main() {
             else {
                 markers.push_back(cursorPos);
             }
+        }
+        if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_P))) {
+            PlayKeysound(sound, buffer, buffer2, markers);
         }
 
         ImGui::SetNextWindowClass(&window_class);
