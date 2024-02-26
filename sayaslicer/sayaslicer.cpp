@@ -116,7 +116,8 @@ void PlayKeysound(sf::Sound &sound, sf::SoundBuffer &buffer, sf::SoundBuffer& bu
     unsigned long long keyStart = 0;
     unsigned long long keyEnd = 0;
     unsigned long long offsetSamples = (long long)offset * (long long)waveformReso;
-    for (int i = 0; i < markers.size(); i++) {
+    int i = 0;
+    for (; i < markers.size(); i++) {
         if (i + 1.0 >= markers.size()) {
             keyStart = get(markers, i) + offsetSamples;
             keyEnd = buffer.getSampleCount();
@@ -129,12 +130,12 @@ void PlayKeysound(sf::Sound &sound, sf::SoundBuffer &buffer, sf::SoundBuffer& bu
         }
     }
     printf("playing keysound with range start: %llu, range end: %llu\n", keyStart, keyEnd);
-    auto bufsize = keyEnd - keyStart;
+    auto bufsize = (keyEnd - keyStart) + 4 - ((keyEnd - keyStart) % 4); // Buffer size must be a multiple of 4
     buffer2.loadFromSamples(&samples[keyStart], bufsize, buffer.getChannelCount(), buffer.getSampleRate());
     sound.setBuffer(buffer2);
     sound.play();
     if (keyEnd != buffer.getSampleCount())
-        cursorPos = keyEnd - offsetSamples;
+        cursorPos = get(markers, i + 1) - (double)offsetSamples;
 }
 
 void WriteKeysounds(sf::SoundBuffer& buffer, std::list<double> markers) {
@@ -195,13 +196,21 @@ void ShowMainMenuBar(sf::SoundBuffer& buffer, std::list<double> markers, sf::Ren
     }
 }
 
+double FindInList(std::list<double> markers, double e) {
+    for (double m : markers) {
+        if (std::abs(m - e) < 0.000001)
+            return m;
+    }
+    return -1.0;
+}
+
 void AddMarkersFromBMSEClipboad(BMSEClipboard objs, sf::SoundBuffer& buffer, std::list<double> &markers) {
     if (buffer.getSampleCount() > 0) {
         auto sampleRate = buffer.getSampleRate();
         auto numChannels = buffer.getChannelCount();
         for (BMSEClipboardObject o : objs.objects) {
             double m = o.toSamplePosition(bpm, sampleRate, numChannels);
-            if (std::find(markers.begin(), markers.end(), m) == markers.end()) {
+            if (FindInList(markers, m) == -1.0) {
                 markers.push_back(m);
             }
         }
@@ -282,8 +291,9 @@ int main() {
             snapping -= 1;
         }
         if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Z))) {
-            if (std::find(markers.begin(), markers.end(), cursorPos) != markers.end()) {
-                markers.remove(cursorPos);
+            double e = FindInList(markers, cursorPos);
+            if (e != -1.0) {
+                markers.remove(e);
             }
             else {
                 markers.push_back(cursorPos);
