@@ -8,7 +8,7 @@ add_executable (sayaslicer "sayaslicer.cpp" "sayaslicer.h")
 
 # TODO: Ajoutez des tests et installez des cibles si nécessaire.
 target_link_options(sayaslicer PRIVATE ${SUBSYSTEM_LINKER_OPTIONS})
-target_link_libraries(sayaslicer PRIVATE sfml-main sfml-audio)
+target_link_libraries(sayaslicer PRIVATE sfml-audio)
 target_link_libraries(sayaslicer PRIVATE imgui::imgui)
 target_link_libraries(sayaslicer PRIVATE ImGui-SFML::ImGui-SFML)
 target_link_libraries(sayaslicer PRIVATE implot::implot)
