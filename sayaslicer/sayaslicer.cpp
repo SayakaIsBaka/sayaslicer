@@ -12,14 +12,16 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Audio.hpp>
 #include <tinyfiledialogs/tinyfiledialogs.h>
+#include <list>
 
 using namespace std;
 
 static int offset = 0;
 static int waveformReso = 192;
-static int cursorPos = 0;
+static double cursorPos = 0.0;
 static int bpm = 120;
 static int snapping = 4;
+static double samplesPerSnap = 0.0;
 
 bool OpenAudioFile(sf::SoundBuffer &buffer)
 {
@@ -121,38 +123,32 @@ int MeterFormatter(double value, char* buff, int size, void* data) {
     return snprintf(buff, size, "%g/%d", value / 250 + 1, unit);
 }
 
-void DisplayWaveform(sf::SoundBuffer &buffer) {
-    static double x1 = 0.2;
-    static double x2 = 0.8;
-    static ImPlotDragToolFlags flags = ImPlotDragToolFlags_None;
-    ImGui::CheckboxFlags("NoCursors", (unsigned int*)&flags, ImPlotDragToolFlags_NoCursors); ImGui::SameLine();
-    ImGui::CheckboxFlags("NoFit", (unsigned int*)&flags, ImPlotDragToolFlags_NoFit); ImGui::SameLine();
-    ImGui::CheckboxFlags("NoInput", (unsigned int*)&flags, ImPlotDragToolFlags_NoInputs);
+void DisplayWaveform(sf::SoundBuffer& buffer, std::list<double> &markers) {
     if (ImPlot::BeginPlot("##lines", ImVec2(-1, 0), ImPlotFlags_NoBoxSelect | ImPlotFlags_NoLegend)) {
         ImPlot::SetupAxisLimits(ImAxis_Y1, -32768, 32768);
-        ImPlot::SetupAxisLimits(ImAxis_X1, cursorPos, cursorPos + 2000, ImPlotCond_Always);
-        ImPlot::SetupAxis(ImAxis_Y1, "", ImPlotAxisFlags_NoGridLines | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Lock);
+        ImPlot::SetupAxisLimits(ImAxis_X1, cursorPos, cursorPos + 2000.0, ImPlotCond_Always);
+        ImPlot::SetupAxis(ImAxis_Y1, "", ImPlotAxisFlags_NoGridLines | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Lock | ImPlotAxisFlags_NoTickMarks);
         
-        ImPlot::SetupAxisZoomConstraints(ImAxis_X1, 2000, 2000);
+        //ImPlot::SetupAxisZoomConstraints(ImAxis_X1, 2000, 2000);
 
         auto sampleCount = buffer.getSampleCount();
         auto sampleRate = buffer.getSampleRate();
         auto numChannels = buffer.getChannelCount();
 
-        double samplesPerBeat = sampleRate ? 60.0 / bpm * ((double)sampleRate / (double)waveformReso * (double)numChannels) : 1.0;
-        double samplesPerSnap = samplesPerBeat / snapping / 4.0;
+        double samplesPerBeat = sampleRate ? 60.0 / (double)bpm * ((double)sampleRate / (double)waveformReso * (double)numChannels) : 1.0;
+        samplesPerSnap = samplesPerBeat / (double)snapping * 4.0;
         double lastTick = sampleCount / waveformReso + samplesPerBeat - fmod((sampleCount / waveformReso), samplesPerBeat);
-        double nbTicksToDraw = (lastTick / samplesPerBeat) * snapping / 4.0;
+        double nbTicksToDraw = (lastTick / samplesPerBeat) * (double)snapping / 4.0;
         ImPlot::SetupAxisTicks(ImAxis_X1, 0, lastTick, nbTicksToDraw + 1.0); // Account for last tick
 
         if (sampleCount > 0) {
-            
-            ImPlot::SetupAxisLimitsConstraints(ImAxis_X1, 0, sampleCount / waveformReso);
+            ImPlot::SetupAxisLimitsConstraints(ImAxis_X1, 0, sampleCount / waveformReso - offset);
             
             auto samples = buffer.getSamples();
             ImPlot::PlotLine("Waveform", samples, sampleCount / waveformReso, 1.0, 0, 0, offset, waveformReso * numChannels); // Buffer stores samples as [channel1_i, channel2_i, channel1_i+1, etc.]
-            ImPlot::DragLineX(0, &x1, ImVec4(1, 1, 1, 1), 1, flags);
-            ImPlot::DragLineX(1, &x2, ImVec4(1, 1, 1, 1), 1, flags);
+            for (double m : markers) {
+                ImPlot::DragLineX(0, &m, ImVec4(1, 1, 1, 1), 1, ImPlotDragToolFlags_NoInputs);
+            }
         }
         ImPlot::EndPlot();
     }
@@ -167,6 +163,7 @@ int main() {
     ImPlot::CreateContext();
 
     sf::SoundBuffer buffer;
+    std::list<double> markers;
 
     window.resetGLStates();
     sf::Clock deltaClock;
@@ -207,16 +204,38 @@ int main() {
         {
             ImGui::SeparatorText("General");
             ImGui::DragInt("Offset", &offset, 1, 0, 1000);
-            ImGui::DragInt("Position", &cursorPos, 1, 0, INFINITY);
+            ImGui::DragScalar("Position", ImGuiDataType_Double, &cursorPos, 1, 0, 0);
             ImGui::DragInt("BPM", &bpm, 1, 10, 10000);
             ImGui::DragInt("Snapping", &snapping, 1, 1, 192);
         }
         ImGui::End();
 
+        if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_RightArrow))) {
+            cursorPos += samplesPerSnap;
+        }
+        else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_LeftArrow)) && cursorPos > 0.0) {
+            cursorPos -= samplesPerSnap;
+        }
+        if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_UpArrow)) && snapping < 192) {
+            snapping += 1;
+        }
+        else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_DownArrow)) && snapping > 1) {
+            snapping -= 1;
+        }
+        if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Z))) {
+            if (std::find(markers.begin(), markers.end(), cursorPos) != markers.end()) {
+                markers.remove(cursorPos);
+            }
+            else {
+                markers.push_back(cursorPos);
+            }
+        }
+
         ImGui::SetNextWindowClass(&window_class);
         ImGui::Begin("Waveform");
         {
-            DisplayWaveform(buffer);
+            ImGui::SeparatorText("Waveform");
+            DisplayWaveform(buffer, markers);
         }
         ImGui::End();
 
