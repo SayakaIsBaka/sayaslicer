@@ -13,5 +13,9 @@ find_package(tinyfiledialogs CONFIG REQUIRED)
 
 include_directories("include")
 
+set(CLIP_EXAMPLES OFF CACHE BOOL "Compile clip examples")
+set(CLIP_TESTS OFF CACHE BOOL "Compile clip tests")
+
 # Incluez les sous-projets.
+add_subdirectory ("include/clip")
 add_subdirectory ("sayaslicer")

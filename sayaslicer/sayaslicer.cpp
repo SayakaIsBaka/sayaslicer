@@ -7,7 +7,7 @@
 #include <imgui_internal.h>
 #include <imgui-SFML.h>
 #include <implot.h>
-#include <clipboardxx.hpp>
+#include <clip/clip.h>
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Clock.hpp>
@@ -224,7 +224,6 @@ int main() {
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     ImGui::StyleColorsDark();
     ImPlot::CreateContext();
-    clipboardxx::clipboard clipboard;
     sf::SoundBuffer buffer;
     sf::SoundBuffer buffer2;
     sf::Sound sound;
@@ -310,7 +309,7 @@ int main() {
         }
         if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_B), false)) {
             std::string cb;
-            cb = clipboard.paste();
+            clip::get_text(cb);
             BMSEClipboard objs(cb);
             AddMarkersFromBMSEClipboad(objs, buffer, markers);
         }
