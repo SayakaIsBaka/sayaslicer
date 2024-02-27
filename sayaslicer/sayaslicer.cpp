@@ -64,7 +64,7 @@ void DisplayWaveform(sf::SoundBuffer& buffer, std::list<double> &markers) {
         ImPlot::SetupAxisLimits(ImAxis_Y1, -32768, 32768);
         ImPlot::SetupAxisLimits(ImAxis_X1, cursorPos / waveformReso, cursorPos / waveformReso + 2000.0, ImPlotCond_Always);
         ImPlot::SetupAxis(ImAxis_Y1, "", ImPlotAxisFlags_NoGridLines | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Lock | ImPlotAxisFlags_NoTickMarks);
-        ImPlot::SetupAxis(ImAxis_X1, "", ImPlotAxisFlags_Foreground);
+        ImPlot::SetupAxis(ImAxis_X1, "", ImPlotAxisFlags_Foreground | ImPlotAxisFlags_NoTickLabels);
 
         //ImPlot::SetupAxisZoomConstraints(ImAxis_X1, 2000, 2000);
 
@@ -87,6 +87,7 @@ void DisplayWaveform(sf::SoundBuffer& buffer, std::list<double> &markers) {
         ImPlot::SetupAxisTicks(ImAxis_X1, 0, lastTick / waveformReso, nbTicksToDraw + 1); // Account for last tick
 
         if (sampleCount > 0) {
+            ImPlot::SetupAxis(ImAxis_X1, "", ImPlotAxisFlags_Foreground);
             ImPlot::SetupAxisLimitsConstraints(ImAxis_X1, 0, sampleCount / waveformReso - offset);
             
             auto samples = buffer.getSamples();
@@ -108,8 +109,8 @@ double get(std::list<double> _list, int _i) {
     return *it;
 }
 
-void PlayKeysound(sf::Sound &sound, sf::SoundBuffer &buffer, sf::SoundBuffer& buffer2, std::list<double> markers) {
-    if (buffer.getSampleCount() == 0)
+void PlayKeysound(sf::Sound &sound, sf::SoundBuffer &buffer, sf::SoundBuffer& buffer2, std::list<double> markers, bool jumpToNext) {
+    if (buffer.getSampleCount() == 0 || markers.size() == 0)
         return;
     auto samples = buffer.getSamples();
     markers.sort();
@@ -134,7 +135,7 @@ void PlayKeysound(sf::Sound &sound, sf::SoundBuffer &buffer, sf::SoundBuffer& bu
     buffer2.loadFromSamples(&samples[keyStart], bufsize, buffer.getChannelCount(), buffer.getSampleRate());
     sound.setBuffer(buffer2);
     sound.play();
-    if (keyEnd != buffer.getSampleCount())
+    if (jumpToNext && keyEnd != buffer.getSampleCount())
         cursorPos = get(markers, i + 1) - (double)offsetSamples;
 }
 
@@ -169,33 +170,6 @@ void WriteKeysounds(sf::SoundBuffer& buffer, std::list<double> markers) {
     }
 }
 
-void ShowMenuFile(sf::SoundBuffer& buffer, std::list<double> markers, sf::RenderWindow &window)
-{
-    if (ImGui::MenuItem("Open", "O")) {
-        OpenAudioFile(buffer);
-    }
-    if (ImGui::MenuItem("Export keysounds", "M")) {
-        WriteKeysounds(buffer, markers);
-    }
-    ImGui::Separator();
-    if (ImGui::MenuItem("Quit", "Alt+F4")) {
-        window.close();
-    }
-}
-
-void ShowMainMenuBar(sf::SoundBuffer& buffer, std::list<double> markers, sf::RenderWindow &window)
-{
-    if (ImGui::BeginMainMenuBar())
-    {
-        if (ImGui::BeginMenu("File"))
-        {
-            ShowMenuFile(buffer, markers, window);
-            ImGui::EndMenu();
-        }
-        ImGui::EndMainMenuBar();
-    }
-}
-
 double FindInList(std::list<double> markers, double e) {
     for (double m : markers) {
         if (std::abs(m - e) < 0.000001)
@@ -204,7 +178,7 @@ double FindInList(std::list<double> markers, double e) {
     return -1.0;
 }
 
-void AddMarkersFromBMSEClipboad(BMSEClipboard objs, sf::SoundBuffer& buffer, std::list<double> &markers) {
+void AddMarkersFromBMSEClipboard(BMSEClipboard objs, sf::SoundBuffer& buffer, std::list<double>& markers) {
     if (buffer.getSampleCount() > 0) {
         auto sampleRate = buffer.getSampleRate();
         auto numChannels = buffer.getChannelCount();
@@ -214,6 +188,43 @@ void AddMarkersFromBMSEClipboad(BMSEClipboard objs, sf::SoundBuffer& buffer, std
                 markers.push_back(m);
             }
         }
+    }
+}
+
+void ProcessBMSEClipboard(sf::SoundBuffer& buffer, std::list<double>& markers) {
+    std::string cb;
+    clip::get_text(cb);
+    BMSEClipboard objs(cb);
+    AddMarkersFromBMSEClipboard(objs, buffer, markers);
+}
+
+void ShowMenuFile(sf::SoundBuffer& buffer, std::list<double> &markers, sf::RenderWindow &window)
+{
+    if (ImGui::MenuItem("Open", "O")) {
+        OpenAudioFile(buffer);
+    }
+    if (ImGui::MenuItem("Export keysounds", "M")) {
+        WriteKeysounds(buffer, markers);
+    }
+    if (ImGui::MenuItem("Paste BMSE clipboard data", "B")) {
+        ProcessBMSEClipboard(buffer, markers);
+    }
+    ImGui::Separator();
+    if (ImGui::MenuItem("Quit", "Alt+F4")) {
+        window.close();
+    }
+}
+
+void ShowMainMenuBar(sf::SoundBuffer& buffer, std::list<double> &markers, sf::RenderWindow &window)
+{
+    if (ImGui::BeginMainMenuBar())
+    {
+        if (ImGui::BeginMenu("File"))
+        {
+            ShowMenuFile(buffer, markers, window);
+            ImGui::EndMenu();
+        }
+        ImGui::EndMainMenuBar();
     }
 }
 
@@ -298,8 +309,11 @@ int main() {
                 markers.push_back(cursorPos);
             }
         }
+        if (!ImGui::GetIO().WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
+            PlayKeysound(sound, buffer, buffer2, markers, false);
+        }
         if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_P))) {
-            PlayKeysound(sound, buffer, buffer2, markers);
+            PlayKeysound(sound, buffer, buffer2, markers, true);
         }
         if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_M), false)) {
             WriteKeysounds(buffer, markers);
@@ -308,10 +322,7 @@ int main() {
             OpenAudioFile(buffer);
         }
         if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_B), false)) {
-            std::string cb;
-            clip::get_text(cb);
-            BMSEClipboard objs(cb);
-            AddMarkersFromBMSEClipboad(objs, buffer, markers);
+            ProcessBMSEClipboard(buffer, markers);
         }
              
         ImGui::SetNextWindowClass(&window_class);
