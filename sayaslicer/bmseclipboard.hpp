@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 #include <iostream>
+#include <algorithm>
 #include <vector>
 
 class BMSEClipboardObject {

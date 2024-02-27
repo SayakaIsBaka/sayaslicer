@@ -160,7 +160,7 @@ void WriteKeysounds(sf::SoundBuffer& buffer, std::list<double> markers) {
         auto bufsize = keyEnd - keyStart;
         sf::OutputSoundFile file;
         char filename[4096];
-        sprintf_s(filename, 4096, "%s_%03d.wav", p.string().c_str(), i);
+        snprintf(filename, 4096, "%s_%03d.wav", p.string().c_str(), i);
         puts(filename);
         if (!file.openFromFile(filename, buffer.getSampleRate(), buffer.getChannelCount())) {
             puts("Error opening file for writing");
@@ -339,7 +339,7 @@ int main() {
                         ImGui::TableNextRow();
                         ImGui::TableSetColumnIndex(0);
                         char buf[64];
-                        sprintf_s(buf, 64, "%f", m);
+                        snprintf(buf, 64, "%f", m);
                         ImGui::Selectable(buf);
                         if (ImGui::IsItemClicked(0)) {
                             cursorPos = m;
