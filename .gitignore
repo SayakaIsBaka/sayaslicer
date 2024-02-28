@@ -4,3 +4,4 @@ vcpkg_installed
 CMakeUserPresets.json
 .vs
 vcpkg-configuration.json
+tools

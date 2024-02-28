@@ -3,6 +3,8 @@
 
 #include "sayaslicer.h"
 #include "bmseclipboard.hpp"
+#include "theme.hpp"
+#include "font.hpp"
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <imgui-SFML.h>
@@ -91,6 +93,7 @@ void DisplayWaveform(sf::SoundBuffer& buffer, std::list<double> &markers) {
             ImPlot::SetupAxisLimitsConstraints(ImAxis_X1, 0, sampleCount / waveformReso - offset);
             
             auto samples = buffer.getSamples();
+            ImPlot::SetNextLineStyle(ImGui::GetStyleColorVec4(ImGuiCol_PlotHistogram));
             ImPlot::PlotLine("Waveform", samples, sampleCount / waveformReso, 1.0, 0, 0, offset, waveformReso * numChannels); // Buffer stores samples as [channel1_i, channel2_i, channel1_i+1, etc.]
             for (double m : markers) {
                 double mTmp = m / waveformReso;
@@ -229,11 +232,15 @@ void ShowMainMenuBar(sf::SoundBuffer& buffer, std::list<double> &markers, sf::Re
 }
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(800, 421), "sayaslicer");
+    sf::RenderWindow window(sf::VideoMode(800, 450), "sayaslicer");
     window.setFramerateLimit(60);
-    ImGui::SFML::Init(window);
-    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-    ImGui::StyleColorsDark();
+    ImGui::SFML::Init(window, false);
+    auto &io = ImGui::GetIO();
+    io.Fonts->AddFontFromMemoryCompressedTTF(roboto_compressed_data, roboto_compressed_size, 13);
+    io.Fonts->Build();
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    ImGui::SFML::UpdateFontTexture();
+    SetupImGuiStyle();
     ImPlot::CreateContext();
     sf::SoundBuffer buffer;
     sf::SoundBuffer buffer2;
@@ -309,7 +316,7 @@ int main() {
                 markers.push_back(cursorPos);
             }
         }
-        if (!ImGui::GetIO().WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
+        if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
             PlayKeysound(sound, buffer, buffer2, markers, false);
         }
         if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_P))) {
