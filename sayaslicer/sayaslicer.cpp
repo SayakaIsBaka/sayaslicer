@@ -228,17 +228,20 @@ void ShowMenuFile(sf::SoundBuffer& buffer, std::list<double> &markers, sf::Rende
     if (ImGui::MenuItem("Export keysounds", "M")) {
         WriteKeysounds(buffer, markers);
     }
-    if (ImGui::MenuItem("Paste BMSE clipboard data", "B")) {
-        ProcessBMSEClipboard(buffer, markers);
-    }
     ImGui::Separator();
     if (ImGui::MenuItem("Quit", "Alt+F4")) {
         window.close();
     }
 }
 
-void ShowMenuEdit(std::list<double>& markers)
+void ShowMenuEdit(sf::SoundBuffer& buffer,  std::list<double>& markers)
 {
+    if (ImGui::MenuItem("Copy BMSE clipboard data", "V")) {
+        GenerateBMSEClipboard(buffer, markers);
+    }
+    if (ImGui::MenuItem("Paste BMSE clipboard data", "B")) {
+        ProcessBMSEClipboard(buffer, markers);
+    }
     if (ImGui::MenuItem("Clear all markers", "C")) {
         ClearAllMarkers(markers);
     }
@@ -255,7 +258,7 @@ void ShowMainMenuBar(sf::SoundBuffer& buffer, std::list<double> &markers, sf::Re
         }
         if (ImGui::BeginMenu("Edit"))
         {
-            ShowMenuEdit(markers);
+            ShowMenuEdit(buffer, markers);
             ImGui::EndMenu();
         }
         ImGui::EndMainMenuBar();
