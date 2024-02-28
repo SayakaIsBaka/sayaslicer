@@ -9,21 +9,38 @@ static const float DRAG_MOUSE_THRESHOLD_FACTOR = 0.50f;
 
 using namespace ImGui;
 
+int FromBaseToDec(const char* s, int b, const char* digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz") {
+    int res = 0;
+    int len = strlen(s);
+    for (int i = len - 1; i >= 0; i--) {
+        const char* tmp = strchr(digits, s[i]);
+        if (!tmp)
+            return -1;
+        int d = tmp - digits;
+        if (d >= b)
+            return -1;
+        res += d * pow(b, len - (i + 1));
+    }
+    return res;
+}
+
 const std::string VerifyBaseAndConvert(const char* buf, int base) {
     if (strlen(buf) != 2)
         return buf;
-    int res = std::stoi(buf, nullptr, base);
+    int res = FromBaseToDec(buf, base);
+    if (res == -1)
+        return buf;
     return std::to_string(res);
 }
 
-std::string ToBase(unsigned int n, int b, char const* digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
+std::string FromDecToBase(unsigned int n, int b, const char* digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
 {
-    return (n / b ? ToBase(n / b, b, digits) : "") + std::string(1, digits[n % b]);
+    return (n / b ? FromDecToBase(n / b, b, digits) : "") + std::string(1, digits[n % b]);
 }
 
 int ToBaseString(char* buf, int buf_size, const void* p_data, int base) {
     auto val = *(const ImU32*)p_data;
-    auto s = ToBase(val, base);
+    auto s = FromDecToBase(val, base);
     auto size = s.size();
     if (size == 1) {
         s.insert(0, 1, '0');
@@ -162,7 +179,7 @@ bool MyDragScalar(const char* label, ImGuiDataType data_type, void* p_data, floa
     return value_changed;
 }
 
-bool DragIntCustomBase(const char* label, int* v, float v_speed = (1.0F), int v_min = 0, int v_max = 0, const char* format = "%d", ImGuiSliderFlags flags = 0, int base = 36)
+bool DragIntCustomBase(const char* label, int* v, float v_speed = (1.0F), int v_min = 0, int v_max = 0, int base = 36, ImGuiSliderFlags flags = 0)
 {
-    return MyDragScalar(label, ImGuiDataType_S32, v, v_speed, &v_min, &v_max, format, flags, base);
+    return MyDragScalar(label, ImGuiDataType_S32, v, v_speed, &v_min, &v_max, "%d", flags, base);
 }

@@ -29,7 +29,8 @@ static int waveformReso = 192;
 static double cursorPos = 0.0;
 static float bpm = 120.0;
 static int snapping = 4;
-int startingKeysound = 1;
+static int startingKeysound = 1;
+static bool useBase62 = false;
 static double samplesPerSnap = 0.0;
 static char* selection = NULL;
 
@@ -319,7 +320,13 @@ int main() {
             ImGui::DragScalar("Position", ImGuiDataType_Double, &cursorPos, 1, 0, 0);
             ImGui::DragFloat("BPM", &bpm, 1, 10, 10000);
             ImGui::DragInt("Snapping", &snapping, 1, 1, 192);
-            DragIntCustomBase("Starting keysound", &startingKeysound, 1, 1, 1295);
+            int base = useBase62 ? 62 : 36;
+            int maxKeysound = base * base - 1;
+            if (startingKeysound > maxKeysound)
+                startingKeysound = maxKeysound;
+            DragIntCustomBase("Starting keysound", &startingKeysound, 1, 1, maxKeysound, base);
+            ImGui::SetItemTooltip("Decimal value: %d", startingKeysound);
+            ImGui::Checkbox("Enable base-62", &useBase62);
         }
         ImGui::End();
 
@@ -338,7 +345,7 @@ int main() {
         else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_DownArrow)) && snapping > 1) {
             snapping -= 1;
         }
-        if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Z))) {
+        if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Z))) {
             double e = FindInList(markers, cursorPos);
             if (e != -1.0) {
                 markers.remove(e);
@@ -350,22 +357,22 @@ int main() {
         if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
             PlayKeysound(sound, buffer, buffer2, markers, false);
         }
-        if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_P))) {
+        if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_P))) {
             PlayKeysound(sound, buffer, buffer2, markers, true);
         }
-        if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_M), false)) {
+        if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_M), false)) {
             WriteKeysounds(buffer, markers);
         }
-        if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_O), false)) {
+        if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_O), false)) {
             OpenAudioFile(buffer);
         }
-        if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_B), false)) {
+        if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_B), false)) {
             ProcessBMSEClipboard(buffer, markers);
         }
-        if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_V), false)) {
+        if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_V), false)) {
             GenerateBMSEClipboard(buffer, markers);
         }
-        if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_C), false)) {
+        if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_C), false)) {
             ClearAllMarkers(markers);
         }
 
