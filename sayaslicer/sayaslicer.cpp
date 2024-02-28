@@ -172,7 +172,6 @@ void ApplyFadeout(vector<sf::Int16>& buffer, int fadeTime, unsigned int sampleRa
         for (size_t j = 0; j < nbChannels && i + j < buffer.size(); j++) {
             buffer[i + j] *= volRatio;
         }
-        printf("%f\n", volRatio);
         volRatio -= 1.0 / fadeoutSampleLen; 
     }
 }
