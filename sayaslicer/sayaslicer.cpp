@@ -403,7 +403,8 @@ int main() {
         ImGui::End();
 
         if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_RightArrow))) {
-            cursorPos += samplesPerSnap;
+            if (cursorPos + samplesPerSnap < buffer.getSampleCount())
+                cursorPos += samplesPerSnap;
         }
         else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_LeftArrow)) && cursorPos > 0.0) {
             if (cursorPos - samplesPerSnap < 0.0)
