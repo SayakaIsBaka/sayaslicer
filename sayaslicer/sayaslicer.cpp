@@ -1,10 +1,13 @@
 ﻿// sayaslicer.cpp : définit le point d'entrée de l'application.
 //
 
+#define IMGUI_DEFINE_MATH_OPERATORS
+
 #include "sayaslicer.h"
 #include "bmseclipboard.hpp"
 #include "theme.hpp"
 #include "font.hpp"
+#include "custom_widgets.hpp"
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <imgui-SFML.h>
@@ -26,6 +29,7 @@ static int waveformReso = 192;
 static double cursorPos = 0.0;
 static float bpm = 120.0;
 static int snapping = 4;
+int startingKeysound = 1;
 static double samplesPerSnap = 0.0;
 static char* selection = NULL;
 
@@ -203,7 +207,7 @@ void ProcessBMSEClipboard(sf::SoundBuffer& buffer, std::list<double>& markers) {
 
 void GenerateBMSEClipboard(sf::SoundBuffer& buffer, std::list<double> markers) {
     if (buffer.getSampleCount() > 0) {
-        auto cb = BMSEClipboard::toBMSEClipboardData(markers, bpm, buffer.getSampleRate(), buffer.getChannelCount(), 1);
+        auto cb = BMSEClipboard::toBMSEClipboardData(markers, bpm, buffer.getSampleRate(), buffer.getChannelCount(), startingKeysound);
         std::cout << cb << std::endl;
         clip::set_text(cb);
     }
@@ -315,6 +319,7 @@ int main() {
             ImGui::DragScalar("Position", ImGuiDataType_Double, &cursorPos, 1, 0, 0);
             ImGui::DragFloat("BPM", &bpm, 1, 10, 10000);
             ImGui::DragInt("Snapping", &snapping, 1, 1, 192);
+            DragIntCustomBase("Starting keysound", &startingKeysound, 1, 1, 1295);
         }
         ImGui::End();
 
