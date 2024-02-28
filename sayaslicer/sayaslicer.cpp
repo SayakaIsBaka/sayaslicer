@@ -24,6 +24,8 @@
 
 using namespace std;
 
+static const int gateThresholds[] = { 0, -24, -30, -36, -42, -48, -54, -60, -66, -72 };
+
 static int offset = 0;
 static int waveformReso = 192;
 static double cursorPos = 0.0;
@@ -31,6 +33,9 @@ static float bpm = 120.0;
 static int snapping = 4;
 static int startingKeysound = 1;
 static bool useBase62 = false;
+static int fadeout = 0;
+static int selectedGateThreshold = 0;
+
 static double samplesPerSnap = 0.0;
 static char* selection = NULL;
 
@@ -96,7 +101,7 @@ void DisplayWaveform(sf::SoundBuffer& buffer, std::list<double> &markers) {
         if (sampleCount > 0) {
             ImPlot::SetupAxis(ImAxis_X1, "", ImPlotAxisFlags_Foreground);
             ImPlot::SetupAxisLimitsConstraints(ImAxis_X1, 0, sampleCount / waveformReso - offset);
-            
+
             auto samples = buffer.getSamples();
             ImPlot::SetNextLineStyle(ImGui::GetStyleColorVec4(ImGuiCol_PlotHistogram));
             ImPlot::PlotLine("Waveform", samples, sampleCount / waveformReso, 1.0, 0, 0, offset, waveformReso * numChannels); // Buffer stores samples as [channel1_i, channel2_i, channel1_i+1, etc.]
@@ -147,6 +152,16 @@ void PlayKeysound(sf::Sound &sound, sf::SoundBuffer &buffer, sf::SoundBuffer& bu
         cursorPos = get(markers, i + 1) - (double)offsetSamples;
 }
 
+int ApplyNoiseGate(vector<sf::Int16>& buffer, int threshold) {
+    double limit = pow(10.0, (double)threshold / 20.0) * 0x7fff; // max Int16
+    auto result = std::find_if(buffer.rbegin(), buffer.rend(),
+        [limit](int i) { return abs(i) > limit; });
+
+    auto pos = std::distance(result, buffer.rend());
+    buffer.resize(pos);
+    return pos;
+}
+
 void WriteKeysounds(sf::SoundBuffer& buffer, std::list<double> markers) {
     if (!selection)
         return;
@@ -169,12 +184,20 @@ void WriteKeysounds(sf::SoundBuffer& buffer, std::list<double> markers) {
         auto bufsize = keyEnd - keyStart;
         sf::OutputSoundFile file;
         char filename[4096];
+        auto bufOut = &samples[keyStart];
+        vector<sf::Int16> newBuf;
+        if (selectedGateThreshold != 0 || fadeout != 0) {
+            newBuf.insert(newBuf.end(), &bufOut[0], &bufOut[bufsize]);
+            if (selectedGateThreshold != 0)
+                bufsize = ApplyNoiseGate(newBuf, gateThresholds[selectedGateThreshold]);
+            bufOut = &newBuf[0];
+        }
         snprintf(filename, 4096, "%s_%03d.wav", p.string().c_str(), i);
         puts(filename);
         if (!file.openFromFile(filename, buffer.getSampleRate(), buffer.getChannelCount())) {
             puts("Error opening file for writing");
         }
-        file.write(&samples[keyStart], bufsize);
+        file.write(bufOut, bufsize);
     }
 }
 
@@ -327,9 +350,39 @@ int main() {
             int maxKeysound = base * base - 1;
             if (startingKeysound > maxKeysound)
                 startingKeysound = maxKeysound;
-            DragIntCustomBase("Starting keysound", &startingKeysound, 1, 1, maxKeysound, base);
+            DragIntCustomBase("Starting key", &startingKeysound, 1, 1, maxKeysound, base);
             ImGui::SetItemTooltip("Decimal value: %d", startingKeysound);
             ImGui::Checkbox("Enable base-62", &useBase62);
+
+            ImGui::SeparatorText("Export settings");
+            char thres[64];
+            if (selectedGateThreshold == 0)
+                snprintf(thres, 64, "Disabled");
+            else
+                snprintf(thres, 64, "%ddB", gateThresholds[selectedGateThreshold]);
+            const char* combo_preview_value = thres;
+            if (ImGui::BeginCombo("Noise gate", combo_preview_value, 0))
+            {
+                for (int n = 0; n < IM_ARRAYSIZE(gateThresholds); n++)
+                {
+                    if (n == 0)
+                        snprintf(thres, 64, "Disabled");
+                    else
+                        snprintf(thres, 64, "%ddB", gateThresholds[n]);
+                    const bool is_selected = (selectedGateThreshold == n);
+                    if (ImGui::Selectable(thres, is_selected))
+                        selectedGateThreshold = n;
+                    if (is_selected)
+                        ImGui::SetItemDefaultFocus();
+                }
+                ImGui::EndCombo();
+            }
+            ImGui::DragInt("Fadeout", &fadeout, 1, 0, 1000, "%dms");
+
+            ImGui::SeparatorText("Process");
+            if (ImGui::Button("Export keysounds", ImVec2(-FLT_MIN, 0.0f))) {
+                WriteKeysounds(buffer, markers);
+            }
         }
         ImGui::End();
 
