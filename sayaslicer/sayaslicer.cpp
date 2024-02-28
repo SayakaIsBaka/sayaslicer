@@ -355,7 +355,7 @@ int main() {
         ImGuiWindowClass window_class;
         window_class.DockNodeFlagsOverrideSet = ImGuiDockNodeFlags_NoTabBar;
         ImGui::SetNextWindowClass(&window_class);
-        if (ImGui::Begin("Settings"));
+        if (ImGui::Begin("Settings"))
         {
             ImGui::SeparatorText("General");
             ImGui::DragInt("Offset", &offset, 1, 0, 1000);
@@ -449,7 +449,7 @@ int main() {
         }
 
         ImGui::SetNextWindowClass(&window_class);
-        if (ImGui::Begin("Waveform"));
+        if (ImGui::Begin("Waveform"))
         {
             ImGui::SeparatorText("Waveform");
             DisplayWaveform(buffer, markers);
