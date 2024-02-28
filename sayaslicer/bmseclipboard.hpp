@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
+#include <list>
 #include <vector>
 
 class BMSEClipboardObject {
@@ -15,6 +16,19 @@ public:
 
 	double toSamplePosition(double bpm, int sampleRate, int numChannels) {
 		return (60.0 / (double)bpm * ((double)sampleRate * (double)numChannels)) / 192.0 * 4.0 * (double)position;
+	}
+
+	std::string toString() {
+		char pos[8];
+		snprintf(pos, 8, "%07d", position);
+		return column + std::to_string(noteType) + std::string(pos) + std::to_string(value);
+	}
+
+	BMSEClipboardObject(std::string column, int noteType, int position, int value) {
+		this->column = column;
+		this->noteType = noteType;
+		this->position = position;
+		this->value = value;
 	}
 
 	BMSEClipboardObject(std::string s) {
@@ -30,6 +44,17 @@ public:
 class BMSEClipboard {
 public:
 	std::vector<BMSEClipboardObject> objects;
+
+	static std::string toBMSEClipboardData(std::list<double> markers, double bpm, int sampleRate, int numChannels, int startDef) {
+		std::string res = "BMSE ClipBoard Object Data Format\r\n";
+		for (double m : markers) {
+			double samplesPer192th = 60.0 / (double)bpm * ((double)sampleRate * (double)numChannels) / 192.0 * 4.0;
+			double position = m / samplesPer192th;
+			BMSEClipboardObject o("101", 0, round(position), startDef++);
+			res = res + o.toString() + "\r\n";
+		}
+		return res;
+	}
 
 	BMSEClipboard(std::string s) {
 		s.erase(std::remove(s.begin(), s.end(), '\r'), s.cend()); // Remove \r from the string

@@ -201,6 +201,14 @@ void ProcessBMSEClipboard(sf::SoundBuffer& buffer, std::list<double>& markers) {
     AddMarkersFromBMSEClipboard(objs, buffer, markers);
 }
 
+void GenerateBMSEClipboard(sf::SoundBuffer& buffer, std::list<double> markers) {
+    if (buffer.getSampleCount() > 0) {
+        auto cb = BMSEClipboard::toBMSEClipboardData(markers, bpm, buffer.getSampleRate(), buffer.getChannelCount(), 1);
+        std::cout << cb << std::endl;
+        clip::set_text(cb);
+    }
+}
+
 void ClearAllMarkers(std::list<double>& markers)
 {
     markers.clear();
@@ -348,6 +356,9 @@ int main() {
         }
         if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_B), false)) {
             ProcessBMSEClipboard(buffer, markers);
+        }
+        if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_V), false)) {
+            GenerateBMSEClipboard(buffer, markers);
         }
         if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_C), false)) {
             ClearAllMarkers(markers);
