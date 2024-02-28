@@ -201,6 +201,12 @@ void ProcessBMSEClipboard(sf::SoundBuffer& buffer, std::list<double>& markers) {
     AddMarkersFromBMSEClipboard(objs, buffer, markers);
 }
 
+void ClearAllMarkers(std::list<double>& markers)
+{
+    markers.clear();
+    //markers.push_back(0.0);
+}
+
 void ShowMenuFile(sf::SoundBuffer& buffer, std::list<double> &markers, sf::RenderWindow &window)
 {
     if (ImGui::MenuItem("Open", "O")) {
@@ -218,6 +224,13 @@ void ShowMenuFile(sf::SoundBuffer& buffer, std::list<double> &markers, sf::Rende
     }
 }
 
+void ShowMenuEdit(std::list<double>& markers)
+{
+    if (ImGui::MenuItem("Clear all markers", "C")) {
+        ClearAllMarkers(markers);
+    }
+}
+
 void ShowMainMenuBar(sf::SoundBuffer& buffer, std::list<double> &markers, sf::RenderWindow &window)
 {
     if (ImGui::BeginMainMenuBar())
@@ -225,6 +238,11 @@ void ShowMainMenuBar(sf::SoundBuffer& buffer, std::list<double> &markers, sf::Re
         if (ImGui::BeginMenu("File"))
         {
             ShowMenuFile(buffer, markers, window);
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Edit"))
+        {
+            ShowMenuEdit(markers);
             ImGui::EndMenu();
         }
         ImGui::EndMainMenuBar();
@@ -331,7 +349,10 @@ int main() {
         if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_B), false)) {
             ProcessBMSEClipboard(buffer, markers);
         }
-             
+        if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_C), false)) {
+            ClearAllMarkers(markers);
+        }
+
         ImGui::SetNextWindowClass(&window_class);
         if (ImGui::Begin("Waveform"));
         {
