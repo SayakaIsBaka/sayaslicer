@@ -167,12 +167,12 @@ int ApplyNoiseGate(vector<sf::Int16>& buffer, int threshold, int nbChannels) {
 void ApplyFadeout(vector<sf::Int16>& buffer, int fadeTime, unsigned int sampleRate, int nbChannels) {
     size_t fadeoutSampleLen = (size_t)(sampleRate * fadeTime / 1000);
     unsigned int startFadeoutSample = buffer.size() <= fadeoutSampleLen * nbChannels ? 0 : buffer.size() - fadeoutSampleLen * nbChannels - 1;
-    double volRatio = 1;
+    double volRatio = 0.0;
     for (size_t i = startFadeoutSample; i < buffer.size(); i += nbChannels) {
         for (size_t j = 0; j < nbChannels && i + j < buffer.size(); j++) {
-            buffer[i + j] *= volRatio;
+            buffer[i + j] *= (1 - volRatio * volRatio);
         }
-        volRatio -= 1.0 / fadeoutSampleLen; 
+        volRatio += 1.0 / fadeoutSampleLen; 
     }
 }
 
