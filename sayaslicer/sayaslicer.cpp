@@ -152,14 +152,29 @@ void PlayKeysound(sf::Sound &sound, sf::SoundBuffer &buffer, sf::SoundBuffer& bu
         cursorPos = get(markers, i + 1) - (double)offsetSamples;
 }
 
-int ApplyNoiseGate(vector<sf::Int16>& buffer, int threshold) {
-    double limit = pow(10.0, (double)threshold / 20.0) * 0x7fff; // max Int16
+int ApplyNoiseGate(vector<sf::Int16>& buffer, int threshold, int nbChannels) {
+    double limit = pow(10.0, (double)threshold / 20.0) * 0x7fff; // dB to amplitude and multiply with max Int16
     auto result = std::find_if(buffer.rbegin(), buffer.rend(),
         [limit](int i) { return abs(i) > limit; });
 
     auto pos = std::distance(result, buffer.rend());
+    if (pos % nbChannels != 0)
+        pos = pos + nbChannels - pos % nbChannels;
     buffer.resize(pos);
     return pos;
+}
+
+void ApplyFadeout(vector<sf::Int16>& buffer, int fadeTime, unsigned int sampleRate, int nbChannels) {
+    size_t fadeoutSampleLen = (size_t)(sampleRate * fadeTime / 1000);
+    unsigned int startFadeoutSample = buffer.size() <= fadeoutSampleLen * nbChannels ? 0 : buffer.size() - fadeoutSampleLen * nbChannels - 1;
+    double volRatio = 1;
+    for (size_t i = startFadeoutSample; i < buffer.size(); i += nbChannels) {
+        for (size_t j = 0; j < nbChannels && i + j < buffer.size(); j++) {
+            buffer[i + j] *= volRatio;
+        }
+        printf("%f\n", volRatio);
+        volRatio -= 1.0 / fadeoutSampleLen; 
+    }
 }
 
 void WriteKeysounds(sf::SoundBuffer& buffer, std::list<double> markers) {
@@ -189,7 +204,9 @@ void WriteKeysounds(sf::SoundBuffer& buffer, std::list<double> markers) {
         if (selectedGateThreshold != 0 || fadeout != 0) {
             newBuf.insert(newBuf.end(), &bufOut[0], &bufOut[bufsize]);
             if (selectedGateThreshold != 0)
-                bufsize = ApplyNoiseGate(newBuf, gateThresholds[selectedGateThreshold]);
+                bufsize = ApplyNoiseGate(newBuf, gateThresholds[selectedGateThreshold], buffer.getChannelCount());
+            if (fadeout != 0)
+                ApplyFadeout(newBuf, fadeout, buffer.getSampleRate(), buffer.getChannelCount());
             bufOut = &newBuf[0];
         }
         snprintf(filename, 4096, "%s_%03d.wav", p.string().c_str(), i);
