@@ -405,12 +405,18 @@ int main() {
         if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_RightArrow))) {
             if (cursorPos + samplesPerSnap < buffer.getSampleCount())
                 cursorPos += samplesPerSnap;
+            if (sound.getStatus() == sf::Sound::Playing) {
+                sound.stop();
+            }
         }
         else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_LeftArrow)) && cursorPos > 0.0) {
             if (cursorPos - samplesPerSnap < 0.0)
                 cursorPos = 0.0;
             else
                 cursorPos -= samplesPerSnap;
+            if (sound.getStatus() == sf::Sound::Playing) {
+                sound.stop();
+            }
         }
         if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_UpArrow)) && snapping < 192) {
             snapping += 1;
