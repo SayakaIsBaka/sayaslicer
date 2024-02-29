@@ -7,6 +7,7 @@
 #include <Windows.h>
 LONG_PTR originalSFMLCallback = 0x0;
 LONG_PTR originalUserData = 0x0;
+LONG_PTR bufferPtr = 0x0;
 #endif
 
 #include "sayaslicer.h"
@@ -44,7 +45,6 @@ static int selectedGateThreshold = 0;
 
 static double samplesPerSnap = 0.0;
 static std::string selectedFile;
-static sf::SoundBuffer buffer;
 
 bool OpenAudioFile(sf::SoundBuffer &buffer, std::string file = "")
 {
@@ -340,7 +340,7 @@ LRESULT CALLBACK myCallback(HWND handle, UINT message, WPARAM wParam, LPARAM lPa
             {
                 std::string stdstr;
                 sf::Utf8::fromWide(str.begin(), str.end(), std::back_inserter(stdstr));
-                OpenAudioFile(buffer, stdstr);
+                OpenAudioFile(*(sf::SoundBuffer*)bufferPtr, stdstr);
             }
         }
         DragFinish(hdrop);
@@ -360,6 +360,7 @@ int main() {
     ImGui::SFML::UpdateFontTexture();
     SetupImGuiStyle();
     ImPlot::CreateContext();
+    sf::SoundBuffer buffer;
     sf::SoundBuffer buffer2;
     sf::Sound sound;
     std::list<double> markers = { 0.0 };
@@ -368,6 +369,7 @@ int main() {
     HWND handle = window.getSystemHandle();
     DragAcceptFiles(handle, TRUE);
     originalSFMLCallback = SetWindowLongPtrW(handle, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(myCallback));
+    bufferPtr = (LONG_PTR)&buffer;
 #endif
 
     window.resetGLStates();
