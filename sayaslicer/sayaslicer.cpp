@@ -3,6 +3,12 @@
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 
+#if _WIN32 // Include required for drag and drop on Windows
+#include <Windows.h>
+LONG_PTR originalSFMLCallback = 0x0;
+LONG_PTR originalUserData = 0x0;
+#endif
+
 #include "sayaslicer.h"
 #include "bmseclipboard.hpp"
 #include "theme.hpp"
@@ -37,31 +43,42 @@ static int fadeout = 0;
 static int selectedGateThreshold = 0;
 
 static double samplesPerSnap = 0.0;
-static char* selection = NULL;
+static std::string selectedFile;
+static sf::SoundBuffer buffer;
 
-bool OpenAudioFile(sf::SoundBuffer &buffer)
+bool OpenAudioFile(sf::SoundBuffer &buffer, std::string file = "")
 {
-    char const* lFilterPatterns[2] = { "*.wav", "*.ogg" };
-    selection = tinyfd_openFileDialog( // there is also a wchar_t version
-        "Select file", // title
-        0, // optional initial directory
-        2, // number of filter patterns
-        lFilterPatterns, // char const * lFilterPatterns[2] = { "*.txt", "*.jpg" };
-        NULL, // optional filter description
-        0 // forbid multiple selections
-    );
+    if (file.size() == 0) {
+        char const* lFilterPatterns[2] = { "*.wav", "*.ogg" };
+        char* s = tinyfd_openFileDialog( // there is also a wchar_t version
+            "Select audio file...", // title
+            0, // optional initial directory
+            2, // number of filter patterns
+            lFilterPatterns, // char const * lFilterPatterns[2] = { "*.txt", "*.jpg" };
+            NULL, // optional filter description
+            0 // forbid multiple selections
+        );
+        if (s)
+            selectedFile = s;
+        else
+            return false;
+    }
+    else {
+        selectedFile = file;
+    }
     
-    if (selection && strlen(selection) > 0) {
-        puts(selection);
-        bool res = buffer.loadFromFile(selection);
-        std::cout << "duration: " << buffer.getDuration().asSeconds() << std::endl;
-        std::cout << "channels: " << buffer.getChannelCount() << std::endl;
-        std::cout << "sample rate: " << buffer.getSampleRate() << std::endl;
-        std::cout << "sample count: " << buffer.getSampleCount() << std::endl;
+    if (selectedFile.size() > 0) {
+        std::cout << "Loading file: " << selectedFile << std::endl;
+        bool res = buffer.loadFromFile(selectedFile);
+        if (res) {
+            std::cout << "Duration: " << buffer.getDuration().asSeconds() << std::endl;
+            std::cout << "Channels: " << buffer.getChannelCount() << std::endl;
+            std::cout << "Sample rate: " << buffer.getSampleRate() << std::endl;
+            std::cout << "Sample count: " << buffer.getSampleCount() << std::endl;
+        }
         return res;
     }
     else {
-        selection = NULL;
         return false;
     }
 }
@@ -177,14 +194,14 @@ void ApplyFadeout(vector<sf::Int16>& buffer, int fadeTime, unsigned int sampleRa
 }
 
 void WriteKeysounds(sf::SoundBuffer& buffer, std::list<double> markers) {
-    if (!selection)
+    if (selectedFile.size() == 0)
         return;
     auto samples = buffer.getSamples();
     markers.sort();
     unsigned long long keyStart = 0;
     unsigned long long keyEnd = 0;
     unsigned long long offsetSamples = (long long)offset * (long long)waveformReso;
-    std::filesystem::path p = selection;
+    std::filesystem::path p = selectedFile;
     p.replace_extension("");
     for (int i = 0; i < markers.size(); i++) {
         keyStart = get(markers, i) + offsetSamples;
@@ -304,6 +321,34 @@ void ShowMainMenuBar(sf::SoundBuffer& buffer, std::list<double> &markers, sf::Re
     }
 }
 
+#if _WIN32 // Modified from https://gist.github.com/FRex/3f7b8d1ad1289a2117553ff3702f04af
+LRESULT CALLBACK myCallback(HWND handle, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    if (message == WM_DROPFILES)
+    {
+        HDROP hdrop = reinterpret_cast<HDROP>(wParam);
+
+        const UINT filescount = DragQueryFile(hdrop, 0xFFFFFFFF, NULL, 0);
+        if (filescount != 1) {
+            std::cout << "Please drag only one file!" << std::endl;
+        }
+        else {
+            const UINT bufsize = DragQueryFile(hdrop, 0, NULL, 0);
+            std::string str;
+            str.resize(bufsize + 1);
+            if (DragQueryFile(hdrop, 0, &str[0], bufsize + 1))
+            {
+                std::string stdstr;
+                sf::Utf8::fromWide(str.begin(), str.end(), std::back_inserter(stdstr));
+                OpenAudioFile(buffer, stdstr);
+            }
+        }
+        DragFinish(hdrop);
+    }
+    return CallWindowProcW(reinterpret_cast<WNDPROC>(originalSFMLCallback), handle, message, wParam, lParam);
+}
+#endif
+
 int main() {
     sf::RenderWindow window(sf::VideoMode(800, 450), "sayaslicer");
     window.setFramerateLimit(60);
@@ -315,10 +360,15 @@ int main() {
     ImGui::SFML::UpdateFontTexture();
     SetupImGuiStyle();
     ImPlot::CreateContext();
-    sf::SoundBuffer buffer;
     sf::SoundBuffer buffer2;
     sf::Sound sound;
     std::list<double> markers = { 0.0 };
+
+#if _WIN32
+    HWND handle = window.getSystemHandle();
+    DragAcceptFiles(handle, TRUE);
+    originalSFMLCallback = SetWindowLongPtrW(handle, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(myCallback));
+#endif
 
     window.resetGLStates();
     sf::Clock deltaClock;
@@ -502,6 +552,10 @@ int main() {
         ImGui::SFML::Render(window);
         window.display();
     }
+
+#if _WIN32
+    DragAcceptFiles(handle, FALSE);
+#endif
 
     ImPlot::DestroyContext();
     ImGui::SFML::Shutdown();
