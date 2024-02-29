@@ -359,6 +359,172 @@ void SetupFonts(ImGuiIO& io) {
     ImGui::SFML::UpdateFontTexture();
 }
 
+void SetupDock() {
+    ImGuiID dockspace_id = ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+    static bool init = true;
+    ImGuiID dock_id_left, dock_id_right;
+    if (init) {
+        init = false;
+        ImGui::DockBuilderRemoveNode(dockspace_id);
+        ImGui::DockBuilderAddNode(dockspace_id);
+        ImGui::DockBuilderSetNodeSize(dockspace_id, ImGui::GetMainViewport()->Size);
+
+        ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Left, 0.3f, &dock_id_left, &dock_id_right);
+        ImGui::DockBuilderDockWindow("Settings", dock_id_left);
+        ImGui::DockBuilderDockWindow("Waveform", dock_id_right);
+
+        ImGui::DockBuilderFinish(dockspace_id);
+    }
+}
+
+void ShowSettingsPanel(sf::SoundBuffer& buffer, std::list<double>& markers) {
+    if (ImGui::Begin("Settings"))
+    {
+        ImGui::SeparatorText("General");
+        ImGui::DragInt("Offset", &offset, 1, 0, 1000);
+        ImGui::DragScalar("Position", ImGuiDataType_Double, &cursorPos, 1, 0, 0);
+        ImGui::DragFloat("BPM", &bpm, 1, 10, 10000);
+        ImGui::DragInt("Snapping", &snapping, 1, 1, 192);
+        int base = useBase62 ? 62 : 36;
+        int maxKeysound = base * base - 1;
+        if (startingKeysound > maxKeysound)
+            startingKeysound = maxKeysound;
+        DragIntCustomBase("Starting key", &startingKeysound, 1, 1, maxKeysound, base);
+        ImGui::SetItemTooltip("Decimal value: %d", startingKeysound);
+        ImGui::Checkbox("Enable base-62", &useBase62);
+
+        ImGui::SeparatorText("Export settings");
+        char thres[64];
+        if (selectedGateThreshold == 0)
+            snprintf(thres, 64, "Disabled");
+        else
+            snprintf(thres, 64, "%ddB", gateThresholds[selectedGateThreshold]);
+        const char* combo_preview_value = thres;
+        if (ImGui::BeginCombo("Noise gate", combo_preview_value, 0))
+        {
+            for (int n = 0; n < IM_ARRAYSIZE(gateThresholds); n++)
+            {
+                if (n == 0)
+                    snprintf(thres, 64, "Disabled");
+                else
+                    snprintf(thres, 64, "%ddB", gateThresholds[n]);
+                const bool is_selected = (selectedGateThreshold == n);
+                if (ImGui::Selectable(thres, is_selected))
+                    selectedGateThreshold = n;
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+        ImGui::DragInt("Fadeout", &fadeout, 1, 0, 1000, "%dms");
+
+        ImGui::SeparatorText("Process");
+        if (ImGui::Button("Export keysounds", ImVec2(-FLT_MIN, 0.0f))) {
+            WriteKeysounds(buffer, markers);
+        }
+    }
+    ImGui::End();
+}
+
+void ProcessShortcuts(ImGuiIO& io, sf::SoundBuffer& buffer, sf::SoundBuffer& buffer2, sf::Sound& sound, std::list<double>& markers) {
+    if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_RightArrow))) {
+        if (cursorPos + samplesPerSnap < buffer.getSampleCount())
+            cursorPos += samplesPerSnap;
+        if (sound.getStatus() == sf::Sound::Playing) {
+            sound.stop();
+        }
+    }
+    else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_LeftArrow)) && cursorPos > 0.0) {
+        if (cursorPos - samplesPerSnap < 0.0)
+            cursorPos = 0.0;
+        else
+            cursorPos -= samplesPerSnap;
+        if (sound.getStatus() == sf::Sound::Playing) {
+            sound.stop();
+        }
+    }
+    if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_UpArrow)) && snapping < 192) {
+        snapping += 1;
+    }
+    else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_DownArrow)) && snapping > 1) {
+        snapping -= 1;
+    }
+    if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Z))) {
+        double e = FindInList(markers, cursorPos);
+        if (e != -1.0) {
+            markers.remove(e);
+        }
+        else {
+            markers.push_back(cursorPos);
+        }
+    }
+    if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
+        PlayKeysound(sound, buffer, buffer2, markers, false);
+    }
+    if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_P))) {
+        PlayKeysound(sound, buffer, buffer2, markers, true);
+    }
+    if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_M), false)) {
+        WriteKeysounds(buffer, markers);
+    }
+    if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_O), false)) {
+        OpenAudioFile(buffer);
+    }
+    if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_B), false)) {
+        ProcessBMSEClipboard(buffer, markers);
+    }
+    if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_V), false)) {
+        GenerateBMSEClipboard(buffer, markers);
+    }
+    if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_C), false)) {
+        ClearAllMarkers(markers);
+    }
+}
+
+void ShowWaveform(sf::SoundBuffer& buffer, std::list<double>& markers) {
+    if (ImGui::Begin("Waveform"))
+    {
+        ImGui::SeparatorText("Waveform");
+        DisplayWaveform(buffer, markers);
+
+        ImGui::SeparatorText("Markers");
+        ImVec2 outer_size = ImVec2(0.0f, ImGui::GetTextLineHeightWithSpacing() * 8);
+        if (ImGui::BeginTable("markerstable", 1, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY, outer_size))
+        {
+            ImGui::TableSetupScrollFreeze(0, 1);
+            ImGui::TableSetupColumn("Marker", ImGuiTableColumnFlags_WidthFixed);
+            ImGui::TableHeadersRow();
+            if (markers.size() == 0) {
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("No markers set...");
+            }
+            else {
+                markers.sort();
+                double toRemove = -1.0;
+                for (double m : markers) {
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    char buf[64];
+                    snprintf(buf, 64, "%f", m);
+                    ImGui::Selectable(buf);
+                    if (ImGui::IsItemClicked(0)) {
+                        cursorPos = m;
+                    }
+                    else if (ImGui::IsItemClicked(1)) {
+                        toRemove = m;
+                    }
+                }
+                if (toRemove != -1) {
+                    markers.remove(toRemove);
+                }
+            }
+            ImGui::EndTable();
+        }
+    }
+    ImGui::End();
+}
+
 #if _WIN32 // Modified from https://gist.github.com/FRex/3f7b8d1ad1289a2117553ff3702f04af
 LRESULT CALLBACK myCallback(HWND handle, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -400,7 +566,7 @@ int main() {
     ImPlot::CreateContext();
 
     sf::SoundBuffer buffer;
-    sf::SoundBuffer buffer2;
+    sf::SoundBuffer buffer2; // For keysound playing
     sf::Sound sound;
     std::list<double> markers = { 0.0 };
 
@@ -413,6 +579,10 @@ int main() {
 
     window.resetGLStates();
     sf::Clock deltaClock;
+
+    ImGuiWindowClass window_class;
+    window_class.DockNodeFlagsOverrideSet = ImGuiDockNodeFlags_NoTabBar;
+
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
@@ -425,169 +595,16 @@ int main() {
 
         ImGui::SFML::Update(window, deltaClock.restart());
 
-        ImGuiID dockspace_id = ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
-        static bool init = true;
-        ImGuiID dock_id_left, dock_id_right;
-        if (init) {
-            init = false;
-            ImGui::DockBuilderRemoveNode(dockspace_id);
-            ImGui::DockBuilderAddNode(dockspace_id);
-            ImGui::DockBuilderSetNodeSize(dockspace_id, ImGui::GetMainViewport()->Size);
-
-            ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Left, 0.3f, &dock_id_left, &dock_id_right);
-            ImGui::DockBuilderDockWindow("Settings", dock_id_left);
-            ImGui::DockBuilderDockWindow("Waveform", dock_id_right);
-
-            ImGui::DockBuilderFinish(dockspace_id);
-        }
-
+        SetupDock();
         ShowMainMenuBar(buffer, markers, window);
 
-        ImGuiWindowClass window_class;
-        window_class.DockNodeFlagsOverrideSet = ImGuiDockNodeFlags_NoTabBar;
         ImGui::SetNextWindowClass(&window_class);
-        if (ImGui::Begin("Settings"))
-        {
-            ImGui::SeparatorText("General");
-            ImGui::DragInt("Offset", &offset, 1, 0, 1000);
-            ImGui::DragScalar("Position", ImGuiDataType_Double, &cursorPos, 1, 0, 0);
-            ImGui::DragFloat("BPM", &bpm, 1, 10, 10000);
-            ImGui::DragInt("Snapping", &snapping, 1, 1, 192);
-            int base = useBase62 ? 62 : 36;
-            int maxKeysound = base * base - 1;
-            if (startingKeysound > maxKeysound)
-                startingKeysound = maxKeysound;
-            DragIntCustomBase("Starting key", &startingKeysound, 1, 1, maxKeysound, base);
-            ImGui::SetItemTooltip("Decimal value: %d", startingKeysound);
-            ImGui::Checkbox("Enable base-62", &useBase62);
+        ShowSettingsPanel(buffer, markers);
 
-            ImGui::SeparatorText("Export settings");
-            char thres[64];
-            if (selectedGateThreshold == 0)
-                snprintf(thres, 64, "Disabled");
-            else
-                snprintf(thres, 64, "%ddB", gateThresholds[selectedGateThreshold]);
-            const char* combo_preview_value = thres;
-            if (ImGui::BeginCombo("Noise gate", combo_preview_value, 0))
-            {
-                for (int n = 0; n < IM_ARRAYSIZE(gateThresholds); n++)
-                {
-                    if (n == 0)
-                        snprintf(thres, 64, "Disabled");
-                    else
-                        snprintf(thres, 64, "%ddB", gateThresholds[n]);
-                    const bool is_selected = (selectedGateThreshold == n);
-                    if (ImGui::Selectable(thres, is_selected))
-                        selectedGateThreshold = n;
-                    if (is_selected)
-                        ImGui::SetItemDefaultFocus();
-                }
-                ImGui::EndCombo();
-            }
-            ImGui::DragInt("Fadeout", &fadeout, 1, 0, 1000, "%dms");
-
-            ImGui::SeparatorText("Process");
-            if (ImGui::Button("Export keysounds", ImVec2(-FLT_MIN, 0.0f))) {
-                WriteKeysounds(buffer, markers);
-            }
-        }
-        ImGui::End();
-
-        if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_RightArrow))) {
-            if (cursorPos + samplesPerSnap < buffer.getSampleCount())
-                cursorPos += samplesPerSnap;
-            if (sound.getStatus() == sf::Sound::Playing) {
-                sound.stop();
-            }
-        }
-        else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_LeftArrow)) && cursorPos > 0.0) {
-            if (cursorPos - samplesPerSnap < 0.0)
-                cursorPos = 0.0;
-            else
-                cursorPos -= samplesPerSnap;
-            if (sound.getStatus() == sf::Sound::Playing) {
-                sound.stop();
-            }
-        }
-        if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_UpArrow)) && snapping < 192) {
-            snapping += 1;
-        }
-        else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_DownArrow)) && snapping > 1) {
-            snapping -= 1;
-        }
-        if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Z))) {
-            double e = FindInList(markers, cursorPos);
-            if (e != -1.0) {
-                markers.remove(e);
-            }
-            else {
-                markers.push_back(cursorPos);
-            }
-        }
-        if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
-            PlayKeysound(sound, buffer, buffer2, markers, false);
-        }
-        if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_P))) {
-            PlayKeysound(sound, buffer, buffer2, markers, true);
-        }
-        if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_M), false)) {
-            WriteKeysounds(buffer, markers);
-        }
-        if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_O), false)) {
-            OpenAudioFile(buffer);
-        }
-        if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_B), false)) {
-            ProcessBMSEClipboard(buffer, markers);
-        }
-        if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_V), false)) {
-            GenerateBMSEClipboard(buffer, markers);
-        }
-        if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_C), false)) {
-            ClearAllMarkers(markers);
-        }
+        ProcessShortcuts(io, buffer, buffer2, sound, markers);
 
         ImGui::SetNextWindowClass(&window_class);
-        if (ImGui::Begin("Waveform"))
-        {
-            ImGui::SeparatorText("Waveform");
-            DisplayWaveform(buffer, markers);
-
-            ImGui::SeparatorText("Markers");
-            ImVec2 outer_size = ImVec2(0.0f, ImGui::GetTextLineHeightWithSpacing() * 8);
-            if (ImGui::BeginTable("markerstable", 1, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY, outer_size))
-            {
-                ImGui::TableSetupScrollFreeze(0, 1);
-                ImGui::TableSetupColumn("Marker", ImGuiTableColumnFlags_WidthFixed);
-                ImGui::TableHeadersRow();
-                if (markers.size() == 0) {
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("No markers set...");
-                }
-                else {
-                    markers.sort();
-                    double toRemove = -1.0;
-                    for (double m : markers) {
-                        ImGui::TableNextRow();
-                        ImGui::TableSetColumnIndex(0);
-                        char buf[64];
-                        snprintf(buf, 64, "%f", m);
-                        ImGui::Selectable(buf);
-                        if (ImGui::IsItemClicked(0)) {
-                            cursorPos = m;
-                        }
-                        else if (ImGui::IsItemClicked(1)) {
-                            toRemove = m;
-                        }
-                    }
-                    if (toRemove != -1) {
-                        markers.remove(toRemove);
-                    }
-                }
-                ImGui::EndTable();
-            }
-        }
-        ImGui::End();
+        ShowWaveform(buffer, markers);
 
         ImGui::RenderNotifications();
 
