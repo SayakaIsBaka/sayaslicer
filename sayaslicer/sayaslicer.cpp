@@ -15,6 +15,9 @@ LONG_PTR bufferPtr = 0x0;
 #include "theme.hpp"
 #include "font.hpp"
 #include "custom_widgets.hpp"
+#include <ImGuiNotify.hpp>
+#include <IconsFontAwesome6.h>
+#include <fa_solid_900.h>
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <imgui-SFML.h>
@@ -75,6 +78,10 @@ bool OpenAudioFile(sf::SoundBuffer &buffer, std::string file = "")
             std::cout << "Channels: " << buffer.getChannelCount() << std::endl;
             std::cout << "Sample rate: " << buffer.getSampleRate() << std::endl;
             std::cout << "Sample count: " << buffer.getSampleCount() << std::endl;
+            ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Opened file:\n%s", selectedFile.c_str() });
+        }
+        else {
+            ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Selected file isn't supported!" });
         }
         return res;
     }
@@ -194,8 +201,10 @@ void ApplyFadeout(vector<sf::Int16>& buffer, int fadeTime, unsigned int sampleRa
 }
 
 void WriteKeysounds(sf::SoundBuffer& buffer, std::list<double> markers) {
-    if (selectedFile.size() == 0)
+    if (selectedFile.size() == 0) {
+        ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Please load a file first!" });
         return;
+    }
     auto samples = buffer.getSamples();
     markers.sort();
     unsigned long long keyStart = 0;
@@ -232,6 +241,7 @@ void WriteKeysounds(sf::SoundBuffer& buffer, std::list<double> markers) {
         }
         file.write(bufOut, bufsize);
     }
+    ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Exported keysounds to the following folder:\n%s", p.parent_path().string().c_str() });
 }
 
 double FindInList(std::list<double> markers, double e) {
@@ -252,6 +262,10 @@ void AddMarkersFromBMSEClipboard(BMSEClipboard objs, sf::SoundBuffer& buffer, st
                 markers.push_back(m);
             }
         }
+        ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Successfully imported markers from the clipboard!" });
+    }
+    else {
+        ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Please load a file first!" });
     }
 }
 
@@ -259,7 +273,10 @@ void ProcessBMSEClipboard(sf::SoundBuffer& buffer, std::list<double>& markers) {
     std::string cb;
     clip::get_text(cb);
     BMSEClipboard objs(cb);
-    AddMarkersFromBMSEClipboard(objs, buffer, markers);
+    if (!objs.objects.empty())
+        AddMarkersFromBMSEClipboard(objs, buffer, markers);
+    else
+        ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Clipboard does not contain any BMSE data!" });
 }
 
 void GenerateBMSEClipboard(sf::SoundBuffer& buffer, std::list<double> markers) {
@@ -267,6 +284,10 @@ void GenerateBMSEClipboard(sf::SoundBuffer& buffer, std::list<double> markers) {
         auto cb = BMSEClipboard::toBMSEClipboardData(markers, bpm, buffer.getSampleRate(), buffer.getChannelCount(), startingKeysound);
         std::cout << cb << std::endl;
         clip::set_text(cb);
+        ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Copied markers as BMSE clipboard data!" });
+    }
+    else {
+        ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Please load a file first!" });
     }
 }
 
@@ -321,6 +342,23 @@ void ShowMainMenuBar(sf::SoundBuffer& buffer, std::list<double> &markers, sf::Re
     }
 }
 
+void SetupFonts(ImGuiIO& io) {
+    float mainFontSize = 13.0f;
+    float iconFontSize = mainFontSize * 2.0f / 3.0f;
+
+    io.Fonts->AddFontFromMemoryCompressedTTF(roboto_compressed_data, roboto_compressed_size, mainFontSize);
+
+    static const ImWchar iconsRanges[] = { ICON_MIN_FA, ICON_MAX_16_FA, 0 };
+    ImFontConfig iconsConfig;
+    iconsConfig.MergeMode = true;
+    iconsConfig.PixelSnapH = true;
+    iconsConfig.GlyphMinAdvanceX = iconFontSize;
+    io.Fonts->AddFontFromMemoryCompressedTTF(fa_solid_900_compressed_data, fa_solid_900_compressed_size, iconFontSize, &iconsConfig, iconsRanges);
+
+    io.Fonts->Build();
+    ImGui::SFML::UpdateFontTexture();
+}
+
 #if _WIN32 // Modified from https://gist.github.com/FRex/3f7b8d1ad1289a2117553ff3702f04af
 LRESULT CALLBACK myCallback(HWND handle, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -354,12 +392,13 @@ int main() {
     window.setFramerateLimit(60);
     ImGui::SFML::Init(window, false);
     auto &io = ImGui::GetIO();
-    io.Fonts->AddFontFromMemoryCompressedTTF(roboto_compressed_data, roboto_compressed_size, 13);
-    io.Fonts->Build();
+
+    SetupFonts(io);
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-    ImGui::SFML::UpdateFontTexture();
+    
     SetupImGuiStyle();
     ImPlot::CreateContext();
+
     sf::SoundBuffer buffer;
     sf::SoundBuffer buffer2;
     sf::Sound sound;
@@ -549,6 +588,8 @@ int main() {
             }
         }
         ImGui::End();
+
+        ImGui::RenderNotifications();
 
         window.clear();
         ImGui::SFML::Render(window);
