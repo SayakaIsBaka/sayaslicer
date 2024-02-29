@@ -43,7 +43,7 @@ The following features are less likely to be implemented but might be done depen
 ## Credits
 sayaslicer uses the following libraries:
 - [Dear ImGui](https://github.com/ocornut/imgui)
-- [SFML](https://github.com/ocornut/imgui)
+- [SFML](https://github.com/SFML/SFML)
 - [imgui-sfml](https://github.com/SFML/imgui-sfml)
 - [implot](https://github.com/epezent/implot)
 - [tinyfiledialogs](https://sourceforge.net/projects/tinyfiledialogs/)
