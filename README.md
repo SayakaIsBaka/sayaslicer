@@ -33,7 +33,6 @@ Additionally, clicking on a marker in the table will jump the cursor to its posi
 ## Planned features
 - Import markers from a MIDI file
 - Import marker names from [mid2bms](https://mid2bms.net)
-- Improve waveform display (clearer measure delimitation and labels)
 
 The following features are less likely to be implemented but might be done depending on whether I feel like it or if there's enough demand for it:
 - Load / save project
