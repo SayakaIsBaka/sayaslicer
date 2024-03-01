@@ -131,7 +131,7 @@ void DisplayWaveform(sf::SoundBuffer& buffer, std::list<double> &markers) {
         int nbTicksToDraw = ticks.size();
 
         ImPlot::SetupAxisFormat(ImAxis_X1, MeterFormatter);
-        ImPlot::SetupAxisTicks(ImAxis_X1, ticks.data(), nbTicksToDraw); // Account for last tick
+        ImPlot::SetupAxisTicks(ImAxis_X1, ticks.data(), nbTicksToDraw);
 
         if (sampleCount > 0) {
             ImPlot::SetupAxis(ImAxis_X1, "", ImPlotAxisFlags_Foreground);
