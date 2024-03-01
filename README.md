@@ -26,6 +26,7 @@ Keyboard shortcuts are the same as woslicerII except the keyboard layout is take
 - `P`: preview current keysound and move to the next one
 - `Enter`: preview current keysound
 - `LeftArrow / RightArrow`: move position cursor
+- `Shift + LeftArrow / Shift + RightArrow`: move position cursor (jump to closest snap)
 - `UpArrow / DownArrow`: set snapping
 
 Additionally, clicking on a marker in the table will jump the cursor to its position; right-clicking it will delete it.

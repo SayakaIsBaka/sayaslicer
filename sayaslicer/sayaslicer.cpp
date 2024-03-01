@@ -104,12 +104,13 @@ void DisplayWaveform(sf::SoundBuffer& buffer, std::list<double> &markers) {
     double maxDisplayRange = 1500.0;
 
     if (ImPlot::BeginPlot("##lines", ImVec2(-1, 200), ImPlotFlags_NoBoxSelect | ImPlotFlags_NoLegend)) {
+        double plotStart = cursorPos / waveformReso;
+        double plotEnd = plotStart + maxDisplayRange;
+        ImPlot::SetupAxisLinks(ImAxis_X1, &plotStart, &plotEnd);
         ImPlot::SetupAxisLimits(ImAxis_Y1, -32768, 32768);
-        ImPlot::SetupAxisLimits(ImAxis_X1, cursorPos / waveformReso, cursorPos / waveformReso + maxDisplayRange, ImPlotCond_Always);
+
         ImPlot::SetupAxis(ImAxis_Y1, "", ImPlotAxisFlags_NoGridLines | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Lock | ImPlotAxisFlags_NoTickMarks);
         ImPlot::SetupAxis(ImAxis_X1, "", ImPlotAxisFlags_Foreground | ImPlotAxisFlags_NoTickLabels);
-
-        //ImPlot::SetupAxisZoomConstraints(ImAxis_X1, 2000, 2000);
 
         auto sampleCount = buffer.getSampleCount();
         auto sampleRate = buffer.getSampleRate();
@@ -160,6 +161,7 @@ void DisplayWaveform(sf::SoundBuffer& buffer, std::list<double> &markers) {
             }
         }
         ImPlot::EndPlot();
+        cursorPos = plotStart * waveformReso;
     }
 }
 
@@ -453,8 +455,14 @@ void ShowSettingsPanel(sf::SoundBuffer& buffer, std::list<double>& markers) {
 
 void ProcessShortcuts(ImGuiIO& io, sf::SoundBuffer& buffer, sf::SoundBuffer& buffer2, sf::Sound& sound, std::list<double>& markers) {
     if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_RightArrow))) {
-        if (cursorPos + samplesPerSnap < buffer.getSampleCount())
-            cursorPos += samplesPerSnap;
+        if (cursorPos + samplesPerSnap < buffer.getSampleCount()) {
+            if (io.KeyShift) {
+                cursorPos += samplesPerSnap - fmod(cursorPos, samplesPerSnap);
+            }
+            else {
+                cursorPos += samplesPerSnap;
+            }
+        }
         if (sound.getStatus() == sf::Sound::Playing) {
             sound.stop();
         }
@@ -462,8 +470,15 @@ void ProcessShortcuts(ImGuiIO& io, sf::SoundBuffer& buffer, sf::SoundBuffer& buf
     else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_LeftArrow)) && cursorPos > 0.0) {
         if (cursorPos - samplesPerSnap < 0.0)
             cursorPos = 0.0;
-        else
-            cursorPos -= samplesPerSnap;
+        else {
+            double diff = fmod(cursorPos, samplesPerSnap);
+            if (io.KeyShift && diff != 0.0) {
+                cursorPos -= diff;
+            }
+            else {
+                cursorPos -= samplesPerSnap;
+            }
+        }
         if (sound.getStatus() == sf::Sound::Playing) {
             sound.stop();
         }
