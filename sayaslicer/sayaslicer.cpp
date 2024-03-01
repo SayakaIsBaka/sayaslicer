@@ -91,8 +91,13 @@ bool OpenAudioFile(sf::SoundBuffer &buffer, std::string file = "")
 }
 
 int MeterFormatter(double value, char* buff, int size, void* data) {
-    const int unit = *(const int*)data;
-    return snprintf(buff, size, "%g/%d", value / 250 + 1, unit);
+    const double reducedSamplesPerMeasure = samplesPerSnap * snapping / waveformReso;
+    double tmp = fmod(value, reducedSamplesPerMeasure);
+    double delta = 0.0001;
+    if (tmp <= delta || tmp >= reducedSamplesPerMeasure - delta)
+        return snprintf(buff, size, "%d", (int)round(value / reducedSamplesPerMeasure));
+    else
+        return snprintf(buff, size, "");
 }
 
 void DisplayWaveform(sf::SoundBuffer& buffer, std::list<double> &markers) {
@@ -120,7 +125,8 @@ void DisplayWaveform(sf::SoundBuffer& buffer, std::list<double> &markers) {
         //printf("samplesPerBeat: %f\n", samplesPerBeat);
         //printf("lastTick: %f\n", lastTick);
         //printf("nbTicksToDraw: %d\n", nbTicksToDraw);
-        ImPlot::SetupAxisTicks(ImAxis_X1, 0, lastTick / waveformReso, nbTicksToDraw + 1); // Account for last tick
+        ImPlot::SetupAxisFormat(ImAxis_X1, MeterFormatter);
+        ImPlot::SetupAxisTicks(ImAxis_X1, 0, lastTick / waveformReso, nbTicksToDraw + 1 + (nbTicksToDraw % 2)); // Account for last tick
 
         if (sampleCount > 0) {
             ImPlot::SetupAxis(ImAxis_X1, "", ImPlotAxisFlags_Foreground);
