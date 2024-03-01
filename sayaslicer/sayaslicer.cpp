@@ -101,9 +101,11 @@ int MeterFormatter(double value, char* buff, int size, void* data) {
 }
 
 void DisplayWaveform(sf::SoundBuffer& buffer, std::list<double> &markers) {
+    double maxDisplayRange = 1500.0;
+
     if (ImPlot::BeginPlot("##lines", ImVec2(-1, 200), ImPlotFlags_NoBoxSelect | ImPlotFlags_NoLegend)) {
         ImPlot::SetupAxisLimits(ImAxis_Y1, -32768, 32768);
-        ImPlot::SetupAxisLimits(ImAxis_X1, cursorPos / waveformReso, cursorPos / waveformReso + 2000.0, ImPlotCond_Always);
+        ImPlot::SetupAxisLimits(ImAxis_X1, cursorPos / waveformReso, cursorPos / waveformReso + maxDisplayRange, ImPlotCond_Always);
         ImPlot::SetupAxis(ImAxis_Y1, "", ImPlotAxisFlags_NoGridLines | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Lock | ImPlotAxisFlags_NoTickMarks);
         ImPlot::SetupAxis(ImAxis_X1, "", ImPlotAxisFlags_Foreground | ImPlotAxisFlags_NoTickLabels);
 
@@ -115,22 +117,39 @@ void DisplayWaveform(sf::SoundBuffer& buffer, std::list<double> &markers) {
 
         double samplesPerBeat = sampleRate ? 60.0 / (double)bpm * ((double)sampleRate * (double)numChannels) : 1.0;
         samplesPerSnap = samplesPerBeat / (double)snapping * 4.0;
-        double lastTick = sampleCount + samplesPerBeat - fmod((sampleCount), samplesPerBeat);
-        double remainder = fmod(lastTick, samplesPerBeat * 4);
-        int extraBeats = 0;
-        if ((int)remainder != 0) {
-            lastTick = lastTick - remainder + samplesPerBeat * 4;
+        double startTick = samplesPerSnap * ceil(cursorPos / samplesPerSnap);
+        double lastTick = cursorPos + maxDisplayRange * waveformReso;
+
+        std::vector<double> ticks;
+        if (sampleCount > 0) {
+            for (double i = startTick; i < lastTick; i += samplesPerSnap)
+                ticks.push_back(i / waveformReso);
         }
-        int nbTicksToDraw = (lastTick / samplesPerBeat) * snapping / 4;
-        //printf("samplesPerBeat: %f\n", samplesPerBeat);
-        //printf("lastTick: %f\n", lastTick);
-        //printf("nbTicksToDraw: %d\n", nbTicksToDraw);
+        else {
+            ticks.push_back(0.0);
+        }
+        int nbTicksToDraw = ticks.size();
+
         ImPlot::SetupAxisFormat(ImAxis_X1, MeterFormatter);
-        ImPlot::SetupAxisTicks(ImAxis_X1, 0, lastTick / waveformReso, nbTicksToDraw + 1 + (nbTicksToDraw % 2)); // Account for last tick
+        ImPlot::SetupAxisTicks(ImAxis_X1, ticks.data(), nbTicksToDraw); // Account for last tick
 
         if (sampleCount > 0) {
             ImPlot::SetupAxis(ImAxis_X1, "", ImPlotAxisFlags_Foreground);
             ImPlot::SetupAxisLimitsConstraints(ImAxis_X1, 0, sampleCount / waveformReso - offset);
+
+            // Draw barlines
+            for (double j = 0; j < lastTick; j += samplesPerBeat * 4) {
+                double tmp = j / waveformReso;
+                ImPlot::DragLineX(555, &tmp, ImVec4(1, 1, 1, 0.25), 0.1, ImPlotDragToolFlags_NoInputs);
+            }
+
+            // Draw beat lines if snapping is a multiple of 4
+            if (snapping % 4 == 0) {
+                for (double j = 0; j < lastTick; j += samplesPerBeat) {
+                    double tmp = j / waveformReso;
+                    ImPlot::DragLineX(555, &tmp, ImVec4(1, 1, 1, 0.075), 0.05, ImPlotDragToolFlags_NoInputs);
+                }
+            }
 
             auto samples = buffer.getSamples();
             ImPlot::SetNextLineStyle(ImGui::GetStyleColorVec4(ImGuiCol_PlotHistogram));
