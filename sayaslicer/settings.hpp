@@ -2,6 +2,7 @@
 
 #include <cereal/types/string.hpp>
 #include <cereal/types/list.hpp>
+#include <midifile/include/MidiFile.h>
 
 class SlicerSettings {
 public:
@@ -16,6 +17,7 @@ public:
 	std::string selectedFile;
 	std::list<double> markers = { 0.0 };
 	double samplesPerSnap = 0.0;
+	smf::MidiFile midiFile;
 
 	template<class Archive>
 	void serialize(Archive& archive)
