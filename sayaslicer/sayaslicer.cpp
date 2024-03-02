@@ -352,9 +352,12 @@ void GetTrackNames(smf::MidiFile midifile, std::vector<std::string>& out) {
         bool foundName = false;
         for (int j = 0; j < midifile[i].getEventCount(); j++) {
             if (midifile[i][j].isTrackName()) {
-                out.push_back(midifile[i][j].getMetaContent());
-                foundName = true;
-                break;
+                std::string trackName = midifile[i][j].getMetaContent();
+                if (!trackName.empty()) {
+                    out.push_back(trackName);
+                    foundName = true;
+                    break;
+                }
             }
         }
         if (!foundName)
@@ -460,7 +463,7 @@ void ImportMidiMarkers(sf::SoundBuffer& buffer, SlicerSettings& settings, int tr
     auto sampleRate = buffer.getSampleRate();
     auto nbChannels = buffer.getChannelCount();
     settings.midiFile.absoluteTicks();
-    cout << "Ticks per 4th: " << settings.midiFile.getTicksPerQuarterNote() << endl;
+
     bool relative = !useMidiBPM || !HasBPMData(settings, 0);
     if (!relative) {
         settings.midiFile.doTimeAnalysis();
