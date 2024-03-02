@@ -71,6 +71,7 @@ bool OpenAudioFile(sf::SoundBuffer &buffer, SlicerSettings &settings, std::strin
             std::cout << "Channels: " << buffer.getChannelCount() << std::endl;
             std::cout << "Sample rate: " << buffer.getSampleRate() << std::endl;
             std::cout << "Sample count: " << buffer.getSampleCount() << std::endl;
+            settings.cursorPos = 0.0; // Reset cursor position to avoid crashing
             ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Opened file:\n%s", settings.selectedFile.c_str() });
         }
         else {
@@ -148,7 +149,11 @@ void DisplayWaveform(sf::SoundBuffer& buffer, SlicerSettings &settings) {
 
             auto samples = buffer.getSamples();
             ImPlot::SetNextLineStyle(ImGui::GetStyleColorVec4(ImGuiCol_PlotHistogram));
-            ImPlot::PlotLine("Waveform", samples, sampleCount / waveformReso, 1.0, 0, 0, settings.offset, waveformReso * numChannels); // Buffer stores samples as [channel1_i, channel2_i, channel1_i+1, etc.]
+            size_t arrLen = maxDisplayRange;
+            if (lastTick > sampleCount)
+                arrLen = (sampleCount - settings.cursorPos) / waveformReso;
+            size_t arrayOffset = ((size_t)settings.cursorPos / (waveformReso * numChannels)) * (waveformReso * numChannels);
+            ImPlot::PlotLine("Waveform", &samples[arrayOffset], arrLen, 1.0, arrayOffset / (waveformReso), 0, settings.offset, waveformReso * numChannels); // Buffer stores samples as [channel1_i, channel2_i, channel1_i+1, etc.]
             for (double m : settings.markers) {
                 double mTmp = m / waveformReso;
                 ImPlot::DragLineX(0, &mTmp, ImVec4(1, 1, 1, 1), 1, ImPlotDragToolFlags_NoInputs);
@@ -217,7 +222,7 @@ void ApplyFadeout(vector<sf::Int16>& buffer, int fadeTime, unsigned int sampleRa
         for (size_t j = 0; j < nbChannels && i + j < buffer.size(); j++) {
             buffer[i + j] *= (1 - volRatio * volRatio);
         }
-        volRatio += 1.0 / fadeoutSampleLen; 
+        volRatio += 1.0 / fadeoutSampleLen;
     }
 }
 
@@ -558,9 +563,12 @@ void SetupDock() {
 void ShowSettingsPanel(sf::SoundBuffer& buffer, SlicerSettings& settings) {
     if (ImGui::Begin("Settings"))
     {
+        double minPos = 0;
+        double maxPos = buffer.getSampleCount();
+
         ImGui::SeparatorText("General");
         ImGui::DragInt("Offset", &settings.offset, 1, 0, 1000);
-        ImGui::DragScalar("Position", ImGuiDataType_Double, &settings.cursorPos, 1, 0, 0);
+        ImGui::DragScalar("Position", ImGuiDataType_Double, &settings.cursorPos, 1, &minPos, &maxPos);
         ImGui::DragFloat("BPM", &settings.bpm, 1, 10, 10000);
         ImGui::DragInt("Snapping", &settings.snapping, 1, 1, 192);
         int base = settings.useBase62 ? 62 : 36;
