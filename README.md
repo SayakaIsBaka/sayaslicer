@@ -14,6 +14,7 @@ A cross-platform audio slicer with BMS-related features. Aims to be a drop-in re
 - Silent tail remover with configurable threshold
 - Fadeout
 - Partial BPM changes support (only for audio slicing, a bit hackish but it works)
+- Load / save project
 
 ## Keyboard shortcuts
 Keyboard shortcuts are the same as woslicerII except the keyboard layout is taken into account:
@@ -36,7 +37,6 @@ Additionally, clicking on a marker in the table will jump the cursor to its posi
 - Import marker names from [mid2bms](https://mid2bms.net)
 
 The following features are less likely to be implemented but might be done depending on whether I feel like it or if there's enough demand for it:
-- Load / save project
 - Copy / paste measures (doesn't make that much sense since markers are stored using their absolute value, maybe something similar to Vim's visual mode?)
 - Better BPM change support (BMSE clipboard support and proper grid display)
 

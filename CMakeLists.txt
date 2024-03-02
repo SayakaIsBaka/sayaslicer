@@ -10,6 +10,7 @@ find_package(ImGui-SFML CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(implot CONFIG REQUIRED)
 find_package(tinyfiledialogs CONFIG REQUIRED)
+find_package(cereal CONFIG REQUIRED)
 
 include_directories("include")
 

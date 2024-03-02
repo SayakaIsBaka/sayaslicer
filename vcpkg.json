@@ -9,6 +9,7 @@
     "imgui-sfml",
     "implot",
     "sfml",
-    "tinyfiledialogs"
+    "tinyfiledialogs",
+    "cereal"
   ]
 }

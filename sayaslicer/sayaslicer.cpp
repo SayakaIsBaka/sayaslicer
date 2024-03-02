@@ -25,6 +25,7 @@ LONG_PTR settingsPtr = 0x0;
 #include <imgui-SFML.h>
 #include <implot.h>
 #include <clip/clip.h>
+#include <cereal/archives/binary.hpp>
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Clock.hpp>
@@ -33,6 +34,7 @@ LONG_PTR settingsPtr = 0x0;
 #include <tinyfiledialogs/tinyfiledialogs.h>
 #include <list>
 #include <filesystem>
+#include <fstream>
 
 using namespace std;
 
@@ -315,9 +317,44 @@ void ClearAllMarkers(std::list<double>& markers)
     //markers.push_back(0.0);
 }
 
+void SaveProject(SlicerSettings settings) {
+    char const* aFilterPatterns[1] = { "*.syp" };
+    char* s = tinyfd_saveFileDialog("Save project file...", 0, 1, aFilterPatterns, "sayaslicer Project (*.syp)");
+    if (s) {
+        std::ofstream outFile(s);
+        cereal::BinaryOutputArchive oarchive(outFile);
+        oarchive(settings);
+        ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Saved project to:\n%s", s });
+    }
+}
+
+void OpenProject(sf::SoundBuffer& buffer, SlicerSettings& settings) {
+    char const* lFilterPatterns[1] = { "*.syp" };
+    char* s = tinyfd_openFileDialog("Open project file...", 0, 1, lFilterPatterns, "sayaslicer Project (*.syp)", 0);
+    if (s) {
+        std::ifstream inFile(s);
+        cereal::BinaryInputArchive iarchive(inFile);
+        iarchive(settings);
+        if (std::filesystem::exists(settings.selectedFile)) {
+            OpenAudioFile(buffer, settings, settings.selectedFile);
+        }
+        else {
+            OpenAudioFile(buffer, settings);
+        }
+        ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Opened project:\n%s", s });
+    }
+}
+
 void ShowMenuFile(sf::SoundBuffer& buffer, SlicerSettings &settings, sf::RenderWindow &window)
 {
-    if (ImGui::MenuItem("Open", "O")) {
+    if (ImGui::MenuItem("Open project", "Ctrl+O")) {
+        OpenProject(buffer, settings);
+    }
+    if (ImGui::MenuItem("Save project", "Ctrl+S")) {
+        SaveProject(settings);
+    }
+    ImGui::Separator();
+    if (ImGui::MenuItem("Import audio file", "O")) {
         OpenAudioFile(buffer, settings);
     }
     if (ImGui::MenuItem("Export keysounds", "M")) {
@@ -445,7 +482,15 @@ void ShowSettingsPanel(sf::SoundBuffer& buffer, SlicerSettings& settings) {
 }
 
 void ProcessShortcuts(ImGuiIO& io, sf::SoundBuffer& buffer, sf::SoundBuffer& buffer2, sf::Sound& sound, SlicerSettings& settings) {
-    if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_RightArrow))) {
+    if (!io.WantTextInput && io.KeyCtrl && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_O), false)) {
+        OpenProject(buffer, settings);
+        io.ClearInputKeys(); // Flush Ctrl key (it gets stuck otherwise)
+    }
+    if (!io.WantTextInput && io.KeyCtrl && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_S), false)) {
+        SaveProject(settings);
+        io.ClearInputKeys();
+    }
+    if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_RightArrow))) {
         if (settings.cursorPos + settings.samplesPerSnap < buffer.getSampleCount()) {
             if (io.KeyShift) {
                 settings.cursorPos += settings.samplesPerSnap - fmod(settings.cursorPos, settings.samplesPerSnap);
@@ -458,7 +503,7 @@ void ProcessShortcuts(ImGuiIO& io, sf::SoundBuffer& buffer, sf::SoundBuffer& buf
             sound.stop();
         }
     }
-    else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_LeftArrow)) && settings.cursorPos > 0.0) {
+    else if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_LeftArrow)) && settings.cursorPos > 0.0) {
         if (settings.cursorPos - settings.samplesPerSnap < 0.0)
             settings.cursorPos = 0.0;
         else {
@@ -498,7 +543,7 @@ void ProcessShortcuts(ImGuiIO& io, sf::SoundBuffer& buffer, sf::SoundBuffer& buf
     if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_M), false)) {
         WriteKeysounds(buffer, settings);
     }
-    if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_O), false)) {
+    if (!io.WantTextInput && !io.KeyCtrl && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_O), false)) {
         OpenAudioFile(buffer, settings);
     }
     if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_B), false)) {
