@@ -187,7 +187,7 @@ void PlayKeysound(sf::Sound &sound, sf::SoundBuffer &buffer, sf::SoundBuffer& bu
             keyEnd = buffer.getSampleCount();
             break;
         }
-        else if (settings.cursorPos < get(settings.markers, i + 1)) {
+        else if ((float)settings.cursorPos < (float)get(settings.markers, i + 1)) {
             keyStart = get(settings.markers, i) + offsetSamples;
             keyEnd = get(settings.markers, i + 1) + offsetSamples;
             break;
