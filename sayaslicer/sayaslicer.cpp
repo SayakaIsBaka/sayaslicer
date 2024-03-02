@@ -3,11 +3,12 @@
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 
-#if _WIN32 // Include required for drag and drop on Windows
+#if _WIN32 // Include required headers and pointers for drag and drop on Windows
 #include <Windows.h>
 LONG_PTR originalSFMLCallback = 0x0;
 LONG_PTR originalUserData = 0x0;
 LONG_PTR bufferPtr = 0x0;
+LONG_PTR settingsPtr = 0x0;
 #endif
 
 #include "sayaslicer.h"
@@ -15,6 +16,7 @@ LONG_PTR bufferPtr = 0x0;
 #include "theme.hpp"
 #include "font.hpp"
 #include "custom_widgets.hpp"
+#include "settings.hpp"
 #include <ImGuiNotify.hpp>
 #include <IconsFontAwesome6.h>
 #include <fa_solid_900.h>
@@ -35,21 +37,9 @@ LONG_PTR bufferPtr = 0x0;
 using namespace std;
 
 static const int gateThresholds[] = { 0, -24, -30, -36, -42, -48, -54, -60, -66, -72 };
+static const int waveformReso = 192;
 
-static int offset = 0;
-static int waveformReso = 192;
-static double cursorPos = 0.0;
-static float bpm = 120.0;
-static int snapping = 4;
-static int startingKeysound = 1;
-static bool useBase62 = false;
-static int fadeout = 0;
-static int selectedGateThreshold = 0;
-
-static double samplesPerSnap = 0.0;
-static std::string selectedFile;
-
-bool OpenAudioFile(sf::SoundBuffer &buffer, std::string file = "")
+bool OpenAudioFile(sf::SoundBuffer &buffer, SlicerSettings &settings, std::string file = "")
 {
     if (file.size() == 0) {
         char const* lFilterPatterns[2] = { "*.wav", "*.ogg" };
@@ -62,23 +52,23 @@ bool OpenAudioFile(sf::SoundBuffer &buffer, std::string file = "")
             0 // forbid multiple selections
         );
         if (s)
-            selectedFile = s;
+            settings.selectedFile = s;
         else
             return false;
     }
     else {
-        selectedFile = file;
+        settings.selectedFile = file;
     }
     
-    if (selectedFile.size() > 0) {
-        std::cout << "Loading file: " << selectedFile << std::endl;
-        bool res = buffer.loadFromFile(selectedFile);
+    if (settings.selectedFile.size() > 0) {
+        std::cout << "Loading file: " << settings.selectedFile << std::endl;
+        bool res = buffer.loadFromFile(settings.selectedFile);
         if (res) {
             std::cout << "Duration: " << buffer.getDuration().asSeconds() << std::endl;
             std::cout << "Channels: " << buffer.getChannelCount() << std::endl;
             std::cout << "Sample rate: " << buffer.getSampleRate() << std::endl;
             std::cout << "Sample count: " << buffer.getSampleCount() << std::endl;
-            ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Opened file:\n%s", selectedFile.c_str() });
+            ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Opened file:\n%s", settings.selectedFile.c_str() });
         }
         else {
             ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Selected file isn't supported!" });
@@ -91,7 +81,8 @@ bool OpenAudioFile(sf::SoundBuffer &buffer, std::string file = "")
 }
 
 int MeterFormatter(double value, char* buff, int size, void* data) {
-    const double reducedSamplesPerMeasure = samplesPerSnap * snapping / waveformReso;
+    SlicerSettings settings = *(SlicerSettings*)data;
+    const double reducedSamplesPerMeasure = settings.samplesPerSnap * settings.snapping / waveformReso;
     double tmp = fmod(value, reducedSamplesPerMeasure);
     double delta = 0.0001;
     if (tmp <= delta || tmp >= reducedSamplesPerMeasure - delta)
@@ -100,11 +91,11 @@ int MeterFormatter(double value, char* buff, int size, void* data) {
         return snprintf(buff, size, "");
 }
 
-void DisplayWaveform(sf::SoundBuffer& buffer, std::list<double> &markers) {
+void DisplayWaveform(sf::SoundBuffer& buffer, SlicerSettings &settings) {
     double maxDisplayRange = 1500.0;
 
     if (ImPlot::BeginPlot("##lines", ImVec2(-1, 200), ImPlotFlags_NoBoxSelect | ImPlotFlags_NoLegend)) {
-        double plotStart = cursorPos / waveformReso;
+        double plotStart = settings.cursorPos / waveformReso;
         double plotEnd = plotStart + maxDisplayRange;
         ImPlot::SetupAxisLinks(ImAxis_X1, &plotStart, &plotEnd);
         ImPlot::SetupAxisLimits(ImAxis_Y1, -32768, 32768);
@@ -116,14 +107,14 @@ void DisplayWaveform(sf::SoundBuffer& buffer, std::list<double> &markers) {
         auto sampleRate = buffer.getSampleRate();
         auto numChannels = buffer.getChannelCount();
 
-        double samplesPerBeat = sampleRate ? 60.0 / (double)bpm * ((double)sampleRate * (double)numChannels) : 1.0;
-        samplesPerSnap = samplesPerBeat / (double)snapping * 4.0;
-        double startTick = samplesPerSnap * ceil(cursorPos / samplesPerSnap);
-        double lastTick = cursorPos + maxDisplayRange * waveformReso;
+        double samplesPerBeat = sampleRate ? 60.0 / (double)settings.bpm * ((double)sampleRate * (double)numChannels) : 1.0;
+        settings.samplesPerSnap = samplesPerBeat / (double)settings.snapping * 4.0;
+        double startTick = settings.samplesPerSnap * ceil(settings.cursorPos / settings.samplesPerSnap);
+        double lastTick = settings.cursorPos + maxDisplayRange * waveformReso;
 
         std::vector<double> ticks;
         if (sampleCount > 0) {
-            for (double i = startTick; i < lastTick; i += samplesPerSnap)
+            for (double i = startTick; i < lastTick; i += settings.samplesPerSnap)
                 ticks.push_back(i / waveformReso);
         }
         else {
@@ -131,12 +122,12 @@ void DisplayWaveform(sf::SoundBuffer& buffer, std::list<double> &markers) {
         }
         int nbTicksToDraw = ticks.size();
 
-        ImPlot::SetupAxisFormat(ImAxis_X1, MeterFormatter);
+        ImPlot::SetupAxisFormat(ImAxis_X1, MeterFormatter, &settings);
         ImPlot::SetupAxisTicks(ImAxis_X1, ticks.data(), nbTicksToDraw);
 
         if (sampleCount > 0) {
             ImPlot::SetupAxis(ImAxis_X1, "", ImPlotAxisFlags_Foreground);
-            ImPlot::SetupAxisLimitsConstraints(ImAxis_X1, 0, sampleCount / waveformReso - offset);
+            ImPlot::SetupAxisLimitsConstraints(ImAxis_X1, 0, sampleCount / waveformReso - settings.offset);
 
             // Draw barlines
             for (double j = 0; j < lastTick; j += samplesPerBeat * 4) {
@@ -145,7 +136,7 @@ void DisplayWaveform(sf::SoundBuffer& buffer, std::list<double> &markers) {
             }
 
             // Draw beat lines if snapping is a multiple of 4
-            if (snapping % 4 == 0) {
+            if (settings.snapping % 4 == 0) {
                 for (double j = 0; j < lastTick; j += samplesPerBeat) {
                     double tmp = j / waveformReso;
                     ImPlot::DragLineX(555, &tmp, ImVec4(1, 1, 1, 0.075), 0.05, ImPlotDragToolFlags_NoInputs);
@@ -154,14 +145,14 @@ void DisplayWaveform(sf::SoundBuffer& buffer, std::list<double> &markers) {
 
             auto samples = buffer.getSamples();
             ImPlot::SetNextLineStyle(ImGui::GetStyleColorVec4(ImGuiCol_PlotHistogram));
-            ImPlot::PlotLine("Waveform", samples, sampleCount / waveformReso, 1.0, 0, 0, offset, waveformReso * numChannels); // Buffer stores samples as [channel1_i, channel2_i, channel1_i+1, etc.]
-            for (double m : markers) {
+            ImPlot::PlotLine("Waveform", samples, sampleCount / waveformReso, 1.0, 0, 0, settings.offset, waveformReso * numChannels); // Buffer stores samples as [channel1_i, channel2_i, channel1_i+1, etc.]
+            for (double m : settings.markers) {
                 double mTmp = m / waveformReso;
                 ImPlot::DragLineX(0, &mTmp, ImVec4(1, 1, 1, 1), 1, ImPlotDragToolFlags_NoInputs);
             }
         }
         ImPlot::EndPlot();
-        cursorPos = plotStart * waveformReso;
+        settings.cursorPos = plotStart * waveformReso;
     }
 }
 
@@ -173,24 +164,24 @@ double get(std::list<double> _list, int _i) {
     return *it;
 }
 
-void PlayKeysound(sf::Sound &sound, sf::SoundBuffer &buffer, sf::SoundBuffer& buffer2, std::list<double> markers, bool jumpToNext) {
-    if (buffer.getSampleCount() == 0 || markers.size() == 0)
+void PlayKeysound(sf::Sound &sound, sf::SoundBuffer &buffer, sf::SoundBuffer& buffer2, SlicerSettings &settings, bool jumpToNext) {
+    if (buffer.getSampleCount() == 0 || settings.markers.size() == 0)
         return;
     auto samples = buffer.getSamples();
-    markers.sort();
+    settings.markers.sort();
     unsigned long long keyStart = 0;
     unsigned long long keyEnd = 0;
-    unsigned long long offsetSamples = (long long)offset * (long long)waveformReso;
+    unsigned long long offsetSamples = (long long)settings.offset * (long long)waveformReso;
     int i = 0;
-    for (; i < markers.size(); i++) {
-        if (i + 1.0 >= markers.size()) {
-            keyStart = get(markers, i) + offsetSamples;
+    for (; i < settings.markers.size(); i++) {
+        if (i + 1.0 >= settings.markers.size()) {
+            keyStart = get(settings.markers, i) + offsetSamples;
             keyEnd = buffer.getSampleCount();
             break;
         }
-        else if (cursorPos < get(markers, i + 1)) {
-            keyStart = get(markers, i) + offsetSamples;
-            keyEnd = get(markers, i + 1) + offsetSamples;
+        else if (settings.cursorPos < get(settings.markers, i + 1)) {
+            keyStart = get(settings.markers, i) + offsetSamples;
+            keyEnd = get(settings.markers, i + 1) + offsetSamples;
             break;
         }
     }
@@ -200,7 +191,7 @@ void PlayKeysound(sf::Sound &sound, sf::SoundBuffer &buffer, sf::SoundBuffer& bu
     sound.setBuffer(buffer2);
     sound.play();
     if (jumpToNext && keyEnd != buffer.getSampleCount())
-        cursorPos = get(markers, i + 1) - (double)offsetSamples;
+        settings.cursorPos = get(settings.markers, i + 1) - (double)offsetSamples;
 }
 
 int ApplyNoiseGate(vector<sf::Int16>& buffer, int threshold, int nbChannels) {
@@ -227,25 +218,25 @@ void ApplyFadeout(vector<sf::Int16>& buffer, int fadeTime, unsigned int sampleRa
     }
 }
 
-void WriteKeysounds(sf::SoundBuffer& buffer, std::list<double> markers) {
-    if (selectedFile.size() == 0) {
+void WriteKeysounds(sf::SoundBuffer& buffer, SlicerSettings &settings) {
+    if (settings.selectedFile.size() == 0) {
         ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Please load a file first!" });
         return;
     }
     auto samples = buffer.getSamples();
-    markers.sort();
+    settings.markers.sort();
     unsigned long long keyStart = 0;
     unsigned long long keyEnd = 0;
-    unsigned long long offsetSamples = (long long)offset * (long long)waveformReso;
-    std::filesystem::path p = selectedFile;
+    unsigned long long offsetSamples = (long long)settings.offset * (long long)waveformReso;
+    std::filesystem::path p = settings.selectedFile;
     p.replace_extension("");
-    for (int i = 0; i < markers.size(); i++) {
-        keyStart = get(markers, i) + offsetSamples;
-        if (i + 1.0 >= markers.size()) {
+    for (int i = 0; i < settings.markers.size(); i++) {
+        keyStart = get(settings.markers, i) + offsetSamples;
+        if (i + 1.0 >= settings.markers.size()) {
             keyEnd = buffer.getSampleCount();
         }
         else {
-            keyEnd = get(markers, i + 1) + offsetSamples;
+            keyEnd = get(settings.markers, i + 1) + offsetSamples;
         }
         printf("exporting keysound with range start: %llu, range end: %llu\n", keyStart, keyEnd);
         auto bufsize = keyEnd - keyStart;
@@ -253,12 +244,12 @@ void WriteKeysounds(sf::SoundBuffer& buffer, std::list<double> markers) {
         char filename[4096];
         auto bufOut = &samples[keyStart];
         vector<sf::Int16> newBuf;
-        if (selectedGateThreshold != 0 || fadeout != 0) {
+        if (settings.selectedGateThreshold != 0 || settings.fadeout != 0) {
             newBuf.insert(newBuf.end(), &bufOut[0], &bufOut[bufsize]);
-            if (selectedGateThreshold != 0)
-                bufsize = ApplyNoiseGate(newBuf, gateThresholds[selectedGateThreshold], buffer.getChannelCount());
-            if (fadeout != 0)
-                ApplyFadeout(newBuf, fadeout, buffer.getSampleRate(), buffer.getChannelCount());
+            if (settings.selectedGateThreshold != 0)
+                bufsize = ApplyNoiseGate(newBuf, gateThresholds[settings.selectedGateThreshold], buffer.getChannelCount());
+            if (settings.fadeout != 0)
+                ApplyFadeout(newBuf, settings.fadeout, buffer.getSampleRate(), buffer.getChannelCount());
             bufOut = &newBuf[0];
         }
         snprintf(filename, 4096, "%s_%03d.wav", p.string().c_str(), i);
@@ -279,14 +270,14 @@ double FindInList(std::list<double> markers, double e) {
     return -1.0;
 }
 
-void AddMarkersFromBMSEClipboard(BMSEClipboard objs, sf::SoundBuffer& buffer, std::list<double>& markers) {
+void AddMarkersFromBMSEClipboard(BMSEClipboard objs, sf::SoundBuffer& buffer, SlicerSettings& settings) {
     if (buffer.getSampleCount() > 0) {
         auto sampleRate = buffer.getSampleRate();
         auto numChannels = buffer.getChannelCount();
         for (BMSEClipboardObject o : objs.objects) {
-            double m = o.toSamplePosition(bpm, sampleRate, numChannels);
-            if (FindInList(markers, m) == -1.0) {
-                markers.push_back(m);
+            double m = o.toSamplePosition(settings.bpm, sampleRate, numChannels);
+            if (FindInList(settings.markers, m) == -1.0) {
+                settings.markers.push_back(m);
             }
         }
         ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Successfully imported markers from the clipboard!" });
@@ -296,19 +287,19 @@ void AddMarkersFromBMSEClipboard(BMSEClipboard objs, sf::SoundBuffer& buffer, st
     }
 }
 
-void ProcessBMSEClipboard(sf::SoundBuffer& buffer, std::list<double>& markers) {
+void ProcessBMSEClipboard(sf::SoundBuffer& buffer, SlicerSettings& settings) {
     std::string cb;
     clip::get_text(cb);
     BMSEClipboard objs(cb);
     if (!objs.objects.empty())
-        AddMarkersFromBMSEClipboard(objs, buffer, markers);
+        AddMarkersFromBMSEClipboard(objs, buffer, settings);
     else
         ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Clipboard does not contain any BMSE data!" });
 }
 
-void GenerateBMSEClipboard(sf::SoundBuffer& buffer, std::list<double> markers) {
+void GenerateBMSEClipboard(sf::SoundBuffer& buffer, SlicerSettings settings) {
     if (buffer.getSampleCount() > 0) {
-        auto cb = BMSEClipboard::toBMSEClipboardData(markers, bpm, buffer.getSampleRate(), buffer.getChannelCount(), startingKeysound);
+        auto cb = BMSEClipboard::toBMSEClipboardData(settings.markers, settings.bpm, buffer.getSampleRate(), buffer.getChannelCount(), settings.startingKeysound);
         std::cout << cb << std::endl;
         clip::set_text(cb);
         ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Copied markers as BMSE clipboard data!" });
@@ -324,13 +315,13 @@ void ClearAllMarkers(std::list<double>& markers)
     //markers.push_back(0.0);
 }
 
-void ShowMenuFile(sf::SoundBuffer& buffer, std::list<double> &markers, sf::RenderWindow &window)
+void ShowMenuFile(sf::SoundBuffer& buffer, SlicerSettings &settings, sf::RenderWindow &window)
 {
     if (ImGui::MenuItem("Open", "O")) {
-        OpenAudioFile(buffer);
+        OpenAudioFile(buffer, settings);
     }
     if (ImGui::MenuItem("Export keysounds", "M")) {
-        WriteKeysounds(buffer, markers);
+        WriteKeysounds(buffer, settings);
     }
     ImGui::Separator();
     if (ImGui::MenuItem("Quit", "Alt+F4")) {
@@ -338,31 +329,31 @@ void ShowMenuFile(sf::SoundBuffer& buffer, std::list<double> &markers, sf::Rende
     }
 }
 
-void ShowMenuEdit(sf::SoundBuffer& buffer,  std::list<double>& markers)
+void ShowMenuEdit(sf::SoundBuffer& buffer, SlicerSettings& settings)
 {
     if (ImGui::MenuItem("Copy BMSE clipboard data", "V")) {
-        GenerateBMSEClipboard(buffer, markers);
+        GenerateBMSEClipboard(buffer, settings);
     }
     if (ImGui::MenuItem("Paste BMSE clipboard data", "B")) {
-        ProcessBMSEClipboard(buffer, markers);
+        ProcessBMSEClipboard(buffer, settings);
     }
     if (ImGui::MenuItem("Clear all markers", "C")) {
-        ClearAllMarkers(markers);
+        ClearAllMarkers(settings.markers);
     }
 }
 
-void ShowMainMenuBar(sf::SoundBuffer& buffer, std::list<double> &markers, sf::RenderWindow &window)
+void ShowMainMenuBar(sf::SoundBuffer& buffer, SlicerSettings &settings, sf::RenderWindow &window)
 {
     if (ImGui::BeginMainMenuBar())
     {
         if (ImGui::BeginMenu("File"))
         {
-            ShowMenuFile(buffer, markers, window);
+            ShowMenuFile(buffer, settings, window);
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Edit"))
         {
-            ShowMenuEdit(buffer, markers);
+            ShowMenuEdit(buffer, settings);
             ImGui::EndMenu();
         }
         ImGui::EndMainMenuBar();
@@ -404,28 +395,28 @@ void SetupDock() {
     }
 }
 
-void ShowSettingsPanel(sf::SoundBuffer& buffer, std::list<double>& markers) {
+void ShowSettingsPanel(sf::SoundBuffer& buffer, SlicerSettings& settings) {
     if (ImGui::Begin("Settings"))
     {
         ImGui::SeparatorText("General");
-        ImGui::DragInt("Offset", &offset, 1, 0, 1000);
-        ImGui::DragScalar("Position", ImGuiDataType_Double, &cursorPos, 1, 0, 0);
-        ImGui::DragFloat("BPM", &bpm, 1, 10, 10000);
-        ImGui::DragInt("Snapping", &snapping, 1, 1, 192);
-        int base = useBase62 ? 62 : 36;
+        ImGui::DragInt("Offset", &settings.offset, 1, 0, 1000);
+        ImGui::DragScalar("Position", ImGuiDataType_Double, &settings.cursorPos, 1, 0, 0);
+        ImGui::DragFloat("BPM", &settings.bpm, 1, 10, 10000);
+        ImGui::DragInt("Snapping", &settings.snapping, 1, 1, 192);
+        int base = settings.useBase62 ? 62 : 36;
         int maxKeysound = base * base - 1;
-        if (startingKeysound > maxKeysound)
-            startingKeysound = maxKeysound;
-        DragIntCustomBase("Starting key", &startingKeysound, 1, 1, maxKeysound, base);
-        ImGui::SetItemTooltip("Decimal value: %d", startingKeysound);
-        ImGui::Checkbox("Enable base-62", &useBase62);
+        if (settings.startingKeysound > maxKeysound)
+            settings.startingKeysound = maxKeysound;
+        DragIntCustomBase("Starting key", &settings.startingKeysound, 1, 1, maxKeysound, base);
+        ImGui::SetItemTooltip("Decimal value: %d", settings.startingKeysound);
+        ImGui::Checkbox("Enable base-62", &settings.useBase62);
 
         ImGui::SeparatorText("Export settings");
         char thres[64];
-        if (selectedGateThreshold == 0)
+        if (settings.selectedGateThreshold == 0)
             snprintf(thres, 64, "Disabled");
         else
-            snprintf(thres, 64, "%ddB", gateThresholds[selectedGateThreshold]);
+            snprintf(thres, 64, "%ddB", gateThresholds[settings.selectedGateThreshold]);
         const char* combo_preview_value = thres;
         if (ImGui::BeginCombo("Noise gate", combo_preview_value, 0))
         {
@@ -435,97 +426,97 @@ void ShowSettingsPanel(sf::SoundBuffer& buffer, std::list<double>& markers) {
                     snprintf(thres, 64, "Disabled");
                 else
                     snprintf(thres, 64, "%ddB", gateThresholds[n]);
-                const bool is_selected = (selectedGateThreshold == n);
+                const bool is_selected = (settings.selectedGateThreshold == n);
                 if (ImGui::Selectable(thres, is_selected))
-                    selectedGateThreshold = n;
+                    settings.selectedGateThreshold = n;
                 if (is_selected)
                     ImGui::SetItemDefaultFocus();
             }
             ImGui::EndCombo();
         }
-        ImGui::DragInt("Fadeout", &fadeout, 1, 0, 1000, "%dms");
+        ImGui::DragInt("Fadeout", &settings.fadeout, 1, 0, 1000, "%dms");
 
         ImGui::SeparatorText("Process");
         if (ImGui::Button("Export keysounds", ImVec2(-FLT_MIN, 0.0f))) {
-            WriteKeysounds(buffer, markers);
+            WriteKeysounds(buffer, settings);
         }
     }
     ImGui::End();
 }
 
-void ProcessShortcuts(ImGuiIO& io, sf::SoundBuffer& buffer, sf::SoundBuffer& buffer2, sf::Sound& sound, std::list<double>& markers) {
+void ProcessShortcuts(ImGuiIO& io, sf::SoundBuffer& buffer, sf::SoundBuffer& buffer2, sf::Sound& sound, SlicerSettings& settings) {
     if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_RightArrow))) {
-        if (cursorPos + samplesPerSnap < buffer.getSampleCount()) {
+        if (settings.cursorPos + settings.samplesPerSnap < buffer.getSampleCount()) {
             if (io.KeyShift) {
-                cursorPos += samplesPerSnap - fmod(cursorPos, samplesPerSnap);
+                settings.cursorPos += settings.samplesPerSnap - fmod(settings.cursorPos, settings.samplesPerSnap);
             }
             else {
-                cursorPos += samplesPerSnap;
+                settings.cursorPos += settings.samplesPerSnap;
             }
         }
         if (sound.getStatus() == sf::Sound::Playing) {
             sound.stop();
         }
     }
-    else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_LeftArrow)) && cursorPos > 0.0) {
-        if (cursorPos - samplesPerSnap < 0.0)
-            cursorPos = 0.0;
+    else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_LeftArrow)) && settings.cursorPos > 0.0) {
+        if (settings.cursorPos - settings.samplesPerSnap < 0.0)
+            settings.cursorPos = 0.0;
         else {
-            double diff = fmod(cursorPos, samplesPerSnap);
+            double diff = fmod(settings.cursorPos, settings.samplesPerSnap);
             if (io.KeyShift && diff != 0.0) {
-                cursorPos -= diff;
+                settings.cursorPos -= diff;
             }
             else {
-                cursorPos -= samplesPerSnap;
+                settings.cursorPos -= settings.samplesPerSnap;
             }
         }
         if (sound.getStatus() == sf::Sound::Playing) {
             sound.stop();
         }
     }
-    if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_UpArrow)) && snapping < 192) {
-        snapping += 1;
+    if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_UpArrow)) && settings.snapping < 192) {
+        settings.snapping += 1;
     }
-    else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_DownArrow)) && snapping > 1) {
-        snapping -= 1;
+    else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_DownArrow)) && settings.snapping > 1) {
+        settings.snapping -= 1;
     }
     if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Z))) {
-        double e = FindInList(markers, cursorPos);
+        double e = FindInList(settings.markers, settings.cursorPos);
         if (e != -1.0) {
-            markers.remove(e);
+            settings.markers.remove(e);
         }
         else {
-            markers.push_back(cursorPos);
+            settings.markers.push_back(settings.cursorPos);
         }
     }
     if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
-        PlayKeysound(sound, buffer, buffer2, markers, false);
+        PlayKeysound(sound, buffer, buffer2, settings, false);
     }
     if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_P))) {
-        PlayKeysound(sound, buffer, buffer2, markers, true);
+        PlayKeysound(sound, buffer, buffer2, settings, true);
     }
     if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_M), false)) {
-        WriteKeysounds(buffer, markers);
+        WriteKeysounds(buffer, settings);
     }
     if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_O), false)) {
-        OpenAudioFile(buffer);
+        OpenAudioFile(buffer, settings);
     }
     if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_B), false)) {
-        ProcessBMSEClipboard(buffer, markers);
+        ProcessBMSEClipboard(buffer, settings);
     }
     if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_V), false)) {
-        GenerateBMSEClipboard(buffer, markers);
+        GenerateBMSEClipboard(buffer, settings);
     }
     if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_C), false)) {
-        ClearAllMarkers(markers);
+        ClearAllMarkers(settings.markers);
     }
 }
 
-void ShowWaveform(sf::SoundBuffer& buffer, std::list<double>& markers) {
+void ShowWaveform(sf::SoundBuffer& buffer, SlicerSettings& settings) {
     if (ImGui::Begin("Waveform"))
     {
         ImGui::SeparatorText("Waveform");
-        DisplayWaveform(buffer, markers);
+        DisplayWaveform(buffer, settings);
 
         ImGui::SeparatorText("Markers");
         ImVec2 outer_size = ImVec2(0.0f, ImGui::GetTextLineHeightWithSpacing() * 8);
@@ -534,29 +525,29 @@ void ShowWaveform(sf::SoundBuffer& buffer, std::list<double>& markers) {
             ImGui::TableSetupScrollFreeze(0, 1);
             ImGui::TableSetupColumn("Marker", ImGuiTableColumnFlags_WidthFixed);
             ImGui::TableHeadersRow();
-            if (markers.size() == 0) {
+            if (settings.markers.size() == 0) {
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("No markers set...");
             }
             else {
-                markers.sort();
+                settings.markers.sort();
                 double toRemove = -1.0;
-                for (double m : markers) {
+                for (double m : settings.markers) {
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
                     char buf[64];
                     snprintf(buf, 64, "%f", m);
                     ImGui::Selectable(buf);
                     if (ImGui::IsItemClicked(0)) {
-                        cursorPos = m;
+                        settings.cursorPos = m;
                     }
                     else if (ImGui::IsItemClicked(1)) {
                         toRemove = m;
                     }
                 }
                 if (toRemove != -1) {
-                    markers.remove(toRemove);
+                    settings.markers.remove(toRemove);
                 }
             }
             ImGui::EndTable();
@@ -584,7 +575,7 @@ LRESULT CALLBACK myCallback(HWND handle, UINT message, WPARAM wParam, LPARAM lPa
             {
                 std::string stdstr;
                 sf::Utf8::fromWide(str.begin(), str.end(), std::back_inserter(stdstr));
-                OpenAudioFile(*(sf::SoundBuffer*)bufferPtr, stdstr);
+                OpenAudioFile(*(sf::SoundBuffer*)bufferPtr, *(SlicerSettings*)settingsPtr, stdstr);
             }
         }
         DragFinish(hdrop);
@@ -608,13 +599,14 @@ int main() {
     sf::SoundBuffer buffer;
     sf::SoundBuffer buffer2; // For keysound playing
     sf::Sound sound;
-    std::list<double> markers = { 0.0 };
+    SlicerSettings settings;
 
 #if _WIN32
     HWND handle = window.getSystemHandle();
     DragAcceptFiles(handle, TRUE);
     originalSFMLCallback = SetWindowLongPtrW(handle, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(myCallback));
     bufferPtr = (LONG_PTR)&buffer;
+    settingsPtr = (LONG_PTR)&settings;
 #endif
 
     window.resetGLStates();
@@ -636,15 +628,15 @@ int main() {
         ImGui::SFML::Update(window, deltaClock.restart());
 
         SetupDock();
-        ShowMainMenuBar(buffer, markers, window);
+        ShowMainMenuBar(buffer, settings, window);
 
         ImGui::SetNextWindowClass(&window_class);
-        ShowSettingsPanel(buffer, markers);
+        ShowSettingsPanel(buffer, settings);
 
-        ProcessShortcuts(io, buffer, buffer2, sound, markers);
+        ProcessShortcuts(io, buffer, buffer2, sound, settings);
 
         ImGui::SetNextWindowClass(&window_class);
-        ShowWaveform(buffer, markers);
+        ShowWaveform(buffer, settings);
 
         ImGui::RenderNotifications();
 
