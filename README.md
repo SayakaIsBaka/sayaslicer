@@ -51,4 +51,5 @@ sayaslicer uses the following libraries:
 - [tinyfiledialogs](https://sourceforge.net/projects/tinyfiledialogs/)
 - [clip](https://github.com/dacap/clip)
 - [ImGuiNotify](https://github.com/TyomaVader/ImGuiNotify)
+- [cereal](https://github.com/USCiLab/cereal)
 - [Moonlight (ImGui theme)](https://github.com/Madam-Herta/Moonlight/)
