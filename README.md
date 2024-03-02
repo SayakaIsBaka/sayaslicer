@@ -29,6 +29,8 @@ Keyboard shortcuts are the same as woslicerII except the keyboard layout is take
 - `LeftArrow / RightArrow`: move position cursor
 - `Shift + LeftArrow / Shift + RightArrow`: move position cursor (jump to closest snap)
 - `UpArrow / DownArrow`: set snapping
+- `Ctrl+O`: load project
+- `Ctrl+S`: save project
 
 Additionally, clicking on a marker in the table will jump the cursor to its position; right-clicking it will delete it.
 
