@@ -489,9 +489,11 @@ void ShowMidiTrackModal(sf::SoundBuffer& buffer, SlicerSettings& settings) {
     ImGuiID popup_id = ImHashStr("MidiPopup");
     ImGui::PushOverrideID(popup_id);
     if (ImGui::BeginPopupModal("Select MIDI track", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize)) {
-        std::vector<std::string> choices = { "All tracks" };
-        GetTrackNames(settings.midiFile, choices);
-
+        static std::vector<std::string> choices;
+        if (choices.size() == 0) {
+            choices.push_back("All tracks");
+            GetTrackNames(settings.midiFile, choices);
+        }
         static int choice = 0;
         static bool useMidiBPM = false;
         ImGui::Text("Select the track to import:");
@@ -513,11 +515,15 @@ void ShowMidiTrackModal(sf::SoundBuffer& buffer, SlicerSettings& settings) {
         if (ImGui::Button("Import")) {
             ImportMidiMarkers(buffer, settings, choice - 1, useMidiBPM);
             choice = 0;
+            choices.clear();
+            settings.midiFile.clear();
             ImGui::CloseCurrentPopup();
         }
         ImGui::SameLine();
         if (ImGui::Button("Cancel")) {
             choice = 0;
+            choices.clear();
+            settings.midiFile.clear();
             ImGui::CloseCurrentPopup();
         }
         ImGui::EndPopup();
