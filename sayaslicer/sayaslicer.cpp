@@ -135,6 +135,8 @@ void DisplayWaveform(sf::SoundBuffer& buffer, SlicerSettings &settings) {
 
             // Draw barlines
             for (double j = 0; j < lastTick; j += samplesPerBeat * 4) {
+                if (j < settings.cursorPos)
+                    continue;
                 double tmp = j / waveformReso;
                 ImPlot::DragLineX(555, &tmp, ImVec4(1, 1, 1, 0.25), 0.1, ImPlotDragToolFlags_NoInputs);
             }
@@ -142,6 +144,8 @@ void DisplayWaveform(sf::SoundBuffer& buffer, SlicerSettings &settings) {
             // Draw beat lines if snapping is a multiple of 4
             if (settings.snapping % 4 == 0) {
                 for (double j = 0; j < lastTick; j += samplesPerBeat) {
+                    if (j < settings.cursorPos)
+                        continue;
                     double tmp = j / waveformReso;
                     ImPlot::DragLineX(555, &tmp, ImVec4(1, 1, 1, 0.075), 0.05, ImPlotDragToolFlags_NoInputs);
                 }
@@ -155,6 +159,8 @@ void DisplayWaveform(sf::SoundBuffer& buffer, SlicerSettings &settings) {
             size_t arrayOffset = ((size_t)settings.cursorPos / (waveformReso * numChannels)) * (waveformReso * numChannels);
             ImPlot::PlotLine("Waveform", &samples[arrayOffset], arrLen, 1.0, arrayOffset / (waveformReso), 0, settings.offset, waveformReso * numChannels); // Buffer stores samples as [channel1_i, channel2_i, channel1_i+1, etc.]
             for (double m : settings.markers) {
+                if (m < settings.cursorPos)
+                    continue;
                 double mTmp = m / waveformReso;
                 ImPlot::DragLineX(0, &mTmp, ImVec4(1, 1, 1, 1), 1, ImPlotDragToolFlags_NoInputs);
             }

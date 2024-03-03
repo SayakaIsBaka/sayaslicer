@@ -1,7 +1,7 @@
 out
 vcpkg_installed
 *.wav
-CMakeUserPresets.json
 .vs
+vcpkg
 vcpkg-configuration.json
 tools
