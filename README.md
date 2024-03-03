@@ -33,6 +33,8 @@ Keyboard shortcuts are the same as woslicerII except the keyboard layout is take
 - `UpArrow / DownArrow`: set snapping
 - `Ctrl+O`: load project
 - `Ctrl+S`: save project
+- `Home`: jump to the beginning of the waveform
+- `End`: jump to the end of the waveform
 
 Additionally, clicking on a marker in the table will jump the cursor to its position; right-clicking it will delete it.
 
