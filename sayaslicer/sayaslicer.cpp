@@ -226,6 +226,19 @@ void ApplyFadeout(vector<sf::Int16>& buffer, int fadeTime, unsigned int sampleRa
     }
 }
 
+std::string GetTempMarkerName(std::string filename, size_t idx) {
+    std::string suffix = "_";
+    switch (idx > 0 ? (int)log10((double)idx) + 1 : 1) { // Get number of digits
+    case 1:
+        suffix = "_00";
+        break;
+    case 2:
+        suffix = "_0";
+        break;
+    }
+    return filename + suffix + std::to_string(idx) + ".wav";
+}
+
 void WriteKeysounds(sf::SoundBuffer& buffer, SlicerSettings &settings) {
     if (settings.selectedFile.size() == 0) {
         ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Please load a file first!" });
@@ -237,7 +250,8 @@ void WriteKeysounds(sf::SoundBuffer& buffer, SlicerSettings &settings) {
     unsigned long long keyEnd = 0;
     unsigned long long offsetSamples = (long long)settings.offset * (long long)waveformReso;
     std::filesystem::path p = settings.selectedFile;
-    p.replace_extension("");
+    auto origFilename = p.filename().replace_extension().string();
+    auto folder = p.remove_filename();
     for (int i = 0; i < settings.markers.size(); i++) {
         keyStart = settings.markers.get(i).position + offsetSamples;
         if (i + 1.0 >= settings.markers.size()) {
@@ -249,7 +263,7 @@ void WriteKeysounds(sf::SoundBuffer& buffer, SlicerSettings &settings) {
         printf("exporting keysound with range start: %llu, range end: %llu\n", keyStart, keyEnd);
         auto bufsize = keyEnd - keyStart;
         sf::OutputSoundFile file;
-        char filename[4096];
+
         auto bufOut = &samples[keyStart];
         vector<sf::Int16> newBuf;
         if (settings.selectedGateThreshold != 0 || settings.fadeout != 0) {
@@ -260,8 +274,15 @@ void WriteKeysounds(sf::SoundBuffer& buffer, SlicerSettings &settings) {
                 ApplyFadeout(newBuf, settings.fadeout, buffer.getSampleRate(), buffer.getChannelCount());
             bufOut = &newBuf[0];
         }
-        snprintf(filename, 4096, "%s_%03d.wav", p.string().c_str(), i);
-        puts(filename);
+
+        Marker m = settings.markers.get(i);
+        std::string filename;
+        if (m.name.empty())
+            filename = folder.string() + GetTempMarkerName(origFilename, i);
+        else
+            filename = folder.string() + m.name;
+        
+        std::cout << filename << std::endl;
         if (!file.openFromFile(filename, buffer.getSampleRate(), buffer.getChannelCount())) {
             puts("Error opening file for writing");
         }
@@ -720,16 +741,7 @@ void DisplayMarkersTable(SlicerSettings& settings) {
                 ImGui::TableNextColumn();
 
                 if (m.name.size() == 0) {
-                    std::string suffix = "_";
-                    switch (idx > 0 ? (int)log10((double)idx) + 1 : 1) { // Get number of digits
-                    case 1:
-                        suffix = "_00";
-                        break;
-                    case 2:
-                        suffix = "_0";
-                        break;
-                    }
-                    std::string tmpName = filename + suffix + std::to_string(idx) + ".wav";
+                    auto tmpName = GetTempMarkerName(filename, idx);
                     SelectableInput(std::to_string(idx).c_str(), false, ImGuiSelectableFlags_None, &m.name[0], 4096, &tmpName[0]);
                 }
                 else {
