@@ -21,27 +21,6 @@ public:
 	double samplesPerSnap = 0.0;
 	smf::MidiFile midiFile;
 
-	void AddMarker(double position, std::string name = "")
-	{
-		if (name.empty()) {
-			std::filesystem::path p = selectedFile;
-			auto filename = p.filename().replace_extension().string();
-			auto idx = markers.size();
-			std::string suffix = "_";
-			switch (idx > 0 ? (int)log10((double)idx) + 1 : 1) { // Get number of digits
-			case 1:
-				suffix = "_00";
-				break;
-			case 2:
-				suffix = "_0";
-				break;
-			}
-			name = filename + suffix + std::to_string(idx) + ".wav";
-		}
-		Marker m(position, name);
-		markers.push_back(m);
-	}
-
 	template<class Archive>
 	void serialize(Archive& archive)
 	{

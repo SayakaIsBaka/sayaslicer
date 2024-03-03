@@ -12,10 +12,11 @@ public:
 	Marker(double position, std::string name) {
 		this->position = position;
 		this->name = name;
+		this->name.reserve(4096);
 	}
 
 	Marker() {
-
+		position = 0.0;
 	}
 
 	template<class Archive>
@@ -32,6 +33,10 @@ private:
 public:
 	void push_back(Marker m) {
 		markers.push_back(m);
+	}
+
+	void push_back(double m) {
+		markers.push_back(Marker(m, ""));
 	}
 
 	void remove(double m) {

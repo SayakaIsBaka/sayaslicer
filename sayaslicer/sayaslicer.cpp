@@ -73,7 +73,7 @@ bool OpenAudioFile(sf::SoundBuffer &buffer, SlicerSettings &settings, std::strin
             std::cout << "Sample count: " << buffer.getSampleCount() << std::endl;
             settings.cursorPos = 0.0; // Reset cursor position to avoid crashing
             if (settings.markers.size() == 0)
-                settings.AddMarker(0.0);
+                settings.markers.push_back(0.0);
             ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Opened file:\n%s", settings.selectedFile.c_str() });
         }
         else {
@@ -277,7 +277,7 @@ void AddMarkersFromBMSEClipboard(BMSEClipboard objs, sf::SoundBuffer& buffer, Sl
         for (BMSEClipboardObject o : objs.objects) {
             double m = o.toSamplePosition(settings.bpm, sampleRate, numChannels);
             if (settings.markers.find(m) == -1.0) {
-                settings.AddMarker(m);
+                settings.markers.push_back(m);
             }
         }
         ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Successfully imported markers from the clipboard!" });
@@ -468,7 +468,7 @@ void ImportMidiMarkers(sf::SoundBuffer& buffer, SlicerSettings& settings, int tr
             auto event = settings.midiFile[selectedTrack][i];
             auto tick = relative ? event.tick * (samplesPerBeat / tpq) : event.seconds * sampleRate * nbChannels;
             if (settings.markers.find(tick) == -1.0) {
-                    settings.AddMarker(tick);
+                    settings.markers.push_back(tick);
             }
         }
     }
@@ -660,7 +660,7 @@ void ProcessShortcuts(ImGuiIO& io, sf::SoundBuffer& buffer, sf::SoundBuffer& buf
             settings.markers.remove(e);
         }
         else {
-            settings.AddMarker(settings.cursorPos);
+            settings.markers.push_back(settings.cursorPos);
         }
     }
     if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
@@ -686,6 +686,66 @@ void ProcessShortcuts(ImGuiIO& io, sf::SoundBuffer& buffer, sf::SoundBuffer& buf
     }
 }
 
+void DisplayMarkersTable(SlicerSettings& settings) {
+    ImVec2 outer_size = ImVec2(0.0f, ImGui::GetTextLineHeightWithSpacing() * 8);
+    if (ImGui::BeginTable("markerstable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY, outer_size))
+    {
+        ImGui::TableSetupScrollFreeze(0, 1);
+        ImGui::TableSetupColumn("Position", ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableHeadersRow();
+        if (settings.markers.size() == 0) {
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("No markers set...");
+        }
+        else {
+            settings.markers.sort();
+            double toRemove = -1.0;
+            std::filesystem::path p = settings.selectedFile;
+            auto filename = p.filename().replace_extension().string();
+            size_t idx = 0;
+            for (auto& m : settings.markers) {
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                char buf[64];
+                snprintf(buf, 64, "%f", m.position);
+                ImGui::Selectable(buf);
+                if (ImGui::IsItemClicked(0)) {
+                    settings.cursorPos = m.position;
+                }
+                else if (ImGui::IsItemClicked(1)) {
+                    toRemove = m.position;
+                }
+                ImGui::TableNextColumn();
+
+                if (m.name.size() == 0) {
+                    std::string suffix = "_";
+                    switch (idx > 0 ? (int)log10((double)idx) + 1 : 1) { // Get number of digits
+                    case 1:
+                        suffix = "_00";
+                        break;
+                    case 2:
+                        suffix = "_0";
+                        break;
+                    }
+                    std::string tmpName = filename + suffix + std::to_string(idx) + ".wav";
+                    SelectableInput(std::to_string(idx).c_str(), false, ImGuiSelectableFlags_None, &m.name[0], 4096, &tmpName[0]);
+                }
+                else {
+                    SelectableInput(std::to_string(idx).c_str(), false, ImGuiSelectableFlags_None, &m.name[0], 4096);
+                }
+                m.name = &m.name[0]; // Awesome hack to update the string structure with the proper length and everything
+                idx++;
+            }
+            if (toRemove != -1) {
+                settings.markers.remove(toRemove);
+            }
+        }
+        ImGui::EndTable();
+    }
+}
+
 void ShowWaveform(sf::SoundBuffer& buffer, SlicerSettings& settings) {
     if (ImGui::Begin("Waveform"))
     {
@@ -693,39 +753,7 @@ void ShowWaveform(sf::SoundBuffer& buffer, SlicerSettings& settings) {
         DisplayWaveform(buffer, settings);
 
         ImGui::SeparatorText("Markers");
-        ImVec2 outer_size = ImVec2(0.0f, ImGui::GetTextLineHeightWithSpacing() * 8);
-        if (ImGui::BeginTable("markerstable", 1, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY, outer_size))
-        {
-            ImGui::TableSetupScrollFreeze(0, 1);
-            ImGui::TableSetupColumn("Marker", ImGuiTableColumnFlags_WidthFixed);
-            ImGui::TableHeadersRow();
-            if (settings.markers.size() == 0) {
-                ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0);
-                ImGui::Text("No markers set...");
-            }
-            else {
-                settings.markers.sort();
-                double toRemove = -1.0;
-                for (auto m : settings.markers) {
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
-                    char buf[64];
-                    snprintf(buf, 64, "%f", m.position);
-                    ImGui::Selectable(buf);
-                    if (ImGui::IsItemClicked(0)) {
-                        settings.cursorPos = m.position;
-                    }
-                    else if (ImGui::IsItemClicked(1)) {
-                        toRemove = m.position;
-                    }
-                }
-                if (toRemove != -1) {
-                    settings.markers.remove(toRemove);
-                }
-            }
-            ImGui::EndTable();
-        }
+        DisplayMarkersTable(settings);
     }
     ImGui::End();
 }

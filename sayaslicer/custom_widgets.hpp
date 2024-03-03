@@ -50,6 +50,44 @@ int ToBaseString(char* buf, int buf_size, const void* p_data, int base) {
     return size;
 }
 
+bool SelectableInput(const char* str_id, bool selected, ImGuiSelectableFlags flags, char* buf, size_t buf_size, char* display_text = nullptr)
+{
+    ImGuiContext& g = *GImGui;
+    ImGuiWindow* window = g.CurrentWindow;
+    ImVec2 pos_before = window->DC.CursorPos;
+
+    PushID(str_id);
+    PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(g.Style.ItemSpacing.x, g.Style.FramePadding.y * 2.0f));
+    bool ret = Selectable("##Selectable", selected, flags | ImGuiSelectableFlags_AllowDoubleClick | ImGuiSelectableFlags_AllowItemOverlap);
+    PopStyleVar();
+
+    ImGuiID id = window->GetID("##Input");
+    bool temp_input_is_active = TempInputIsActive(id);
+    bool temp_input_start = ret ? IsMouseDoubleClicked(0) : false;
+
+    if (temp_input_start)
+        SetActiveID(id, window);
+
+    if (temp_input_is_active || temp_input_start)
+    {
+        KeepAliveID(id);
+        ImVec2 pos_after = window->DC.CursorPos;
+        window->DC.CursorPos = pos_before;
+        ret = TempInputText(g.LastItemData.Rect, id, "##Input", buf, (int)buf_size, ImGuiInputTextFlags_None);
+        window->DC.CursorPos = pos_after;
+    }
+    else
+    {
+        if (display_text != nullptr)
+            window->DrawList->AddText(pos_before, GetColorU32(ImGuiCol_Text), display_text);
+        else
+            window->DrawList->AddText(pos_before, GetColorU32(ImGuiCol_Text), buf);
+    }
+
+    PopID();
+    return ret;
+}
+
 bool MyTempInputScalar(const ImRect& bb, ImGuiID id, const char* label, ImGuiDataType data_type, void* p_data, const char* format, const void* p_clamp_min, const void* p_clamp_max, int base)
 {
     // FIXME: May need to clarify display behavior if format doesn't contain %.
