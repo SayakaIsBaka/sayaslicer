@@ -460,7 +460,7 @@ bool HasBPMData(SlicerSettings& settings, int selectedTrack) {
     return false;
 }
 
-void ImportMidiMarkers(sf::SoundBuffer& buffer, SlicerSettings& settings, int track, bool useMidiBPM) {
+void ImportMidiMarkers(sf::SoundBuffer& buffer, SlicerSettings& settings, int track, bool useMidiBPM, bool clearMarkers) {
     int selectedTrack = 0;
     if (track == -1) {
         settings.midiFile.joinTracks();
@@ -479,6 +479,8 @@ void ImportMidiMarkers(sf::SoundBuffer& buffer, SlicerSettings& settings, int tr
     if (!relative) {
         settings.midiFile.doTimeAnalysis();
     }
+    if (clearMarkers)
+        settings.markers.clear();
     for (int i = 0; i < settings.midiFile[selectedTrack].size(); i++) {
         if (settings.midiFile[selectedTrack][i].isNoteOn()) {
             auto event = settings.midiFile[selectedTrack][i];
@@ -502,6 +504,7 @@ void ShowMidiTrackModal(sf::SoundBuffer& buffer, SlicerSettings& settings) {
         }
         static int choice = 0;
         static bool useMidiBPM = false;
+        static bool clearMarkers = true;
         ImGui::Text("Select the track to import:");
         const char* combo_preview_value = choices[choice].c_str();
         if (ImGui::BeginCombo("##miditrack", combo_preview_value)) {
@@ -517,9 +520,10 @@ void ShowMidiTrackModal(sf::SoundBuffer& buffer, SlicerSettings& settings) {
             ImGui::EndCombo();
         }
         //ImGui::Checkbox("Use BPM from the MIDI file", &useMidiBPM);
+        ImGui::Checkbox("Clear existing markers", &clearMarkers);
 
         if (ImGui::Button("Import")) {
-            ImportMidiMarkers(buffer, settings, choice - 1, useMidiBPM);
+            ImportMidiMarkers(buffer, settings, choice - 1, useMidiBPM, clearMarkers);
             choice = 0;
             choices.clear();
             settings.midiFile.clear();
