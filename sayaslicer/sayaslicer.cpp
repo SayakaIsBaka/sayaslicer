@@ -253,7 +253,8 @@ void WriteKeysounds(sf::SoundBuffer& buffer, SlicerSettings &settings) {
     auto origFilename = p.filename().replace_extension().string();
     auto folder = p.remove_filename();
     for (int i = 0; i < settings.markers.size(); i++) {
-        keyStart = settings.markers.get(i).position + offsetSamples;
+        Marker m = settings.markers.get(i);
+        keyStart = m.position + offsetSamples;
         if (i + 1.0 >= settings.markers.size()) {
             keyEnd = buffer.getSampleCount();
         }
@@ -275,7 +276,6 @@ void WriteKeysounds(sf::SoundBuffer& buffer, SlicerSettings &settings) {
             bufOut = &newBuf[0];
         }
 
-        Marker m = settings.markers.get(i);
         std::string filename;
         if (m.name.empty())
             filename = folder.string() + GetTempMarkerName(origFilename, i);
@@ -398,6 +398,38 @@ void LoadMidi(sf::SoundBuffer& buffer, SlicerSettings& settings) {
     }
 }
 
+void ImportNamesFromMid2Bms(SlicerSettings& settings) {
+    char const* lFilterPatterns[1] = { "*.txt" };
+    char* s = tinyfd_openFileDialog("Open renamer array file...", "text5_renamer_array.txt", 1, lFilterPatterns, "Text file (*.txt)", 0);
+    if (s) {
+        std::ifstream f(s);
+        std::vector<std::string> names;
+        if (f.is_open() && f.good()) {
+            std::string line;
+            for (int i = 0; i < 3 && f.good(); i++) {
+                f >> line;
+            }
+            while (f.good()) {
+                f >> line;
+                if (line == "//") {
+                    for (int i = 0; i < 3 && f.good(); i++) {
+                        f >> line;
+                    }
+                }
+                else {
+                    names.push_back(line);
+                }
+            }
+        }
+        if (settings.markers.importNames(names)) {
+            ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Successfully imported marker names!" });
+        }
+        else {
+            ImGui::InsertNotification({ ImGuiToastType::Warning, 3000, "Imported marker names but the number of names did not perfectly match the number of markers" });
+        }
+    }
+}
+
 void ShowMenuFile(sf::SoundBuffer& buffer, SlicerSettings &settings, sf::RenderWindow &window)
 {
     if (ImGui::MenuItem("Open project", "Ctrl+O")) {
@@ -423,6 +455,9 @@ void ShowMenuEdit(sf::SoundBuffer& buffer, SlicerSettings& settings)
 {
     if (ImGui::MenuItem("Import slices from MIDI")) {
         LoadMidi(buffer, settings);
+    }
+    if (ImGui::MenuItem("Import Mid2BMS renamer file")) {
+        ImportNamesFromMid2Bms(settings);
     }
     ImGui::Separator();
     if (ImGui::MenuItem("Copy BMSE clipboard data", "V")) {

@@ -16,6 +16,7 @@ A cross-platform audio slicer with BMS-related features. Aims to be a drop-in re
 - Partial BPM changes support (only for audio slicing, a bit hackish but it works)
 - Load / save project
 - Import markers from a MIDI file
+- [Mid2BMS](https://mid2bms.net) renamer array file import
 
 ## Keyboard shortcuts
 Keyboard shortcuts are the same as woslicerII except the keyboard layout is taken into account:
@@ -36,8 +37,6 @@ Keyboard shortcuts are the same as woslicerII except the keyboard layout is take
 Additionally, clicking on a marker in the table will jump the cursor to its position; right-clicking it will delete it.
 
 ## Planned features
-- Import marker names from [mid2bms](https://mid2bms.net)
-
 The following features are less likely to be implemented but might be done depending on whether I feel like it or if there's enough demand for it:
 - Copy / paste measures (doesn't make that much sense since markers are stored using their absolute value, maybe something similar to Vim's visual mode?)
 - Better BPM change support (BMSE clipboard support, import BPM changes from MIDI and proper grid display)

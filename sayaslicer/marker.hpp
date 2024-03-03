@@ -84,6 +84,20 @@ public:
 		return *it;
 	}
 
+	bool importNames(std::vector<std::string> names) {
+		bool perfectMatch = false;
+		if (names.size() == markers.size())
+			perfectMatch = true;
+		size_t limit = names.size() < markers.size() ? names.size() : markers.size();
+		size_t i = 0;
+		for (auto& marker : markers) {
+			marker.name = names[i];
+			if (++i >= limit)
+				break;
+		}
+		return perfectMatch;
+	}
+
 	template<class Archive>
 	void serialize(Archive& archive)
 	{
