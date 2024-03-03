@@ -72,6 +72,8 @@ bool OpenAudioFile(sf::SoundBuffer &buffer, SlicerSettings &settings, std::strin
             std::cout << "Sample rate: " << buffer.getSampleRate() << std::endl;
             std::cout << "Sample count: " << buffer.getSampleCount() << std::endl;
             settings.cursorPos = 0.0; // Reset cursor position to avoid crashing
+            if (settings.markers.size() == 0)
+                settings.AddMarker(0.0);
             ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Opened file:\n%s", settings.selectedFile.c_str() });
         }
         else {
