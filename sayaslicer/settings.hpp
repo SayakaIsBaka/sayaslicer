@@ -3,6 +3,8 @@
 #include <cereal/types/string.hpp>
 #include <cereal/types/list.hpp>
 #include <midifile/include/MidiFile.h>
+#include <filesystem>
+#include "marker.hpp"
 
 class SlicerSettings {
 public:
@@ -15,9 +17,20 @@ public:
 	int fadeout = 0;
 	int selectedGateThreshold = 0;
 	std::string selectedFile;
-	std::list<double> markers = { 0.0 };
+	MarkerList markers;
 	double samplesPerSnap = 0.0;
 	smf::MidiFile midiFile;
+
+	void AddMarker(double position, std::string name = "")
+	{
+		if (name.empty()) {
+			std::filesystem::path p = selectedFile;
+			auto filename = p.filename().replace_extension().string();
+			name = filename + "_" + std::to_string(markers.size()) + ".wav";
+		}
+		Marker m(position, name);
+		markers.push_back(m);
+	}
 
 	template<class Archive>
 	void serialize(Archive& archive)

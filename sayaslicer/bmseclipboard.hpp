@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <list>
 #include <vector>
+#include "marker.hpp"
 
 class BMSEClipboardObject {
 public:
@@ -46,11 +47,11 @@ class BMSEClipboard {
 public:
 	std::vector<BMSEClipboardObject> objects;
 
-	static std::string toBMSEClipboardData(std::list<double> markers, double bpm, int sampleRate, int numChannels, int startDef) {
+	static std::string toBMSEClipboardData(MarkerList markers, double bpm, int sampleRate, int numChannels, int startDef) {
 		std::string res = "BMSE ClipBoard Object Data Format\r\n";
-		for (double m : markers) {
+		for (auto m : markers) {
 			double samplesPer192th = 60.0 / (double)bpm * ((double)sampleRate * (double)numChannels) / 192.0 * 4.0;
-			double position = m / samplesPer192th;
+			double position = m.position / samplesPer192th;
 			BMSEClipboardObject o("101", 0, round(position), startDef++);
 			res = res + o.toString() + "\r\n";
 		}

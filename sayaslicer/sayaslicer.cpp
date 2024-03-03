@@ -158,24 +158,16 @@ void DisplayWaveform(sf::SoundBuffer& buffer, SlicerSettings &settings) {
                 arrLen = (sampleCount - settings.cursorPos) / waveformReso;
             size_t arrayOffset = ((size_t)settings.cursorPos / (waveformReso * numChannels)) * (waveformReso * numChannels);
             ImPlot::PlotLine("Waveform", &samples[arrayOffset], arrLen, 1.0, arrayOffset / (waveformReso), 0, settings.offset, waveformReso * numChannels); // Buffer stores samples as [channel1_i, channel2_i, channel1_i+1, etc.]
-            for (double m : settings.markers) {
-                if (m < settings.cursorPos)
+            for (auto m : settings.markers) {
+                if (m.position < settings.cursorPos)
                     continue;
-                double mTmp = m / waveformReso;
+                double mTmp = m.position / waveformReso;
                 ImPlot::DragLineX(0, &mTmp, ImVec4(1, 1, 1, 1), 1, ImPlotDragToolFlags_NoInputs);
             }
         }
         ImPlot::EndPlot();
         settings.cursorPos = plotStart * waveformReso;
     }
-}
-
-double get(std::list<double> _list, int _i) {
-    std::list<double>::iterator it = _list.begin();
-    for (int i = 0; i < _i; i++) {
-        ++it;
-    }
-    return *it;
 }
 
 void PlayKeysound(sf::Sound &sound, sf::SoundBuffer &buffer, sf::SoundBuffer& buffer2, SlicerSettings &settings, bool jumpToNext) {
@@ -189,13 +181,13 @@ void PlayKeysound(sf::Sound &sound, sf::SoundBuffer &buffer, sf::SoundBuffer& bu
     int i = 0;
     for (; i < settings.markers.size(); i++) {
         if (i + 1.0 >= settings.markers.size()) {
-            keyStart = get(settings.markers, i) + offsetSamples;
+            keyStart = settings.markers.get(i).position + offsetSamples;
             keyEnd = buffer.getSampleCount();
             break;
         }
-        else if ((float)settings.cursorPos < (float)get(settings.markers, i + 1)) {
-            keyStart = get(settings.markers, i) + offsetSamples;
-            keyEnd = get(settings.markers, i + 1) + offsetSamples;
+        else if ((float)settings.cursorPos < (float)settings.markers.get(i + 1).position) {
+            keyStart = settings.markers.get(i).position + offsetSamples;
+            keyEnd = settings.markers.get(i + 1).position + offsetSamples;
             break;
         }
     }
@@ -205,7 +197,7 @@ void PlayKeysound(sf::Sound &sound, sf::SoundBuffer &buffer, sf::SoundBuffer& bu
     sound.setBuffer(buffer2);
     sound.play();
     if (jumpToNext && keyEnd != buffer.getSampleCount())
-        settings.cursorPos = get(settings.markers, i + 1) - (double)offsetSamples;
+        settings.cursorPos = settings.markers.get(i + 1).position - (double)offsetSamples;
 }
 
 int ApplyNoiseGate(vector<sf::Int16>& buffer, int threshold, int nbChannels) {
@@ -245,12 +237,12 @@ void WriteKeysounds(sf::SoundBuffer& buffer, SlicerSettings &settings) {
     std::filesystem::path p = settings.selectedFile;
     p.replace_extension("");
     for (int i = 0; i < settings.markers.size(); i++) {
-        keyStart = get(settings.markers, i) + offsetSamples;
+        keyStart = settings.markers.get(i).position + offsetSamples;
         if (i + 1.0 >= settings.markers.size()) {
             keyEnd = buffer.getSampleCount();
         }
         else {
-            keyEnd = get(settings.markers, i + 1) + offsetSamples;
+            keyEnd = settings.markers.get(i + 1).position + offsetSamples;
         }
         printf("exporting keysound with range start: %llu, range end: %llu\n", keyStart, keyEnd);
         auto bufsize = keyEnd - keyStart;
@@ -276,22 +268,14 @@ void WriteKeysounds(sf::SoundBuffer& buffer, SlicerSettings &settings) {
     ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Exported keysounds to the following folder:\n%s", p.parent_path().string().c_str() });
 }
 
-double FindInList(std::list<double> markers, double e) {
-    for (double m : markers) {
-        if (std::abs(m - e) < 0.000001)
-            return m;
-    }
-    return -1.0;
-}
-
 void AddMarkersFromBMSEClipboard(BMSEClipboard objs, sf::SoundBuffer& buffer, SlicerSettings& settings) {
     if (buffer.getSampleCount() > 0) {
         auto sampleRate = buffer.getSampleRate();
         auto numChannels = buffer.getChannelCount();
         for (BMSEClipboardObject o : objs.objects) {
             double m = o.toSamplePosition(settings.bpm, sampleRate, numChannels);
-            if (FindInList(settings.markers, m) == -1.0) {
-                settings.markers.push_back(m);
+            if (settings.markers.find(m) == -1.0) {
+                settings.AddMarker(m);
             }
         }
         ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Successfully imported markers from the clipboard!" });
@@ -321,12 +305,6 @@ void GenerateBMSEClipboard(sf::SoundBuffer& buffer, SlicerSettings settings) {
     else {
         ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Please load a file first!" });
     }
-}
-
-void ClearAllMarkers(std::list<double>& markers)
-{
-    markers.clear();
-    //markers.push_back(0.0);
 }
 
 void SaveProject(SlicerSettings settings) {
@@ -423,14 +401,16 @@ void ShowMenuEdit(sf::SoundBuffer& buffer, SlicerSettings& settings)
     if (ImGui::MenuItem("Import slices from MIDI")) {
         LoadMidi(buffer, settings);
     }
+    ImGui::Separator();
     if (ImGui::MenuItem("Copy BMSE clipboard data", "V")) {
         GenerateBMSEClipboard(buffer, settings);
     }
     if (ImGui::MenuItem("Paste BMSE clipboard data", "B")) {
         ProcessBMSEClipboard(buffer, settings);
     }
+    ImGui::Separator();
     if (ImGui::MenuItem("Clear all markers", "C")) {
-        ClearAllMarkers(settings.markers);
+        settings.markers.clear();
     }
 }
 
@@ -485,8 +465,8 @@ void ImportMidiMarkers(sf::SoundBuffer& buffer, SlicerSettings& settings, int tr
         if (settings.midiFile[selectedTrack][i].isNoteOn()) {
             auto event = settings.midiFile[selectedTrack][i];
             auto tick = relative ? event.tick * (samplesPerBeat / tpq) : event.seconds * sampleRate * nbChannels;
-            if (FindInList(settings.markers, tick) == -1.0) {
-                    settings.markers.push_back(tick);
+            if (settings.markers.find(tick) == -1.0) {
+                    settings.AddMarker(tick);
             }
         }
     }
@@ -673,12 +653,12 @@ void ProcessShortcuts(ImGuiIO& io, sf::SoundBuffer& buffer, sf::SoundBuffer& buf
         settings.snapping -= 1;
     }
     if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Z))) {
-        double e = FindInList(settings.markers, settings.cursorPos);
+        double e = settings.markers.find(settings.cursorPos);
         if (e != -1.0) {
             settings.markers.remove(e);
         }
         else {
-            settings.markers.push_back(settings.cursorPos);
+            settings.AddMarker(settings.cursorPos);
         }
     }
     if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
@@ -700,7 +680,7 @@ void ProcessShortcuts(ImGuiIO& io, sf::SoundBuffer& buffer, sf::SoundBuffer& buf
         GenerateBMSEClipboard(buffer, settings);
     }
     if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_C), false)) {
-        ClearAllMarkers(settings.markers);
+        settings.markers.clear();
     }
 }
 
@@ -725,17 +705,17 @@ void ShowWaveform(sf::SoundBuffer& buffer, SlicerSettings& settings) {
             else {
                 settings.markers.sort();
                 double toRemove = -1.0;
-                for (double m : settings.markers) {
+                for (auto m : settings.markers) {
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
                     char buf[64];
-                    snprintf(buf, 64, "%f", m);
+                    snprintf(buf, 64, "%f", m.position);
                     ImGui::Selectable(buf);
                     if (ImGui::IsItemClicked(0)) {
-                        settings.cursorPos = m;
+                        settings.cursorPos = m.position;
                     }
                     else if (ImGui::IsItemClicked(1)) {
-                        toRemove = m;
+                        toRemove = m.position;
                     }
                 }
                 if (toRemove != -1) {
