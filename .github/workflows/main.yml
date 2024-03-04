@@ -46,3 +46,12 @@ jobs:
           path: |
             out/build/x64-Release/sayaslicer/*.dll
             out/build/x64-Release/sayaslicer/*.exe
+
+      - name: Upload artifact (macOS)
+        uses: actions/upload-artifact@v4.3.1
+        if: runner.os == 'macOS'
+        with:
+          name: sayaslicer-osx-x64
+          path: |
+            out/build/x64-Release/sayaslicer/*.*
+
