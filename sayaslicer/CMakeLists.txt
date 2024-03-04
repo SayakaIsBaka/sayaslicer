@@ -10,7 +10,7 @@ add_executable (sayaslicer "sayaslicer.cpp" "sayaslicer.h" "bmseclipboard.hpp" "
 target_link_options(sayaslicer PRIVATE ${SUBSYSTEM_LINKER_OPTIONS})
 target_compile_features(sayaslicer PRIVATE cxx_std_17)
 if (APPLE)
-    target_link_libraries(sayaslicer "-framework CoreAudio")
+    target_link_libraries(sayaslicer PRIVATE "-framework CoreAudio")
 endif()
 target_link_libraries(sayaslicer PRIVATE sfml-audio)
 target_link_libraries(sayaslicer PRIVATE imgui::imgui)
