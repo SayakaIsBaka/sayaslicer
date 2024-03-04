@@ -53,5 +53,5 @@ jobs:
         with:
           name: sayaslicer-osx-x64
           path: |
-            out/build/x64-Release/sayaslicer/*.*
+            out/build/x64-Release/sayaslicer/*
 
