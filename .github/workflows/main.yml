@@ -19,10 +19,10 @@ jobs:
       - uses: lukka/get-cmake@latest
 
       - name: Setup vcpkg and install packages
-        uses: lukka/run-vcpkg@latest
+        uses: lukka/run-vcpkg@v11.5
 
       - name: Run CMake
-        uses: lukka/run-cmake@latest
+        uses: lukka/run-cmake@v10.7
         with:
           configurePreset: 'x64-Release'
           buildPreset: 'x64-Release'
