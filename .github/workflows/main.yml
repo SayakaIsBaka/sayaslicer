@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest, macos-14]
 
     steps:
       - uses: actions/checkout@v4
@@ -47,11 +47,16 @@ jobs:
             out/build/x64-Release/sayaslicer/*.dll
             out/build/x64-Release/sayaslicer/*.exe
 
-      - name: Upload artifact (macOS)
+      - name: Upload artifact (macOS x64)
         uses: actions/upload-artifact@v4.3.1
-        if: runner.os == 'macOS'
+        if: matrix.os == 'macos-latest'
         with:
           name: sayaslicer-osx-x64
-          path: |
-            out/build/x64-Release/sayaslicer/*
+          path: out/build/x64-Release/sayaslicer/sayaslicer
 
+      - name: Upload artifact (macOS ARM)
+        uses: actions/upload-artifact@v4.3.1
+        if: matrix.os == 'macos-14'
+        with:
+          name: sayaslicer-osx-arm64
+          path: out/build/x64-Release/sayaslicer/sayaslicer
