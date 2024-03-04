@@ -9,20 +9,40 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest]
 
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true
 
+      - name: Install dependencies (Linux)
+        run: sudo apt-get install libx11-dev libxrandr-dev libxcursor-dev libxi-dev libudev-dev libgl1-mesa-dev
+        if: matrix.os == 'ubuntu-latest'
+
       - uses: lukka/get-cmake@latest
 
-      - name: Setup vcpkg and install packages
+      - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11.5
 
-      - name: Run CMake
+      - name: Run CMake and install necessary packages
         uses: lukka/run-cmake@v10.7
         with:
           configurePreset: 'x64-Release'
           buildPreset: 'x64-Release'
+
+      - name: Upload artifact (Linux)
+        uses: actions/upload-artifact@v4.3.1
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          name: sayaslicer-linux
+          path: out/build/x64-Release/sayaslicer/sayaslicer
+
+      - name: Upload artifact (Windows)
+        uses: actions/upload-artifact@v4.3.1
+        if: matrix.os == 'windows-latest'
+        with:
+          name: sayaslicer-windows
+          path: |
+            out/build/x64-Release/sayaslicer/*.dll
+            out/build/x64-Release/sayaslicer/*.exe
