@@ -4,6 +4,7 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 
 #if _WIN32 // Include required headers and pointers for drag and drop on Windows
+#define NOMINMAX
 #include <Windows.h>
 LONG_PTR originalSFMLCallback = 0x0;
 LONG_PTR originalUserData = 0x0;
@@ -99,9 +100,10 @@ int MeterFormatter(double value, char* buff, int size, void* data) {
 
 void DisplayWaveform(sf::SoundBuffer& buffer, SlicerSettings &settings) {
     double maxDisplayRange = 1500.0;
+    double leftMargin = 400 * waveformReso;
 
     if (ImPlot::BeginPlot("##lines", ImVec2(-1, 200), ImPlotFlags_NoBoxSelect | ImPlotFlags_NoLegend)) {
-        double plotStart = settings.cursorPos / waveformReso;
+        double plotStart = (settings.cursorPos - leftMargin) / waveformReso;
         double plotEnd = plotStart + maxDisplayRange;
         ImPlot::SetupAxisLinks(ImAxis_X1, &plotStart, &plotEnd);
         ImPlot::SetupAxisLimits(ImAxis_Y1, -32768, 32768);
@@ -115,7 +117,11 @@ void DisplayWaveform(sf::SoundBuffer& buffer, SlicerSettings &settings) {
 
         double samplesPerBeat = sampleRate ? 60.0 / (double)settings.bpm * ((double)sampleRate * (double)numChannels) : 1.0;
         settings.samplesPerSnap = samplesPerBeat / (double)settings.snapping * 4.0;
-        double startTick = settings.samplesPerSnap * ceil(settings.cursorPos / settings.samplesPerSnap);
+        int beatsToDisplayLeft = (leftMargin / samplesPerBeat) - (int)(leftMargin / samplesPerBeat) % 4 + 4;
+
+        double leftPartSamples = fmod(settings.cursorPos, samplesPerBeat * beatsToDisplayLeft);
+        double fixMod = settings.cursorPos > leftMargin && leftPartSamples < leftMargin ? samplesPerBeat * beatsToDisplayLeft : 0.0;
+        double startTick = settings.cursorPos - leftPartSamples - fixMod;
         double lastTick = settings.cursorPos + maxDisplayRange * waveformReso;
 
         std::vector<double> ticks;
@@ -133,11 +139,11 @@ void DisplayWaveform(sf::SoundBuffer& buffer, SlicerSettings &settings) {
 
         if (sampleCount > 0) {
             ImPlot::SetupAxis(ImAxis_X1, "", ImPlotAxisFlags_Foreground);
-            ImPlot::SetupAxisLimitsConstraints(ImAxis_X1, 0, sampleCount / waveformReso - settings.offset);
+            ImPlot::SetupAxisLimitsConstraints(ImAxis_X1, -leftMargin, sampleCount / waveformReso - settings.offset);
 
             // Draw barlines
             for (double j = 0; j < lastTick; j += samplesPerBeat * 4) {
-                if (j < settings.cursorPos)
+                if (j < settings.cursorPos - leftMargin)
                     continue;
                 double tmp = j / waveformReso;
                 ImPlot::DragLineX(555, &tmp, ImVec4(1, 1, 1, 0.25), 0.1, ImPlotDragToolFlags_NoInputs);
@@ -146,7 +152,7 @@ void DisplayWaveform(sf::SoundBuffer& buffer, SlicerSettings &settings) {
             // Draw beat lines if snapping is a multiple of 4
             if (settings.snapping % 4 == 0) {
                 for (double j = 0; j < lastTick; j += samplesPerBeat) {
-                    if (j < settings.cursorPos)
+                    if (j < settings.cursorPos - leftMargin)
                         continue;
                     double tmp = j / waveformReso;
                     ImPlot::DragLineX(555, &tmp, ImVec4(1, 1, 1, 0.075), 0.05, ImPlotDragToolFlags_NoInputs);
@@ -157,18 +163,24 @@ void DisplayWaveform(sf::SoundBuffer& buffer, SlicerSettings &settings) {
             ImPlot::SetNextLineStyle(ImGui::GetStyleColorVec4(ImGuiCol_PlotHistogram));
             size_t arrLen = maxDisplayRange;
             if (lastTick > sampleCount)
-                arrLen = (sampleCount - settings.cursorPos) / waveformReso;
-            size_t arrayOffset = ((size_t)settings.cursorPos / (waveformReso * numChannels)) * (waveformReso * numChannels);
+                arrLen = (sampleCount - settings.cursorPos + leftMargin) / waveformReso;
+            size_t arrayOffset = (std::max((long long)(settings.cursorPos - leftMargin), (long long)0) / (waveformReso * numChannels)) * (waveformReso * numChannels);
             ImPlot::PlotLine("Waveform", &samples[arrayOffset], arrLen, 1.0, arrayOffset / (waveformReso), 0, settings.offset, waveformReso * numChannels); // Buffer stores samples as [channel1_i, channel2_i, channel1_i+1, etc.]
+            
+            // Display cursor
+            double curDisplayPos = settings.cursorPos / waveformReso;
+            ImPlot::DragLineX(555, &curDisplayPos, ImGui::GetStyleColorVec4(ImGuiCol_PlotLines), 0.5, ImPlotDragToolFlags_NoInputs);
+            ImPlot::TagX(curDisplayPos, ImGui::GetStyleColorVec4(ImGuiCol_PlotLines), true);
+            
             for (auto m : settings.markers) {
-                if (m.position < settings.cursorPos)
+                if (m.position < settings.cursorPos - leftMargin)
                     continue;
                 double mTmp = m.position / waveformReso;
                 ImPlot::DragLineX(0, &mTmp, ImVec4(1, 1, 1, 1), 1, ImPlotDragToolFlags_NoInputs);
             }
         }
         ImPlot::EndPlot();
-        settings.cursorPos = plotStart * waveformReso;
+        settings.cursorPos = plotStart * waveformReso + leftMargin;
     }
 }
 
