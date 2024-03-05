@@ -100,7 +100,7 @@ int MeterFormatter(double value, char* buff, int size, void* data) {
 
 void DisplayWaveform(sf::SoundBuffer& buffer, SlicerSettings &settings) {
     double maxDisplayRange = 1500.0;
-    double leftMargin = 400 * waveformReso;
+    double leftMargin = (buffer.getSampleCount() < 400 * waveformReso ? 0 : 400) * waveformReso;
 
     if (ImPlot::BeginPlot("##lines", ImVec2(-1, 200), ImPlotFlags_NoBoxSelect | ImPlotFlags_NoLegend)) {
         double plotStart = (settings.cursorPos - leftMargin) / waveformReso;
@@ -276,6 +276,9 @@ void WriteKeysounds(sf::SoundBuffer& buffer, SlicerSettings &settings) {
         printf("exporting keysound with range start: %llu, range end: %llu\n", keyStart, keyEnd);
         auto bufsize = keyEnd - keyStart;
         sf::OutputSoundFile file;
+
+        if (keyStart > buffer.getSampleCount())
+            continue;
 
         auto bufOut = &samples[keyStart];
         vector<sf::Int16> newBuf;
