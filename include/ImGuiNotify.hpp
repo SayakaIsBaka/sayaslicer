@@ -516,13 +516,7 @@ namespace ImGui
 
 			// Generate new unique name for this toast
 			char windowName[50];
-			#ifdef _WIN32
-				sprintf_s(windowName, "##TOAST%d", (int)i);
-			#elif defined(__linux__)
-				sprintf(windowName, "##TOAST%d", (int)i);
-			#else
-				throw "Unsupported platform";
-			#endif
+			snprintf(windowName, 50, "##TOAST%d", (int)i);
 
 			//PushStyleColor(ImGuiCol_Text, textColor);
 			SetNextWindowBgAlpha(opacity);
