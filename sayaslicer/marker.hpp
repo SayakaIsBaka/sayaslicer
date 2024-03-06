@@ -43,8 +43,10 @@ public:
 		markers.remove_if([m](Marker marker) { return marker.position == m; });
 	}
 
-	void clear() {
+	void clear(bool clearAll = false) {
 		markers.clear();
+		if(!clearAll)
+			markers.push_back(Marker(0.0, ""));
 	}
 
 	size_t size() {

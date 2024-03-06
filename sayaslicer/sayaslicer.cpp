@@ -483,7 +483,10 @@ void ShowMenuEdit(sf::SoundBuffer& buffer, SlicerSettings& settings)
     }
     ImGui::Separator();
     if (ImGui::MenuItem("Clear all markers", "C")) {
-        settings.markers.clear();
+        settings.markers.clear(false);
+    }
+    if (ImGui::MenuItem("Clear all markers (including 0)", "Shift+C")) {
+        settings.markers.clear(true);
     }
 }
 
@@ -753,7 +756,7 @@ void ProcessShortcuts(ImGuiIO& io, sf::SoundBuffer& buffer, sf::SoundBuffer& buf
         GenerateBMSEClipboard(buffer, settings);
     }
     if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_C), false)) {
-        settings.markers.clear();
+        settings.markers.clear(io.KeyShift);
     }
     if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Home))) {
         settings.cursorPos = 0.0;

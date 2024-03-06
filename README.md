@@ -23,7 +23,8 @@ A cross-platform audio slicer with BMS-related features. Aims to be a drop-in re
 Keyboard shortcuts are the same as woslicerII except the keyboard layout is taken into account:
 - `O`: open audio file
 - `Z`: add slice marker
-- `C`: clear all markers
+- `C`: clear all markers (but adds a marker at 0, similar behaviour to woslicerII)
+- `Shift+C`: clear ALL markers (including marker at 0)
 - `V`: copy markers as BMSE clipboard data
 - `B`: import markers from clipboard (using BMSE clipboard data)
 - `M`: export keysounds
