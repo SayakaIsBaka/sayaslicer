@@ -18,6 +18,7 @@ LONG_PTR settingsPtr = 0x0;
 #include "font.hpp"
 #include "custom_widgets.hpp"
 #include "settings.hpp"
+#include "base_convert.hpp"
 #include <ImGuiNotify.hpp>
 #include <IconsFontAwesome6.h>
 #include <fa_solid_900.h>
@@ -345,6 +346,25 @@ void GenerateBMSEClipboard(sf::SoundBuffer& buffer, SlicerSettings settings) {
     }
 }
 
+void ExportKeysoundList(SlicerSettings settings) {
+    size_t idx = 0;
+    std::string res = "";
+    std::filesystem::path p = settings.selectedFile;
+    auto filename = p.filename().replace_extension().string();
+    for (auto m : settings.markers) {
+        char kId[64];
+        size_t keysoundId = idx + settings.startingKeysound;
+        ToBaseString(kId, IM_ARRAYSIZE(kId), &keysoundId, settings.useBase62 ? 62 : 36);
+        std::string keysoundName = m.name;
+        if (keysoundName.empty())
+            keysoundName = GetTempMarkerName(filename, idx);
+        res = res + "#WAV" + std::string(kId) + " " + keysoundName + '\n';
+        idx++;
+    }
+    clip::set_text(res);
+    ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Copied keysound list to clipboard!" });
+}
+
 void SaveProject(SlicerSettings settings) {
     char const* aFilterPatterns[1] = { "*.syp" };
     char* s = tinyfd_saveFileDialog("Save project file...", 0, 1, aFilterPatterns, "sayaslicer Project (*.syp)");
@@ -481,6 +501,9 @@ void ShowMenuEdit(sf::SoundBuffer& buffer, SlicerSettings& settings)
     if (ImGui::MenuItem("Paste BMSE clipboard data", "B")) {
         ProcessBMSEClipboard(buffer, settings);
     }
+    if (ImGui::MenuItem("Copy keysound list to clipboard", "K")) {
+        ExportKeysoundList(settings);
+    }
     ImGui::Separator();
     if (ImGui::MenuItem("Clear all markers", "C")) {
         settings.markers.clear(false);
@@ -536,7 +559,7 @@ void ImportMidiMarkers(sf::SoundBuffer& buffer, SlicerSettings& settings, int tr
         settings.midiFile.doTimeAnalysis();
     }
     if (clearMarkers)
-        settings.markers.clear();
+        settings.markers.clear(true);
     for (int i = 0; i < settings.midiFile[selectedTrack].size(); i++) {
         if (settings.midiFile[selectedTrack][i].isNoteOn()) {
             auto event = settings.midiFile[selectedTrack][i];
@@ -758,6 +781,9 @@ void ProcessShortcuts(ImGuiIO& io, sf::SoundBuffer& buffer, sf::SoundBuffer& buf
     if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_C), false)) {
         settings.markers.clear(io.KeyShift);
     }
+    if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_K), false)) {
+        ExportKeysoundList(settings);
+    }
     if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Home))) {
         settings.cursorPos = 0.0;
     }
@@ -769,15 +795,18 @@ void ProcessShortcuts(ImGuiIO& io, sf::SoundBuffer& buffer, sf::SoundBuffer& buf
 
 void DisplayMarkersTable(SlicerSettings& settings) {
     ImVec2 outer_size = ImVec2(0.0f, ImGui::GetTextLineHeightWithSpacing() * 8);
-    if (ImGui::BeginTable("markerstable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY, outer_size))
+    if (ImGui::BeginTable("markerstable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY, outer_size))
     {
         ImGui::TableSetupScrollFreeze(0, 1);
+        ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn("Position", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableHeadersRow();
         if (settings.markers.size() == 0) {
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
+            ImGui::TableNextColumn();
+            ImGui::TableNextColumn();
             ImGui::Text("No markers set...");
         }
         else {
@@ -789,6 +818,12 @@ void DisplayMarkersTable(SlicerSettings& settings) {
             for (auto& m : settings.markers) {
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
+                char bufId[64];
+                size_t keysoundId = idx + settings.startingKeysound;
+                ToBaseString(bufId, IM_ARRAYSIZE(bufId), &keysoundId, settings.useBase62 ? 62 : 36);
+                ImGui::Text("%s", bufId);
+                ImGui::TableNextColumn();
+
                 char buf[64];
                 snprintf(buf, 64, "%f", m.position);
                 ImGui::Selectable(buf);
