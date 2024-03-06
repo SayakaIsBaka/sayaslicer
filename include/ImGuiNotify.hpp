@@ -582,10 +582,12 @@ namespace ImGui
 					// NEEDS TO BE REWORKED
 					float scale = 0.8f;
 
+					/* Disabled because this breaks with long lines
 					if (CalcTextSize(content).x > GetWindowContentRegionMax().x)
 					{
 						scale = 0.95f;
 					}
+					*/
 
 					SetCursorPosX(GetCursorPosX() + (GetWindowSize().x - GetCursorPosX()) * scale);
 
