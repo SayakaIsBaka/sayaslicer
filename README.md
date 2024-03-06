@@ -18,6 +18,7 @@ A cross-platform audio slicer with BMS-related features. Aims to be a drop-in re
 - Load / save project
 - Import markers from a MIDI file
 - [Mid2BMS](https://mid2bms.net) renamer array file import
+- Keysound list export
 
 ## Keyboard shortcuts
 Keyboard shortcuts are the same as woslicerII except the keyboard layout is taken into account:
@@ -27,6 +28,7 @@ Keyboard shortcuts are the same as woslicerII except the keyboard layout is take
 - `Shift+C`: clear ALL markers (including marker at 0)
 - `V`: copy markers as BMSE clipboard data
 - `B`: import markers from clipboard (using BMSE clipboard data)
+- `K`: copy keysound list to clipboard
 - `M`: export keysounds
 - `P`: preview current keysound and move to the next one
 - `Enter`: preview current keysound
