@@ -2,6 +2,7 @@
 
 > [!WARNING]
 > Currently a work-in-progress; nightly builds are available [here](https://github.com/SayakaIsBaka/sayaslicer/actions) (Windows, Linux and Mac, GitHub login required)
+> Alternatively, you can download builds from [nightly.link](https://nightly.link/SayakaIsBaka/sayaslicer/workflows/main/master?preview) if you don't have a GitHub account
 
 A cross-platform audio slicer with BMS-related features. Aims to be a drop-in replacement for [woslicerII](https://cerebralmuddystream.nekokan.dyndns.info/soft/woslicerII.zip) [(english version)](https://github.com/SayakaIsBaka/woslicerII-english) by [wosderge](https://cerebralmuddystream.nekokan.dyndns.info) with similar features and newly added ones, while also fixing some long-standing limitations and ergonomic issues.
 
