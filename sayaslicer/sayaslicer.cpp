@@ -99,6 +99,16 @@ int MeterFormatter(double value, char* buff, int size, void* data) {
         return snprintf(buff, size, "");
 }
 
+void DrawSelection(SlicerSettings& settings) {
+    if (settings.selection.start != -1.0) {
+        double yMinLimit = -32768;
+        double yMaxLimit = 32768;
+        double startRect = settings.selection.start / waveformReso;
+        double endRect = (settings.selection.isSelectMode ? settings.cursorPos : settings.selection.end) / waveformReso;
+        ImPlot::DragRect(0, &startRect, &yMinLimit, &endRect, &yMaxLimit, ImGui::GetStyleColorVec4(ImGuiCol_PlotHistogram), ImPlotDragToolFlags_NoInputs);
+    }
+}
+
 void DisplayWaveform(sf::SoundBuffer& buffer, SlicerSettings &settings) {
     double maxDisplayRange = 1500.0;
     double leftMargin = (buffer.getSampleCount() < 400 * waveformReso ? 0 : 400) * waveformReso;
@@ -171,7 +181,10 @@ void DisplayWaveform(sf::SoundBuffer& buffer, SlicerSettings &settings) {
             // Display cursor
             double curDisplayPos = settings.cursorPos / waveformReso;
             ImPlot::DragLineX(555, &curDisplayPos, ImGui::GetStyleColorVec4(ImGuiCol_PlotLines), 0.5, ImPlotDragToolFlags_NoInputs);
-            ImPlot::TagX(curDisplayPos, ImGui::GetStyleColorVec4(ImGuiCol_PlotLines), true);
+            if (settings.selection.isSelectMode)
+                ImPlot::TagX(curDisplayPos, ImGui::GetStyleColorVec4(ImGuiCol_PlotHistogram), "Select");
+            else
+                ImPlot::TagX(curDisplayPos, ImGui::GetStyleColorVec4(ImGuiCol_PlotLines));
             
             for (auto m : settings.markers) {
                 if (m.position < settings.cursorPos - leftMargin)
@@ -179,6 +192,8 @@ void DisplayWaveform(sf::SoundBuffer& buffer, SlicerSettings &settings) {
                 double mTmp = m.position / waveformReso;
                 ImPlot::DragLineX(0, &mTmp, ImVec4(1, 1, 1, 1), 1, ImPlotDragToolFlags_NoInputs);
             }
+
+            DrawSelection(settings);
         }
         ImPlot::EndPlot();
         settings.cursorPos = plotStart * waveformReso + leftMargin;
@@ -465,6 +480,21 @@ void ImportNamesFromMid2Bms(SlicerSettings& settings) {
     }
 }
 
+void ManageSelection(SlicerSettings& settings) {
+    if (!settings.selection.isSelectMode)
+        settings.selection.start = settings.cursorPos;
+    else {
+        settings.selection.end = settings.cursorPos;
+        if (settings.selection.start == settings.selection.end) {
+            settings.selection.start = settings.selection.end = -1.0;
+        }
+        else if (settings.selection.end < settings.selection.start) {
+            std::swap(settings.selection.start, settings.selection.end);
+        }
+    }
+    settings.selection.isSelectMode = !settings.selection.isSelectMode;
+}
+
 void ShowMenuFile(sf::SoundBuffer& buffer, SlicerSettings &settings, sf::RenderWindow &window)
 {
     if (ImGui::MenuItem("Open project", "Ctrl+O")) {
@@ -618,6 +648,35 @@ void ShowMidiTrackModal(sf::SoundBuffer& buffer, SlicerSettings& settings) {
         ImGui::EndPopup();
     }
     ImGui::PopID();
+}
+
+void HandleMarkerCopyPaste(SlicerSettings& settings, SelectionOperation op) {
+    if (op == SelectionOperation::COPY || op == SelectionOperation::CUT) {
+        bool cut = op == SelectionOperation::CUT;
+        int copiedMarkers = settings.selection.CopyMarkers(settings.markers, cut);
+        if (copiedMarkers == -1)
+            ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Please select a region first!" });
+        else if (copiedMarkers == 0)
+            ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Selected region does not contain any markers!" });
+        else
+            ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "%s %d %s!", cut ? "Cut" : "Copied", copiedMarkers, copiedMarkers <= 1 ? "marker" : "markers" });
+    }
+    else if (op == SelectionOperation::PASTE) {
+        int pastedMarkers = settings.selection.PasteMarkers(settings.markers, settings.cursorPos);
+        if (pastedMarkers == 0)
+            ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Clipboard is empty!" });
+        else
+            ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Pasted %d %s!", pastedMarkers, pastedMarkers <= 1 ? "marker" : "markers" });
+    }
+    else if (op == SelectionOperation::DEL) {
+        int delMarkers = settings.selection.DeleteSelection(settings.markers);
+        if (delMarkers == -1)
+            ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Please select a region first!" });
+        else if (delMarkers == 0)
+            ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Selected region does not contain any markers!" });
+        else
+            ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Deleted %d %s!", delMarkers, delMarkers <= 1 ? "marker" : "markers" });
+    }
 }
 
 void SetupFonts(ImGuiIO& io) {
@@ -776,13 +835,32 @@ void ProcessShortcuts(ImGuiIO& io, sf::SoundBuffer& buffer, sf::SoundBuffer& buf
         ProcessBMSEClipboard(buffer, settings);
     }
     if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_V), false)) {
-        GenerateBMSEClipboard(buffer, settings);
+        if (io.KeyCtrl) {
+            HandleMarkerCopyPaste(settings, SelectionOperation::PASTE);
+        }
+        else {
+            GenerateBMSEClipboard(buffer, settings);
+        }
     }
     if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_C), false)) {
-        settings.markers.clear(io.KeyShift);
+        if (io.KeyCtrl) {
+            HandleMarkerCopyPaste(settings, SelectionOperation::COPY);
+        }
+        else {
+            settings.markers.clear(io.KeyShift);
+        }
+    }
+    if (!io.WantTextInput && io.KeyCtrl && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_X), false)) {
+        HandleMarkerCopyPaste(settings, SelectionOperation::CUT);
     }
     if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_K), false)) {
         ExportKeysoundList(settings);
+    }
+    if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space), false)) {
+        ManageSelection(settings);
+    }
+    if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Delete), false)) {
+        HandleMarkerCopyPaste(settings, SelectionOperation::DEL);
     }
     if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Home))) {
         settings.cursorPos = 0.0;

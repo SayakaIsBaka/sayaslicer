@@ -4,7 +4,7 @@
 cmake_minimum_required (VERSION 3.8)
 
 # Ajoutez une source à l'exécutable de ce projet.
-add_executable (sayaslicer "sayaslicer.cpp" "sayaslicer.h" "bmseclipboard.hpp" "theme.hpp" "custom_widgets.hpp" "settings.hpp" "marker.hpp" "base_convert.hpp")
+add_executable (sayaslicer "sayaslicer.cpp" "sayaslicer.h" "bmseclipboard.hpp" "theme.hpp" "custom_widgets.hpp" "settings.hpp" "marker.hpp" "base_convert.hpp" "selection.hpp")
 
 # TODO: Ajoutez des tests et installez des cibles si nécessaire.
 target_link_options(sayaslicer PRIVATE ${SUBSYSTEM_LINKER_OPTIONS})

@@ -5,6 +5,7 @@
 #include <midifile/include/MidiFile.h>
 #include <filesystem>
 #include "marker.hpp"
+#include "selection.hpp"
 
 class SlicerSettings {
 public:
@@ -20,6 +21,7 @@ public:
 	MarkerList markers;
 	double samplesPerSnap = 0.0;
 	smf::MidiFile midiFile;
+	MarkerSelection selection;
 
 	template<class Archive>
 	void serialize(Archive& archive)
