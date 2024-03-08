@@ -19,6 +19,7 @@ LONG_PTR settingsPtr = 0x0;
 #include "custom_widgets.hpp"
 #include "settings.hpp"
 #include "base_convert.hpp"
+#include "history.hpp"
 #include <ImGuiNotify.hpp>
 #include <IconsFontAwesome6.h>
 #include <fa_solid_900.h>
@@ -76,6 +77,7 @@ bool OpenAudioFile(sf::SoundBuffer &buffer, SlicerSettings &settings, std::strin
             settings.cursorPos = 0.0; // Reset cursor position to avoid crashing
             if (settings.markers.size() == 0)
                 settings.markers.push_back(0.0);
+            settings.updateHistory = true;
             ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Opened file:\n%s", settings.selectedFile.c_str() });
         }
         else {
@@ -343,8 +345,10 @@ void ProcessBMSEClipboard(sf::SoundBuffer& buffer, SlicerSettings& settings) {
     std::string cb;
     clip::get_text(cb);
     BMSEClipboard objs(cb);
-    if (!objs.objects.empty())
+    if (!objs.objects.empty()) {
         AddMarkersFromBMSEClipboard(objs, buffer, settings);
+        settings.updateHistory = true;
+    }
     else
         ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Clipboard does not contain any BMSE data!" });
 }
@@ -384,7 +388,7 @@ void SaveProject(SlicerSettings settings) {
     char const* aFilterPatterns[1] = { "*.syp" };
     char* s = tinyfd_saveFileDialog("Save project file...", 0, 1, aFilterPatterns, "sayaslicer Project (*.syp)");
     if (s) {
-        std::ofstream outFile(s);
+        std::ofstream outFile(s, std::ios::binary);
         cereal::BinaryOutputArchive oarchive(outFile);
         oarchive(settings);
         ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Saved project to:\n%s", s });
@@ -395,7 +399,7 @@ void OpenProject(sf::SoundBuffer& buffer, SlicerSettings& settings) {
     char const* lFilterPatterns[1] = { "*.syp" };
     char* s = tinyfd_openFileDialog("Open project file...", 0, 1, lFilterPatterns, "sayaslicer Project (*.syp)", 0);
     if (s) {
-        std::ifstream inFile(s);
+        std::ifstream inFile(s, std::ios::binary);
         cereal::BinaryInputArchive iarchive(inFile);
         iarchive(settings);
         if (std::filesystem::exists(settings.selectedFile)) {
@@ -472,6 +476,7 @@ void ImportNamesFromMid2Bms(SlicerSettings& settings) {
             }
         }
         if (settings.markers.importNames(names)) {
+            settings.updateHistory = true;
             ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Successfully imported marker names!" });
         }
         else {
@@ -537,9 +542,11 @@ void ShowMenuEdit(sf::SoundBuffer& buffer, SlicerSettings& settings)
     ImGui::Separator();
     if (ImGui::MenuItem("Clear all markers", "C")) {
         settings.markers.clear(false);
+        settings.updateHistory = true;
     }
     if (ImGui::MenuItem("Clear all markers (including 0)", "Shift+C")) {
         settings.markers.clear(true);
+        settings.updateHistory = true;
     }
 }
 
@@ -636,6 +643,7 @@ void ShowMidiTrackModal(sf::SoundBuffer& buffer, SlicerSettings& settings) {
             choice = 0;
             choices.clear();
             settings.midiFile.clear();
+            settings.updateHistory = true;
             ImGui::CloseCurrentPopup();
         }
         ImGui::SameLine();
@@ -658,15 +666,20 @@ void HandleMarkerCopyPaste(SlicerSettings& settings, SelectionOperation op) {
             ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Please select a region first!" });
         else if (copiedMarkers == 0)
             ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Selected region does not contain any markers!" });
-        else
+        else {
             ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "%s %d %s!", cut ? "Cut" : "Copied", copiedMarkers, copiedMarkers <= 1 ? "marker" : "markers" });
+            settings.updateHistory = cut;
+        }
     }
     else if (op == SelectionOperation::PASTE) {
         int pastedMarkers = settings.selection.PasteMarkers(settings.markers, settings.cursorPos);
         if (pastedMarkers == 0)
             ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Clipboard is empty!" });
-        else
+        else {
             ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Pasted %d %s!", pastedMarkers, pastedMarkers <= 1 ? "marker" : "markers" });
+            settings.updateHistory = true;
+        }
+            
     }
     else if (op == SelectionOperation::DEL) {
         int delMarkers = settings.selection.DeleteSelection(settings.markers);
@@ -674,8 +687,10 @@ void HandleMarkerCopyPaste(SlicerSettings& settings, SelectionOperation op) {
             ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Please select a region first!" });
         else if (delMarkers == 0)
             ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Selected region does not contain any markers!" });
-        else
+        else {
             ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Deleted %d %s!", delMarkers, delMarkers <= 1 ? "marker" : "markers" });
+            settings.updateHistory = true;
+        }
     }
 }
 
@@ -766,7 +781,7 @@ void ShowSettingsPanel(sf::SoundBuffer& buffer, SlicerSettings& settings) {
     ImGui::End();
 }
 
-void ProcessShortcuts(ImGuiIO& io, sf::SoundBuffer& buffer, sf::SoundBuffer& buffer2, sf::Sound& sound, SlicerSettings& settings) {
+void ProcessShortcuts(ImGuiIO& io, sf::SoundBuffer& buffer, sf::SoundBuffer& buffer2, sf::Sound& sound, SlicerSettings& settings, History& history) {
     if (!io.WantTextInput && io.KeyCtrl && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_O), false)) {
         OpenProject(buffer, settings);
         io.ClearInputKeys(); // Flush Ctrl key (it gets stuck otherwise)
@@ -811,13 +826,22 @@ void ProcessShortcuts(ImGuiIO& io, sf::SoundBuffer& buffer, sf::SoundBuffer& buf
         settings.snapping -= 1;
     }
     if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Z))) {
-        double e = settings.markers.find(settings.cursorPos);
-        if (e != -1.0) {
-            settings.markers.remove(e);
+        if (io.KeyCtrl) {
+            history.Undo(settings);
         }
         else {
-            settings.markers.push_back(settings.cursorPos);
+            double e = settings.markers.find(settings.cursorPos);
+            if (e != -1.0) {
+                settings.markers.remove(e);
+            }
+            else {
+                settings.markers.push_back(settings.cursorPos);
+            }
+            settings.updateHistory = true;
         }
+    }
+    if (!io.WantTextInput && io.KeyCtrl && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Y))) {
+        history.Redo(settings);
     }
     if (!io.WantTextInput && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
         PlayKeysound(sound, buffer, buffer2, settings, false);
@@ -848,6 +872,7 @@ void ProcessShortcuts(ImGuiIO& io, sf::SoundBuffer& buffer, sf::SoundBuffer& buf
         }
         else {
             settings.markers.clear(io.KeyShift);
+            settings.updateHistory = true;
         }
     }
     if (!io.WantTextInput && io.KeyCtrl && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_X), false)) {
@@ -913,13 +938,16 @@ void DisplayMarkersTable(SlicerSettings& settings) {
                 }
                 ImGui::TableNextColumn();
 
+                bool edited = false;
                 if (m.name.size() == 0) {
                     auto tmpName = GetTempMarkerName(filename, idx);
-                    SelectableInput(std::to_string(idx).c_str(), false, ImGuiSelectableFlags_None, &m.name[0], 4096, &tmpName[0]);
+                    edited = SelectableInput(std::to_string(idx).c_str(), false, ImGuiSelectableFlags_None, &m.name[0], 4096, &tmpName[0]);
                 }
                 else {
-                    SelectableInput(std::to_string(idx).c_str(), false, ImGuiSelectableFlags_None, &m.name[0], 4096);
+                    edited = SelectableInput(std::to_string(idx).c_str(), false, ImGuiSelectableFlags_None, &m.name[0], 4096);
                 }
+                if (edited)
+                    settings.updateHistory = true;
                 m.name = &m.name[0]; // Awesome hack to update the string structure with the proper length and everything
                 idx++;
             }
@@ -987,6 +1015,7 @@ int main() {
     sf::SoundBuffer buffer2; // For keysound playing
     sf::Sound sound;
     SlicerSettings settings;
+    History history;
 
 #if _WIN32
     HWND handle = window.getSystemHandle();
@@ -1020,12 +1049,16 @@ int main() {
         ImGui::SetNextWindowClass(&window_class);
         ShowSettingsPanel(buffer, settings);
 
-        ProcessShortcuts(io, buffer, buffer2, sound, settings);
+        ProcessShortcuts(io, buffer, buffer2, sound, settings, history);
 
         ImGui::SetNextWindowClass(&window_class);
         ShowWaveform(buffer, settings);
 
         ShowMidiTrackModal(buffer, settings);
+        if (settings.updateHistory) {
+            settings.updateHistory = false;
+            history.AddItem(settings);
+        }
 
         ImGui::RenderNotifications();
 

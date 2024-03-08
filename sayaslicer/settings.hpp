@@ -22,6 +22,7 @@ public:
 	double samplesPerSnap = 0.0;
 	smf::MidiFile midiFile;
 	MarkerSelection selection;
+	bool updateHistory = false;
 
 	template<class Archive>
 	void serialize(Archive& archive)

@@ -26,11 +26,19 @@ public:
 	}
 };
 
+inline bool operator==(const Marker& lhs, const Marker& rhs) {
+	return lhs.position == rhs.position && lhs.name == rhs.name;
+}
+
 class MarkerList {
 private:
 	std::list<Marker> markers = {};
 
 public:
+	bool operator==(const MarkerList& rhs) {
+		return markers == rhs.markers;
+	}
+
 	void push_back(Marker m) {
 		markers.push_back(m);
 	}
