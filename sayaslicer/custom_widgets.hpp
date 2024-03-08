@@ -20,6 +20,8 @@ bool SelectableInput(const char* str_id, bool selected, ImGuiSelectableFlags fla
     PopStyleVar();
 
     ImGuiID id = window->GetID("##Input");
+    static std::string leftText = "";
+    bool res = false;
     bool temp_input_is_active = TempInputIsActive(id);
     bool temp_input_start = ret ? IsMouseDoubleClicked(0) : false;
 
@@ -28,6 +30,7 @@ bool SelectableInput(const char* str_id, bool selected, ImGuiSelectableFlags fla
 
     if (temp_input_is_active || temp_input_start)
     {
+        leftText = str_id;
         KeepAliveID(id);
         ImVec2 pos_after = window->DC.CursorPos;
         window->DC.CursorPos = pos_before;
@@ -36,6 +39,11 @@ bool SelectableInput(const char* str_id, bool selected, ImGuiSelectableFlags fla
     }
     else
     {
+        if (!leftText.empty() && leftText == str_id) {
+            res = true;
+            leftText = "";
+        }
+
         if (display_text != nullptr)
             window->DrawList->AddText(pos_before, GetColorU32(ImGuiCol_Text), display_text);
         else
@@ -43,7 +51,7 @@ bool SelectableInput(const char* str_id, bool selected, ImGuiSelectableFlags fla
     }
 
     PopID();
-    return ret;
+    return res;
 }
 
 bool MyTempInputScalar(const ImRect& bb, ImGuiID id, const char* label, ImGuiDataType data_type, void* p_data, const char* format, const void* p_clamp_min, const void* p_clamp_max, int base)
