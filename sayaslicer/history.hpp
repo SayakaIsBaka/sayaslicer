@@ -1,6 +1,7 @@
 #pragma once
 
 #include "settings.hpp"
+#include "audio.hpp"
 #include <chrono>
 #include <list>
 
@@ -29,7 +30,7 @@ private:
 		return *it;
 	}
 
-	void UpdateSettings(SlicerSettings& dst, SlicerSettings src) {
+	void UpdateSettings(SlicerSettings& dst, SlicerSettings src, sf::SoundBuffer& buffer) {
 		bool fileChange = dst.selectedFile != src.selectedFile;
 		dst.markers = src.markers;
 		dst.startingKeysound = src.startingKeysound;
@@ -37,6 +38,8 @@ private:
 		dst.fadeout = src.fadeout;
 		dst.selectedGateThreshold = src.selectedGateThreshold;
 		dst.selectedFile = src.selectedFile;
+		if (fileChange)
+			OpenAudioFile(buffer, dst, dst.selectedFile);
 	}
 
 	bool IsSameSettings(SlicerSettings a, SlicerSettings b) {
@@ -72,19 +75,19 @@ public:
 		return true;
 	}
 
-	bool Undo(SlicerSettings& item) {
+	bool Undo(SlicerSettings& item, sf::SoundBuffer& buffer) {
 		if (curPos >= maxSize - 1 || curPos >= items.size() - 1 || items.size() == 0)
 			return false;
 		SlicerSettings newItem = get(++curPos).item;
-		UpdateSettings(item, newItem);
+		UpdateSettings(item, newItem, buffer);
 		return true;
 	}
 
-	bool Redo(SlicerSettings& item) {
+	bool Redo(SlicerSettings& item, sf::SoundBuffer& buffer) {
 		if (curPos <= 0 || items.size() < 2)
 			return false;
 		SlicerSettings newItem = get(--curPos).item;
-		UpdateSettings(item, newItem);
+		UpdateSettings(item, newItem, buffer);
 		return true;
 	}
 };
