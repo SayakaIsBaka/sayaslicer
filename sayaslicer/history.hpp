@@ -7,7 +7,7 @@
 class HistoryItem {
 public:
 	SlicerSettings item;
-	std::chrono::steady_clock::time_point timestamp;
+	std::chrono::high_resolution_clock::time_point timestamp;
 
 	HistoryItem(SlicerSettings item) {
 		this->item = item;
