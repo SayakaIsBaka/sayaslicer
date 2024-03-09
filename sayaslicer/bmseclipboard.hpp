@@ -7,7 +7,11 @@
 #include <algorithm>
 #include <list>
 #include <vector>
+#include <ImGuiNotify.hpp>
+#include <SFML/Audio.hpp>
+#include <clip/clip.h>
 #include "marker.hpp"
+#include "settings.hpp"
 
 class BMSEClipboardObject {
 public:
@@ -78,3 +82,44 @@ public:
 		}
 	}
 };
+
+void AddMarkersFromBMSEClipboard(BMSEClipboard objs, sf::SoundBuffer& buffer, SlicerSettings& settings) {
+	if (buffer.getSampleCount() > 0) {
+		auto sampleRate = buffer.getSampleRate();
+		auto numChannels = buffer.getChannelCount();
+		for (BMSEClipboardObject o : objs.objects) {
+			double m = o.toSamplePosition(settings.bpm, sampleRate, numChannels);
+			if (settings.markers.find(m) == -1.0) {
+				settings.markers.push_back(m);
+			}
+		}
+		ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Successfully imported markers from the clipboard!" });
+	}
+	else {
+		ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Please load a file first!" });
+	}
+}
+
+void ProcessBMSEClipboard(sf::SoundBuffer& buffer, SlicerSettings& settings) {
+	std::string cb;
+	clip::get_text(cb);
+	BMSEClipboard objs(cb);
+	if (!objs.objects.empty()) {
+		AddMarkersFromBMSEClipboard(objs, buffer, settings);
+		settings.updateHistory = true;
+	}
+	else
+		ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Clipboard does not contain any BMSE data!" });
+}
+
+void GenerateBMSEClipboard(sf::SoundBuffer& buffer, SlicerSettings settings) {
+	if (buffer.getSampleCount() > 0) {
+		auto cb = BMSEClipboard::toBMSEClipboardData(settings.markers, settings.bpm, buffer.getSampleRate(), buffer.getChannelCount(), settings.startingKeysound);
+		std::cout << cb << std::endl;
+		clip::set_text(cb);
+		ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Copied markers as BMSE clipboard data!" });
+	}
+	else {
+		ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Please load a file first!" });
+	}
+}

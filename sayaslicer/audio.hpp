@@ -3,8 +3,6 @@
 #include "settings.hpp"
 #include "utils.hpp"
 #include <ImGuiNotify.hpp>
-#include <imgui.h>
-#include <imgui_internal.h>
 #include <SFML/Audio.hpp>
 #include <tinyfiledialogs/tinyfiledialogs.h>
 
