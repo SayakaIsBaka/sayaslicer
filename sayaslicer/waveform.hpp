@@ -3,6 +3,7 @@
 #include "settings.hpp"
 #include <SFML/Audio.hpp>
 #include <implot.h>
+#include <cmath>
 
 static const int waveformReso = 192;
 
