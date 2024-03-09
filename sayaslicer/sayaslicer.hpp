@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-#define IMGUI_DEFINE_MATH_OPERATORS
-
 #if _WIN32 // Include required headers and pointers for drag and drop on Windows
 	#define NOMINMAX
 	#include <Windows.h>
@@ -16,7 +14,6 @@
 #include "font.hpp"
 #include "custom_widgets.hpp"
 #include "settings.hpp"
-#include "base_convert.hpp"
 #include "history.hpp"
 #include "audio.hpp"
 #include "utils.hpp"
