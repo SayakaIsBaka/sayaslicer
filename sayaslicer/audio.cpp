@@ -59,6 +59,8 @@ void PlayKeysound(sf::Sound& sound, sf::SoundBuffer& buffer, sf::SoundBuffer& bu
             break;
         }
     }
+    keyStart = keyStart - keyStart % buffer.getChannelCount();
+    keyEnd = keyEnd - keyEnd % buffer.getChannelCount();
     printf("playing keysound with range start: %llu, range end: %llu\n", keyStart, keyEnd);
     auto bufsize = (keyEnd - keyStart) + 4 - ((keyEnd - keyStart) % 4); // Buffer size must be a multiple of 4
     buffer2.loadFromSamples(&samples[keyStart], bufsize, buffer.getChannelCount(), buffer.getSampleRate());
@@ -108,12 +110,14 @@ void WriteKeysounds(sf::SoundBuffer& buffer, SlicerSettings& settings) {
     for (int i = 0; i < settings.markers.size(); i++) {
         Marker m = settings.markers.get(i);
         keyStart = m.position + offsetSamples;
+        keyStart = keyStart - keyStart % buffer.getChannelCount();
         if (i + 1.0 >= settings.markers.size()) {
             keyEnd = buffer.getSampleCount();
         }
         else {
             keyEnd = settings.markers.get(i + 1).position + offsetSamples;
         }
+        keyEnd = keyEnd - keyEnd % buffer.getChannelCount();
         printf("exporting keysound with range start: %llu, range end: %llu\n", keyStart, keyEnd);
         auto bufsize = keyEnd - keyStart;
         sf::OutputSoundFile file;
