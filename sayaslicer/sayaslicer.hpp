@@ -11,7 +11,6 @@
 
 #include "bmseclipboard.hpp"
 #include "theme.hpp"
-#include "font.hpp"
 #include "custom_widgets.hpp"
 #include "settings.hpp"
 #include "history.hpp"
@@ -23,7 +22,8 @@
 #include "copy_paste.hpp"
 
 #include <IconsFontAwesome6.h>
-#include <fa_solid_900.h>
+#include <fonts/fa_solid_900.hpp>
+#include <fonts/roboto_medium.hpp>
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <imgui-SFML.h>
