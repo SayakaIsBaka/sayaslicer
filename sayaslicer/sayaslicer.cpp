@@ -123,6 +123,10 @@ void ShowSettingsPanel(sf::SoundBuffer& buffer, SlicerSettings& settings) {
         DragIntCustomBase("Starting key", &settings.startingKeysound, 1, 1, maxKeysound, base);
         ImGui::SetItemTooltip("Decimal value: %d", settings.startingKeysound);
         ImGui::Checkbox("Enable base-62", &settings.useBase62);
+        if (ImGui::Button("Zero-cross markers", ImVec2(-FLT_MIN, 0.0f))) {
+            ZeroCrossMarkers(buffer, settings);
+            settings.updateHistory = true;
+        }
 
         ImGui::SeparatorText("Export settings");
         char thres[64];

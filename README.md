@@ -21,6 +21,7 @@ A cross-platform audio slicer with BMS-related features. Aims to be a drop-in re
 - Keysound list export
 - Copy / paste markers
 - Undo / redo
+- Zero-crossing
 
 ## Keyboard shortcuts
 Keyboard shortcuts are the same as woslicerII except the keyboard layout is taken into account:

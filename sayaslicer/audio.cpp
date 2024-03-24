@@ -150,3 +150,33 @@ void WriteKeysounds(sf::SoundBuffer& buffer, SlicerSettings& settings) {
     }
     ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Exported keysounds to the following folder:\n%s", p.parent_path().string().c_str() });
 }
+
+unsigned long long FindCrossing(sf::SoundBuffer& buffer, unsigned long long pos, bool searchRight) {
+    auto buf = buffer.getSamples();
+    auto sampleCount = buffer.getSampleCount();
+    auto channelCount = buffer.getChannelCount();
+    auto origVal = buf[pos];
+    auto prevPos = pos;
+    int delta = 2;
+    if (-delta <= origVal && origVal <= delta)
+        return pos;
+    while (pos >= 0 && pos < sampleCount && buf[pos] != 0 && (origVal < 0) == (buf[pos] < 0)) {
+        prevPos = pos;
+        searchRight ? pos += channelCount : pos -= channelCount;
+    }
+    return std::abs(buf[prevPos]) < std::abs(buf[pos]) ? prevPos : pos;
+}
+
+void ZeroCrossMarkers(sf::SoundBuffer& buffer, SlicerSettings& settings) {
+    for (auto& m : settings.markers) {
+        unsigned long long p = m.position;
+        auto pos = p - p % buffer.getChannelCount();
+        auto crossL = FindCrossing(buffer, pos, false);
+        auto crossR = FindCrossing(buffer, pos, true);
+        if (pos - crossL <= crossR - pos)
+            m.position = crossL;
+        else
+            m.position = crossR;
+    }
+    ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Moved markers to zero-crossing points!" });
+}
