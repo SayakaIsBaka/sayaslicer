@@ -375,6 +375,8 @@ LRESULT CALLBACK myCallback(HWND handle, UINT message, WPARAM wParam, LPARAM lPa
                 auto ext = stdstr.substr(stdstr.find_last_of(".") + 1);
                 if (strcmp(ext.c_str(), "mid") == 0 || strcmp(ext.c_str(), "midi") == 0)
                     LoadMidi(*(sf::SoundBuffer*)bufferPtr, *(SlicerSettings*)settingsPtr, stdstr);
+                else if (strcmp(ext.c_str(), "syp") == 0)
+                    OpenProject(*(sf::SoundBuffer*)bufferPtr, *(SlicerSettings*)settingsPtr, stdstr);
                 else
                     OpenAudioFile(*(sf::SoundBuffer*)bufferPtr, *(SlicerSettings*)settingsPtr, stdstr);
             }

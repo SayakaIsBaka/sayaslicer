@@ -12,11 +12,17 @@ void SaveProject(SlicerSettings settings) {
     }
 }
 
-void OpenProject(sf::SoundBuffer& buffer, SlicerSettings& settings) {
-    char const* lFilterPatterns[1] = { "*.syp" };
-    char* s = tinyfd_openFileDialog("Open project file...", 0, 1, lFilterPatterns, "sayaslicer Project (*.syp)", 0);
-    if (s) {
-        auto p = std::filesystem::u8path(s);
+void OpenProject(sf::SoundBuffer& buffer, SlicerSettings& settings, std::string file) {
+    if (file.size() == 0) {
+        char const* lFilterPatterns[1] = { "*.syp" };
+        char* s = tinyfd_openFileDialog("Open project file...", 0, 1, lFilterPatterns, "sayaslicer Project (*.syp)", 0);
+        if (s)
+            file = s;
+        else
+            return;
+    }
+    if (file.size() != 0) {
+        auto p = std::filesystem::u8path(file);
         std::ifstream inFile(p, std::ios::binary);
         cereal::BinaryInputArchive iarchive(inFile);
         iarchive(settings);
@@ -26,6 +32,6 @@ void OpenProject(sf::SoundBuffer& buffer, SlicerSettings& settings) {
         else {
             OpenAudioFile(buffer, settings);
         }
-        ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Opened project:\n%s", s });
+        ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Opened project:\n%s", file.c_str() });
     }
 }

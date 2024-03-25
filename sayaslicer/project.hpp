@@ -7,4 +7,4 @@
 #include <cereal/archives/binary.hpp>
 
 void SaveProject(SlicerSettings settings);
-void OpenProject(sf::SoundBuffer& buffer, SlicerSettings& settings);
+void OpenProject(sf::SoundBuffer& buffer, SlicerSettings& settings, std::string path = "");
