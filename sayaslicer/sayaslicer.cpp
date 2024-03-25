@@ -377,6 +377,8 @@ LRESULT CALLBACK myCallback(HWND handle, UINT message, WPARAM wParam, LPARAM lPa
                     LoadMidi(*(sf::SoundBuffer*)bufferPtr, *(SlicerSettings*)settingsPtr, stdstr);
                 else if (strcmp(ext.c_str(), "syp") == 0)
                     OpenProject(*(sf::SoundBuffer*)bufferPtr, *(SlicerSettings*)settingsPtr, stdstr);
+                else if (strcmp(ext.c_str(), "txt") == 0)
+                    ImportNamesFromMid2Bms(*(SlicerSettings*)settingsPtr, stdstr);
                 else
                     OpenAudioFile(*(sf::SoundBuffer*)bufferPtr, *(SlicerSettings*)settingsPtr, stdstr);
             }

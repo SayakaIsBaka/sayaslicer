@@ -9,5 +9,5 @@
 
 std::string GetTempMarkerName(std::string filename, size_t idx);
 void ExportKeysoundList(SlicerSettings settings);
-void ImportNamesFromMid2Bms(SlicerSettings& settings);
+void ImportNamesFromMid2Bms(SlicerSettings& settings, std::string file = "");
 long long LoadFileUnicode(std::string path, std::vector<char>& buf);

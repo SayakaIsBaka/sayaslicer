@@ -32,11 +32,17 @@ void ExportKeysoundList(SlicerSettings settings) {
     ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Copied keysound list to clipboard!" });
 }
 
-void ImportNamesFromMid2Bms(SlicerSettings& settings) {
-    char const* lFilterPatterns[1] = { "*.txt" };
-    char* s = tinyfd_openFileDialog("Open renamer array file...", "text5_renamer_array.txt", 1, lFilterPatterns, "Text file (*.txt)", 0);
-    if (s) {
-        auto p = std::filesystem::u8path(s);
+void ImportNamesFromMid2Bms(SlicerSettings& settings, std::string file) {
+    if (file.size() == 0) {
+        char const* lFilterPatterns[1] = { "*.txt" };
+        char* s = tinyfd_openFileDialog("Open renamer array file...", "text5_renamer_array.txt", 1, lFilterPatterns, "Text file (*.txt)", 0);
+        if (s)
+            file = s;
+        else
+            return;
+    }
+    if (file.size() != 0) {
+        auto p = std::filesystem::u8path(file);
         std::ifstream f(p);
         std::vector<std::string> names;
         if (f.is_open() && f.good()) {
