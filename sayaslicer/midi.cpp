@@ -26,7 +26,11 @@ void LoadMidi(sf::SoundBuffer& buffer, SlicerSettings& settings, std::string fil
     }
     if (file.size() == 0) {
         char const* lFilterPatterns[2] = { "*.mid", "*.midi" };
-        file = tinyfd_openFileDialog("Open MIDI file...", 0, 2, lFilterPatterns, "MIDI file (*.mid, *.midi)", 0);
+        auto s = tinyfd_openFileDialog("Open MIDI file...", 0, 2, lFilterPatterns, "MIDI file (*.mid, *.midi)", 0);
+        if (s)
+            file = s;
+        else
+            return;
     }
     if (file.size() != 0) {
         auto p = std::filesystem::u8path(file);
