@@ -159,14 +159,17 @@ unsigned long long FindCrossing(sf::SoundBuffer& buffer, unsigned long long pos,
     auto channelCount = buffer.getChannelCount();
     auto origVal = buf[pos];
     auto prevPos = pos;
-    int delta = 2;
-    if (-delta <= origVal && origVal <= delta)
+    int delta = 500;
+    if (pos == 0 || (-delta <= origVal && origVal <= delta))
         return pos;
-    while (pos >= 0 && pos < sampleCount && buf[pos] != 0 && (origVal < 0) == (buf[pos] < 0)) {
+    while (pos >= 0 && pos < sampleCount && buf[pos] != 0 && ((origVal < 0) == (buf[pos] < 0))) {
+        std::cout << buf[pos] << std::endl;
+        if (buf[pos] >= -delta && buf[pos] <= delta)
+            break;
         prevPos = pos;
         searchRight ? pos += channelCount : pos -= channelCount;
     }
-    return std::abs(buf[prevPos]) < std::abs(buf[pos]) ? prevPos : pos;
+    return std::abs(buf[prevPos]) > std::abs(buf[pos]) ? prevPos : pos; // Start marker on the sample right after the crossing and not the other way around
 }
 
 void ZeroCrossMarkers(sf::SoundBuffer& buffer, SlicerSettings& settings) {
