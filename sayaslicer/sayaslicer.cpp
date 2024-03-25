@@ -71,10 +71,10 @@ void ShowMainMenuBar(sf::SoundBuffer& buffer, SlicerSettings &settings, sf::Rend
 }
 
 void SetupFonts(ImGuiIO& io) {
-    float mainFontSize = 13.0f;
+    float mainFontSize = 14.0f;
     float iconFontSize = mainFontSize * 2.0f / 3.0f;
 
-    io.Fonts->AddFontFromMemoryCompressedTTF(roboto_compressed_data, roboto_compressed_size, mainFontSize);
+    io.Fonts->AddFontFromMemoryCompressedTTF(noto_compressed_data, noto_compressed_size, mainFontSize, 0, io.Fonts->GetGlyphRangesJapanese());
 
     static const ImWchar iconsRanges[] = { ICON_MIN_FA, ICON_MAX_16_FA, 0 };
     ImFontConfig iconsConfig;
@@ -383,7 +383,7 @@ LRESULT CALLBACK myCallback(HWND handle, UINT message, WPARAM wParam, LPARAM lPa
 #endif
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(800, 450), "sayaslicer");
+    sf::RenderWindow window(sf::VideoMode(800, 456), "sayaslicer");
     window.setFramerateLimit(60);
     ImGui::SFML::Init(window, false);
     auto &io = ImGui::GetIO();
