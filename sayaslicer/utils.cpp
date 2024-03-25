@@ -36,7 +36,8 @@ void ImportNamesFromMid2Bms(SlicerSettings& settings) {
     char const* lFilterPatterns[1] = { "*.txt" };
     char* s = tinyfd_openFileDialog("Open renamer array file...", "text5_renamer_array.txt", 1, lFilterPatterns, "Text file (*.txt)", 0);
     if (s) {
-        std::ifstream f(s);
+        auto p = std::filesystem::u8path(s);
+        std::ifstream f(p);
         std::vector<std::string> names;
         if (f.is_open() && f.good()) {
             std::string line;
