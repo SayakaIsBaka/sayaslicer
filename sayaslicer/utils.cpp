@@ -16,8 +16,8 @@ std::string GetTempMarkerName(std::string filename, size_t idx) {
 void ExportKeysoundList(SlicerSettings settings) {
     size_t idx = 0;
     std::string res = "";
-    std::filesystem::path p = settings.selectedFile;
-    auto filename = p.filename().replace_extension().string();
+    auto p = std::filesystem::u8path(settings.selectedFile);
+    auto filename = p.filename().replace_extension().u8string();
     for (auto m : settings.markers) {
         char kId[64];
         size_t keysoundId = idx + settings.startingKeysound;
@@ -63,4 +63,17 @@ void ImportNamesFromMid2Bms(SlicerSettings& settings) {
             ImGui::InsertNotification({ ImGuiToastType::Warning, 3000, "Imported marker names but the number of names did not perfectly match the number of markers" });
         }
     }
+}
+
+long long LoadFileUnicode(std::string path, std::vector<char>& buf) {
+    auto fp = std::filesystem::u8path(path);
+    if (!std::filesystem::exists(fp))
+        return -1;
+    std::ifstream file(fp, std::ios::binary | std::ios::ate);
+    std::streamsize size = file.tellg();
+    file.seekg(0, std::ios::beg);
+    buf.clear();
+    buf.resize(size);
+    file.read(buf.data(), size);
+    return size;
 }

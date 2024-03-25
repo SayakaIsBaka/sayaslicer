@@ -17,7 +17,15 @@ bool OpenAudioFile(sf::SoundBuffer& buffer, SlicerSettings& settings, std::strin
 
     if (settings.selectedFile.size() > 0) {
         std::cout << "Loading file: " << settings.selectedFile << std::endl;
-        bool res = buffer.loadFromFile(settings.selectedFile);
+
+        std::vector<char> bTmp;
+        auto size = LoadFileUnicode(settings.selectedFile, bTmp);
+        if (size == -1) {
+            ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Selected file does not exist!" });
+            return false;
+        }
+        bool res = buffer.loadFromMemory(bTmp.data(), size);
+
         if (res) {
             std::cout << "Duration: " << buffer.getDuration().asSeconds() << std::endl;
             std::cout << "Channels: " << buffer.getChannelCount() << std::endl;
@@ -106,8 +114,8 @@ void WriteKeysounds(sf::SoundBuffer& buffer, SlicerSettings& settings) {
     unsigned long long keyStart = 0;
     unsigned long long keyEnd = 0;
     unsigned long long offsetSamples = (long long)settings.offset * (long long)waveformReso;
-    std::filesystem::path p = settings.selectedFile;
-    auto origFilename = p.filename().replace_extension().string();
+    auto p = std::filesystem::u8path(settings.selectedFile);
+    auto origFilename = p.filename().replace_extension();
     auto folder = p.remove_filename();
     for (int i = 0; i < settings.markers.size(); i++) {
         Marker m = settings.markers.get(i);
@@ -139,18 +147,29 @@ void WriteKeysounds(sf::SoundBuffer& buffer, SlicerSettings& settings) {
         }
 
         std::string filename;
-        if (m.name.empty())
-            filename = folder.string() + GetTempMarkerName(origFilename, i);
-        else
-            filename = folder.string() + m.name;
+        std::filesystem::path u8filename;
+        // Write to temp file first because SFML 2.6 doesn't support unicode paths
+        if (m.name.empty()) {
+            filename = std::filesystem::temp_directory_path().string() + GetTempMarkerName(origFilename.string(), i);
+            u8filename = std::filesystem::u8path(std::filesystem::temp_directory_path().string() + GetTempMarkerName(origFilename.u8string(), i));
+        }
+        else {
+            filename = std::filesystem::temp_directory_path().string() + m.name;
+            u8filename = std::filesystem::u8path(std::filesystem::temp_directory_path().string() + m.name);
+        }
 
-        std::cout << filename << std::endl;
+        std::cout << u8filename.u8string() << std::endl;
         if (!file.openFromFile(filename, buffer.getSampleRate(), buffer.getChannelCount())) {
-            puts("Error opening file for writing");
+            puts("Error opening temp file for writing");
         }
         file.write(bufOut, bufsize);
+        file.close();
+        if (m.name.empty())
+            std::filesystem::rename(u8filename, std::filesystem::u8path(folder.u8string() + GetTempMarkerName(origFilename.u8string(), i)));
+        else
+            std::filesystem::rename(u8filename, std::filesystem::u8path(folder.u8string() + m.name));
     }
-    ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Exported keysounds to the following folder:\n%s", p.parent_path().string().c_str() });
+    ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Exported keysounds to the following folder:\n%s", p.parent_path().u8string().c_str() });
 }
 
 unsigned long long FindCrossing(sf::SoundBuffer& buffer, unsigned long long pos, bool searchRight) {
@@ -163,7 +182,6 @@ unsigned long long FindCrossing(sf::SoundBuffer& buffer, unsigned long long pos,
     if (pos == 0 || (-delta <= origVal && origVal <= delta))
         return pos;
     while (pos >= 0 && pos < sampleCount && buf[pos] != 0 && ((origVal < 0) == (buf[pos] < 0))) {
-        std::cout << buf[pos] << std::endl;
         if (buf[pos] >= -delta && buf[pos] <= delta)
             break;
         prevPos = pos;

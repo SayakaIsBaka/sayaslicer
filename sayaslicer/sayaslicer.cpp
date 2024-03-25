@@ -294,8 +294,8 @@ void DisplayMarkersTable(SlicerSettings& settings) {
         else {
             settings.markers.sort();
             double toRemove = -1.0;
-            std::filesystem::path p = settings.selectedFile;
-            auto filename = p.filename().replace_extension().string();
+            auto p = std::filesystem::u8path(settings.selectedFile);
+            auto filename = p.filename().replace_extension().u8string();
             size_t idx = 0;
             for (auto& m : settings.markers) {
                 ImGui::TableNextRow();
@@ -357,15 +357,15 @@ LRESULT CALLBACK myCallback(HWND handle, UINT message, WPARAM wParam, LPARAM lPa
     {
         HDROP hdrop = reinterpret_cast<HDROP>(wParam);
 
-        const UINT filescount = DragQueryFile(hdrop, 0xFFFFFFFF, NULL, 0);
+        const UINT filescount = DragQueryFileW(hdrop, 0xFFFFFFFF, NULL, 0);
         if (filescount != 1) {
             std::cout << "Please drag only one file!" << std::endl;
         }
         else {
-            const UINT bufsize = DragQueryFile(hdrop, 0, NULL, 0);
-            std::string str;
+            const UINT bufsize = DragQueryFileW(hdrop, 0, NULL, 0);
+            std::wstring str;
             str.resize(bufsize + 1);
-            if (DragQueryFile(hdrop, 0, &str[0], bufsize + 1))
+            if (DragQueryFileW(hdrop, 0, &str[0], bufsize + 1))
             {
                 std::string stdstr;
                 sf::Utf8::fromWide(str.begin(), str.end(), std::back_inserter(stdstr));
@@ -406,6 +406,8 @@ int main() {
     originalSFMLCallback = SetWindowLongPtrW(handle, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(myCallback));
     bufferPtr = (LONG_PTR)&buffer;
     settingsPtr = (LONG_PTR)&settings;
+
+    SetConsoleOutputCP(CP_UTF8);
 #endif
 
     window.resetGLStates();
