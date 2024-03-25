@@ -335,6 +335,7 @@ void DisplayMarkersTable(SlicerSettings& settings) {
             }
             if (toRemove != -1) {
                 settings.markers.remove(toRemove);
+                settings.updateHistory = true;
             }
         }
         ImGui::EndTable();
