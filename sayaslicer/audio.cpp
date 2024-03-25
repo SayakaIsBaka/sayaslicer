@@ -148,26 +148,26 @@ void WriteKeysounds(sf::SoundBuffer& buffer, SlicerSettings& settings) {
 
         std::string filename;
         std::filesystem::path u8filename;
+        std::filesystem::path finalPath;
         // Write to temp file first because SFML 2.6 doesn't support unicode paths
         if (m.name.empty()) {
-            filename = std::filesystem::temp_directory_path().string() + GetTempMarkerName(origFilename.string(), i);
-            u8filename = std::filesystem::u8path(std::filesystem::temp_directory_path().string() + GetTempMarkerName(origFilename.u8string(), i));
+            filename = GetTempMarkerName(origFilename.string(), i);
+            u8filename = std::filesystem::u8path(GetTempMarkerName(origFilename.u8string(), i));
+            finalPath = std::filesystem::u8path(folder.u8string() + GetTempMarkerName(origFilename.u8string(), i));
         }
         else {
-            filename = std::filesystem::temp_directory_path().string() + m.name;
-            u8filename = std::filesystem::u8path(std::filesystem::temp_directory_path().string() + m.name);
+            filename = m.name;
+            u8filename = std::filesystem::u8path(m.name);
+            finalPath = std::filesystem::u8path(folder.u8string() + m.name);
         }
 
-        std::cout << u8filename.u8string() << std::endl;
+        std::cout << finalPath.u8string() << std::endl;
         if (!file.openFromFile(filename, buffer.getSampleRate(), buffer.getChannelCount())) {
             puts("Error opening temp file for writing");
         }
         file.write(bufOut, bufsize);
         file.close();
-        if (m.name.empty())
-            std::filesystem::rename(u8filename, std::filesystem::u8path(folder.u8string() + GetTempMarkerName(origFilename.u8string(), i)));
-        else
-            std::filesystem::rename(u8filename, std::filesystem::u8path(folder.u8string() + m.name));
+        std::filesystem::rename(u8filename, finalPath);
     }
     ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Exported keysounds to the following folder:\n%s", p.parent_path().u8string().c_str() });
 }
