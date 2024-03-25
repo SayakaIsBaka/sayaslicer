@@ -18,7 +18,7 @@ void OpenProject(sf::SoundBuffer& buffer, SlicerSettings& settings) {
         std::ifstream inFile(s, std::ios::binary);
         cereal::BinaryInputArchive iarchive(inFile);
         iarchive(settings);
-        if (std::filesystem::exists(settings.selectedFile)) {
+        if (std::filesystem::exists(std::filesystem::u8path(settings.selectedFile))) {
             OpenAudioFile(buffer, settings, settings.selectedFile);
         }
         else {
