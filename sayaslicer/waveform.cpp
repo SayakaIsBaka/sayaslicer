@@ -22,8 +22,9 @@ void DrawSelection(SlicerSettings& settings) {
 }
 
 void DisplayWaveform(sf::SoundBuffer& buffer, SlicerSettings& settings) {
-    double maxDisplayRange = 1500.0;
-    double leftMargin = (buffer.getSampleCount() < 400 * waveformReso ? 0 : 400) * waveformReso;
+    double maxDisplayRange = settings.maxDisplayRange;
+    double marginConst = 1600.0 * maxDisplayRange / minZoom;
+    double leftMargin = (buffer.getSampleCount() < marginConst * waveformReso ? 0 : marginConst) * waveformReso;
 
     if (ImPlot::BeginPlot("##lines", ImVec2(-1, 200), ImPlotFlags_NoBoxSelect | ImPlotFlags_NoLegend)) {
         double plotStart = (settings.cursorPos - leftMargin) / waveformReso;
@@ -62,7 +63,7 @@ void DisplayWaveform(sf::SoundBuffer& buffer, SlicerSettings& settings) {
 
         if (sampleCount > 0) {
             ImPlot::SetupAxis(ImAxis_X1, "", ImPlotAxisFlags_Foreground);
-            ImPlot::SetupAxisLimitsConstraints(ImAxis_X1, -leftMargin, sampleCount / waveformReso - settings.offset);
+            ImPlot::SetupAxisLimitsConstraints(ImAxis_X1, -marginConst, sampleCount / waveformReso - settings.offset);
 
             // Draw barlines
             for (double j = 0; j < lastTick; j += samplesPerBeat * 4) {

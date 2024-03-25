@@ -24,6 +24,7 @@ public:
 	MarkerSelection selection;
 	bool updateHistory = false;
 	bool openMidiModalTemp = false;
+	float maxDisplayRange = 1.0;
 
 	template<class Archive>
 	void serialize(Archive& archive)

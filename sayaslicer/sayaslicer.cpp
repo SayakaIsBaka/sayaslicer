@@ -110,11 +110,14 @@ void ShowSettingsPanel(sf::SoundBuffer& buffer, SlicerSettings& settings) {
     {
         double minPos = 0;
         double maxPos = buffer.getSampleCount();
+        static float zoom = 0;
 
         ImGui::SeparatorText("General");
+        ImGui::SliderFloat("Zoom", &zoom, 0, minZoom - waveformReso * 2.0);
+        settings.maxDisplayRange = minZoom - zoom;
         ImGui::DragInt("Offset", &settings.offset, 1, 0, 1000);
         ImGui::DragScalar("Position", ImGuiDataType_Double, &settings.cursorPos, 1, &minPos, &maxPos);
-        ImGui::DragFloat("BPM", &settings.bpm, 1, 10, 10000);
+        ImGui::DragFloat("BPM", &settings.bpm, 1, 10, 3500);
         ImGui::DragInt("Snapping", &settings.snapping, 1, 1, 192);
         int base = settings.useBase62 ? 62 : 36;
         int maxKeysound = base * base - 1;
@@ -399,6 +402,7 @@ int main() {
     sf::Sound sound;
     SlicerSettings settings;
     History history;
+    settings.maxDisplayRange = minZoom;
 
 #if _WIN32
     HWND handle = window.getSystemHandle();
