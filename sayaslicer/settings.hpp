@@ -23,6 +23,7 @@ public:
 	smf::MidiFile midiFile;
 	MarkerSelection selection;
 	bool updateHistory = false;
+	bool openMidiModalTemp = false;
 
 	template<class Archive>
 	void serialize(Archive& archive)

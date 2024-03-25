@@ -19,23 +19,22 @@ void GetTrackNames(smf::MidiFile midifile, std::vector<std::string>& out) {
     }
 }
 
-void LoadMidi(sf::SoundBuffer& buffer, SlicerSettings& settings) {
+void LoadMidi(sf::SoundBuffer& buffer, SlicerSettings& settings, std::string file) {
     if (!buffer.getSampleCount()) {
         ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Please load a file first!" });
         return;
     }
-    char const* lFilterPatterns[2] = { "*.mid", "*.midi" };
-    char* s = tinyfd_openFileDialog("Open MIDI file...", 0, 2, lFilterPatterns, "MIDI file (*.mid, *.midi)", 0);
-    if (s) {
-        settings.midiFile.read(s);
+    if (file.size() == 0) {
+        char const* lFilterPatterns[2] = { "*.mid", "*.midi" };
+        file = tinyfd_openFileDialog("Open MIDI file...", 0, 2, lFilterPatterns, "MIDI file (*.mid, *.midi)", 0);
+    }
+    if (file.size() != 0) {
+        settings.midiFile.read(file);
         if (!settings.midiFile.status()) {
-            std::cout << "Error reading MIDI file: " << s << std::endl;
+            std::cout << "Error reading MIDI file: " << file << std::endl;
         }
         else {
-            ImGuiID popup_id = ImHashStr("MidiPopup");
-            ImGui::PushOverrideID(popup_id);
-            ImGui::OpenPopup("Select MIDI track");
-            ImGui::PopID();
+            settings.openMidiModalTemp = true;
         }
     }
 }
@@ -82,8 +81,10 @@ void ImportMidiMarkers(sf::SoundBuffer& buffer, SlicerSettings& settings, int tr
 }
 
 void ShowMidiTrackModal(sf::SoundBuffer& buffer, SlicerSettings& settings) {
-    ImGuiID popup_id = ImHashStr("MidiPopup");
-    ImGui::PushOverrideID(popup_id);
+    if (settings.openMidiModalTemp) {
+        settings.openMidiModalTemp = false;
+        ImGui::OpenPopup("Select MIDI track");
+    }
     if (ImGui::BeginPopupModal("Select MIDI track", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize)) {
         static std::vector<std::string> choices;
         if (choices.size() == 0) {
@@ -127,5 +128,4 @@ void ShowMidiTrackModal(sf::SoundBuffer& buffer, SlicerSettings& settings) {
         }
         ImGui::EndPopup();
     }
-    ImGui::PopID();
 }

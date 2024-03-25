@@ -7,5 +7,5 @@
 #include <SFML/Audio.hpp>
 #include <tinyfiledialogs/tinyfiledialogs.h>
 
-void LoadMidi(sf::SoundBuffer& buffer, SlicerSettings& settings);
+void LoadMidi(sf::SoundBuffer& buffer, SlicerSettings& settings, std::string file = "");
 void ShowMidiTrackModal(sf::SoundBuffer& buffer, SlicerSettings& settings);

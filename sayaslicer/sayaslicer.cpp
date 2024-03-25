@@ -125,7 +125,6 @@ void ShowSettingsPanel(sf::SoundBuffer& buffer, SlicerSettings& settings) {
         ImGui::Checkbox("Enable base-62", &settings.useBase62);
         if (ImGui::Button("Zero-cross markers", ImVec2(-FLT_MIN, 0.0f))) {
             ZeroCrossMarkers(buffer, settings);
-            settings.updateHistory = true;
         }
 
         ImGui::SeparatorText("Export settings");
@@ -370,7 +369,11 @@ LRESULT CALLBACK myCallback(HWND handle, UINT message, WPARAM wParam, LPARAM lPa
             {
                 std::string stdstr;
                 sf::Utf8::fromWide(str.begin(), str.end(), std::back_inserter(stdstr));
-                OpenAudioFile(*(sf::SoundBuffer*)bufferPtr, *(SlicerSettings*)settingsPtr, stdstr);
+                auto ext = stdstr.substr(stdstr.find_last_of(".") + 1);
+                if (strcmp(ext.c_str(), "mid") == 0 || strcmp(ext.c_str(), "midi") == 0)
+                    LoadMidi(*(sf::SoundBuffer*)bufferPtr, *(SlicerSettings*)settingsPtr, stdstr);
+                else
+                    OpenAudioFile(*(sf::SoundBuffer*)bufferPtr, *(SlicerSettings*)settingsPtr, stdstr);
             }
         }
         DragFinish(hdrop);

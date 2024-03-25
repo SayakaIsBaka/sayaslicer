@@ -2,6 +2,7 @@
 
 bool OpenAudioFile(sf::SoundBuffer& buffer, SlicerSettings& settings, std::string file)
 {
+    auto prevFile = settings.selectedFile;
     if (file.size() == 0) {
         char const* lFilterPatterns[2] = { "*.wav", "*.ogg" };
         char* s = tinyfd_openFileDialog("Select audio file...", 0, 2, lFilterPatterns, "Audio files (*.wav, *.ogg)", 0);
@@ -29,6 +30,7 @@ bool OpenAudioFile(sf::SoundBuffer& buffer, SlicerSettings& settings, std::strin
             ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Opened file:\n%s", settings.selectedFile.c_str() });
         }
         else {
+            settings.selectedFile = prevFile;
             ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Selected file isn't supported!" });
         }
         return res;
@@ -178,5 +180,6 @@ void ZeroCrossMarkers(sf::SoundBuffer& buffer, SlicerSettings& settings) {
         else
             m.position = crossR;
     }
+    settings.updateHistory = true;
     ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Moved markers to zero-crossing points!" });
 }
