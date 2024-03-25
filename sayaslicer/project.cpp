@@ -4,7 +4,8 @@ void SaveProject(SlicerSettings settings) {
     char const* aFilterPatterns[1] = { "*.syp" };
     char* s = tinyfd_saveFileDialog("Save project file...", 0, 1, aFilterPatterns, "sayaslicer Project (*.syp)");
     if (s) {
-        std::ofstream outFile(s, std::ios::binary);
+        auto p = std::filesystem::u8path(s);
+        std::ofstream outFile(p, std::ios::binary);
         cereal::BinaryOutputArchive oarchive(outFile);
         oarchive(settings);
         ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Saved project to:\n%s", s });
@@ -15,7 +16,8 @@ void OpenProject(sf::SoundBuffer& buffer, SlicerSettings& settings) {
     char const* lFilterPatterns[1] = { "*.syp" };
     char* s = tinyfd_openFileDialog("Open project file...", 0, 1, lFilterPatterns, "sayaslicer Project (*.syp)", 0);
     if (s) {
-        std::ifstream inFile(s, std::ios::binary);
+        auto p = std::filesystem::u8path(s);
+        std::ifstream inFile(p, std::ios::binary);
         cereal::BinaryInputArchive iarchive(inFile);
         iarchive(settings);
         if (std::filesystem::exists(std::filesystem::u8path(settings.selectedFile))) {
