@@ -29,7 +29,9 @@ void LoadMidi(sf::SoundBuffer& buffer, SlicerSettings& settings, std::string fil
         file = tinyfd_openFileDialog("Open MIDI file...", 0, 2, lFilterPatterns, "MIDI file (*.mid, *.midi)", 0);
     }
     if (file.size() != 0) {
-        settings.midiFile.read(file);
+        auto p = std::filesystem::u8path(file);
+        std::ifstream inFile(p, std::ios::binary);
+        settings.midiFile.read(inFile);
         if (!settings.midiFile.status()) {
             std::cout << "Error reading MIDI file: " << file << std::endl;
         }
