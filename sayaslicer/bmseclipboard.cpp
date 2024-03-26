@@ -28,12 +28,37 @@ BMSEClipboardObject::BMSEClipboardObject(std::string s) {
 
 
 
+iBMSCClipboardObject::iBMSCClipboardObject(int column, double position, int value) {
+	this->column = column;
+	this->position = position;
+	this->value = value;
+}
+
+std::string iBMSCClipboardObject::toString() {
+	char pos[64];
+	snprintf(pos, 64, "%d %f %d0000 %d %d %d", column, position, value, ln_length, invisible ? -1 : 0, mine ? -1 : 0);
+	return std::string(pos);
+}
+
+
+
 std::string BMSEClipboard::toBMSEClipboardData(MarkerList markers, double bpm, int sampleRate, int numChannels, int startDef) {
 	std::string res = "BMSE ClipBoard Object Data Format\r\n";
 	for (auto m : markers) {
 		double samplesPer192th = 60.0 / (double)bpm * ((double)sampleRate * (double)numChannels) / 192.0 * 4.0;
 		double position = m.position / samplesPer192th;
 		BMSEClipboardObject o("101", 0, round(position), startDef++);
+		res = res + o.toString() + "\r\n";
+	}
+	return res;
+}
+
+std::string BMSEClipboard::toiBMSCClipboardData(MarkerList markers, double bpm, int sampleRate, int numChannels, int startDef) {
+	std::string res = "iBMSC Clipboard Data xNT\r\n";
+	for (auto m : markers) {
+		double samplesPer192th = 60.0 / (double)bpm * ((double)sampleRate * (double)numChannels) / 192.0 * 4.0;
+		double position = m.position / samplesPer192th;
+		iBMSCClipboardObject o(27, position, startDef++);
 		res = res + o.toString() + "\r\n";
 	}
 	return res;
@@ -90,12 +115,16 @@ void ProcessBMSEClipboard(sf::SoundBuffer& buffer, SlicerSettings& settings) {
 		ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Clipboard does not contain any BMSE data!" });
 }
 
-void GenerateBMSEClipboard(sf::SoundBuffer& buffer, SlicerSettings settings) {
+void GenerateBMSEClipboard(sf::SoundBuffer& buffer, SlicerSettings settings, bool useiBMSC) {
 	if (buffer.getSampleCount() > 0) {
-		auto cb = BMSEClipboard::toBMSEClipboardData(settings.markers, settings.bpm, buffer.getSampleRate(), buffer.getChannelCount(), settings.startingKeysound);
+		std::string cb;
+		if (useiBMSC)
+			cb = BMSEClipboard::toiBMSCClipboardData(settings.markers, settings.bpm, buffer.getSampleRate(), buffer.getChannelCount(), settings.startingKeysound);
+		else
+			cb = BMSEClipboard::toBMSEClipboardData(settings.markers, settings.bpm, buffer.getSampleRate(), buffer.getChannelCount(), settings.startingKeysound);
 		std::cout << cb << std::endl;
 		clip::set_text(cb);
-		ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Copied markers as BMSE clipboard data!" });
+		ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Copied markers as %s clipboard data!", useiBMSC ? "iBMSC" : "BMSE" });
 	}
 	else {
 		ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Please load a file first!" });

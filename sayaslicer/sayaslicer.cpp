@@ -33,7 +33,10 @@ void ShowMenuEdit(sf::SoundBuffer& buffer, SlicerSettings& settings)
     }
     ImGui::Separator();
     if (ImGui::MenuItem("Copy BMSE clipboard data", "V")) {
-        GenerateBMSEClipboard(buffer, settings);
+        GenerateBMSEClipboard(buffer, settings, false);
+    }
+    if (ImGui::MenuItem("Copy iBMSC clipboard data", "Shift+V")) {
+        GenerateBMSEClipboard(buffer, settings, true);
     }
     if (ImGui::MenuItem("Paste BMSE clipboard data", "B")) {
         ProcessBMSEClipboard(buffer, settings);
@@ -253,7 +256,7 @@ void ProcessShortcuts(ImGuiIO& io, sf::SoundBuffer& buffer, sf::SoundBuffer& buf
             HandleMarkerCopyPaste(settings, SelectionOperation::PASTE);
         }
         else {
-            GenerateBMSEClipboard(buffer, settings);
+            GenerateBMSEClipboard(buffer, settings, io.KeyShift);
         }
     }
     if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_C), false)) {

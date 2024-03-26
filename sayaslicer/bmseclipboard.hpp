@@ -26,14 +26,28 @@ public:
 	BMSEClipboardObject(std::string s);
 };
 
+class iBMSCClipboardObject {
+public:
+	int column = 0;
+	double position = 0;
+	int value = 0;
+	int ln_length = 0;
+	bool invisible = false;
+	bool mine = false;
+
+	std::string toString();
+	iBMSCClipboardObject(int column, double position, int value);
+};
+
 class BMSEClipboard {
 public:
 	std::vector<BMSEClipboardObject> objects;
 
 	static std::string toBMSEClipboardData(MarkerList markers, double bpm, int sampleRate, int numChannels, int startDef);
+	static std::string toiBMSCClipboardData(MarkerList markers, double bpm, int sampleRate, int numChannels, int startDef);
 	BMSEClipboard(std::string s);
 };
 
 void AddMarkersFromBMSEClipboard(BMSEClipboard objs, sf::SoundBuffer& buffer, SlicerSettings& settings);
 void ProcessBMSEClipboard(sf::SoundBuffer& buffer, SlicerSettings& settings);
-void GenerateBMSEClipboard(sf::SoundBuffer& buffer, SlicerSettings settings);
+void GenerateBMSEClipboard(sf::SoundBuffer& buffer, SlicerSettings settings, bool useiBMSC);
