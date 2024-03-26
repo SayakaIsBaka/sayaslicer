@@ -114,16 +114,22 @@ void ShowSettingsPanel(sf::SoundBuffer& buffer, SlicerSettings& settings) {
 
         ImGui::SeparatorText("General");
         ImGui::SliderFloat("Zoom", &zoom, 0, minZoom - waveformReso * 2.0);
+        AddScalarScroll(ImGuiDataType_Float, &zoom, 0, minZoom - waveformReso * 2.0, 200);
         settings.maxDisplayRange = minZoom - zoom;
         ImGui::DragInt("Offset", &settings.offset, 1, 0, 1000);
+        AddScalarScroll(ImGuiDataType_S32, &settings.offset, 0, 1000, 10);
         ImGui::DragScalar("Position", ImGuiDataType_Double, &settings.cursorPos, 1, &minPos, &maxPos);
+        AddScalarScroll(ImGuiDataType_Double, &settings.cursorPos, minPos, maxPos, 100);
         ImGui::DragFloat("BPM", &settings.bpm, 1, 10, 3500);
+        AddScalarScroll(ImGuiDataType_Float, &settings.bpm, 10, 3500, 1);
         ImGui::DragInt("Snapping", &settings.snapping, 1, 1, 192);
+        AddScalarScroll(ImGuiDataType_S32, &settings.snapping, 1, 192, 1);
         int base = settings.useBase62 ? 62 : 36;
         int maxKeysound = base * base - 1;
         if (settings.startingKeysound > maxKeysound)
             settings.startingKeysound = maxKeysound;
         DragIntCustomBase("Starting key", &settings.startingKeysound, 1, 1, maxKeysound, base);
+        AddScalarScroll(ImGuiDataType_S32, &settings.startingKeysound, 1, maxKeysound, 1);
         ImGui::SetItemTooltip("Decimal value: %d", settings.startingKeysound);
         ImGui::Checkbox("Enable base-62", &settings.useBase62);
         if (ImGui::Button("Zero-cross markers", ImVec2(-FLT_MIN, 0.0f))) {
@@ -153,7 +159,9 @@ void ShowSettingsPanel(sf::SoundBuffer& buffer, SlicerSettings& settings) {
             }
             ImGui::EndCombo();
         }
+        AddScalarScroll(ImGuiDataType_S32, &settings.selectedGateThreshold, 0, IM_ARRAYSIZE(gateThresholds) - 1, 1);
         ImGui::DragInt("Fadeout", &settings.fadeout, 1, 0, 1000, "%dms");
+        AddScalarScroll(ImGuiDataType_S32, &settings.fadeout, 0, 1000, 5);
 
         ImGui::SeparatorText("Process");
         if (ImGui::Button("Export keysounds", ImVec2(-FLT_MIN, 0.0f))) {

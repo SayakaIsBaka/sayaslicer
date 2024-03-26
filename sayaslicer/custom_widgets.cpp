@@ -2,6 +2,53 @@
 
 using namespace ImGui;
 
+bool AddScalarScroll(ImGuiDataType data_type, void* v, float v_min, float v_max, float scrollStep) {
+    ImGui::SetItemKeyOwner(ImGuiKey_MouseWheelY);
+    if (ImGui::IsItemHovered())
+    {
+        float wheel = ImGui::GetIO().MouseWheel;
+        if (wheel)
+        {
+            if (ImGui::IsItemActive())
+            {
+                ImGui::ClearActiveID();
+            }
+            else
+            {
+                if (data_type == ImGuiDataType_S32) { // I sincerely need to find a better way to handle that
+                    
+                    auto tmp = *((int*)v) + wheel * scrollStep;
+                    if (tmp >= v_max)
+                        *((int*)v) = v_max;
+                    else if (tmp <= v_min)
+                        *((int*)v) = v_min;
+                    else
+                        *((int*)v) = tmp;
+                }
+                else if (data_type == ImGuiDataType_Float) {
+                    auto tmp = *((float*)v) + wheel * scrollStep;
+                    if (tmp >= v_max)
+                        *((float*)v) = v_max;
+                    else if (tmp <= v_min)
+                        *((float*)v) = v_min;
+                    else
+                        *((float*)v) = tmp;
+                }
+                else if (data_type == ImGuiDataType_Double) {
+                    auto tmp = *((double*)v) + wheel * scrollStep;
+                    if (tmp >= v_max)
+                        *((double*)v) = v_max;
+                    else if (tmp <= v_min)
+                        *((double*)v) = v_min;
+                    else
+                        *((double*)v) = tmp;
+                }
+            }
+        }
+    }
+    return true;
+}
+
 bool SelectableInput(const char* str_id, bool selected, ImGuiSelectableFlags flags, char* buf, size_t buf_size, char* display_text)
 {
     ImGuiContext& g = *GImGui;
