@@ -84,3 +84,40 @@ long long LoadFileUnicode(std::string path, std::vector<char>& buf) {
     file.read(buf.data(), size);
     return size;
 }
+
+void GetStartingKeysoundFromBMS(SlicerSettings& settings) {
+    const std::string bmsExtensions[4] = { ".bms", ".bme", ".bml", ".pms" };
+
+    auto p = std::filesystem::u8path(settings.selectedFile);
+    std::filesystem::path selectedPath;
+    for (const auto& entry : std::filesystem::directory_iterator(p.parent_path())) {
+        auto ext = entry.path().extension().string();
+        std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) { return std::tolower(c); }); // To lowercase
+        if (std::find(std::begin(bmsExtensions), std::end(bmsExtensions), ext) != std::end(bmsExtensions)) {
+            selectedPath = entry.path();
+            break; // Only select the first BMS file found
+        }
+    }
+    if (selectedPath.empty()) // No BMS file found in the folder
+        return;
+
+    std::ifstream inBms(selectedPath);
+    std::list<std::string> wavs;
+    std::string l;
+    settings.useBase62 = false;
+
+    while (std::getline(inBms, l)) {
+        if (l.rfind("#BASE", 0) == 0) {
+            std::istringstream iss(l);
+            int base;
+            std::string cmd;
+            if (!(iss >> cmd >> base)) { break; }
+            settings.useBase62 = base == 62;
+        }
+        if (l.rfind("#WAV", 0) == 0)
+            wavs.push_back(l.substr(4, 2));
+    }
+    wavs.sort();
+    int lastKeysound = FromBaseToDec(wavs.back().c_str(), settings.useBase62 ? 62 : 36);
+    settings.startingKeysound = lastKeysound + 1;
+}

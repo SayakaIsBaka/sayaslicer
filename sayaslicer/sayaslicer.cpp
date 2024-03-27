@@ -135,6 +135,8 @@ void ShowSettingsPanel(sf::SoundBuffer& buffer, SlicerSettings& settings) {
         int maxKeysound = base * base - 1;
         if (settings.startingKeysound > maxKeysound)
             settings.startingKeysound = maxKeysound;
+        if (settings.startingKeysound <= 0)
+            settings.startingKeysound = 1;
         DragIntCustomBase("Starting key", &settings.startingKeysound, 1, 1, maxKeysound, base);
         AddScalarScroll(ImGuiDataType_S32, &settings.startingKeysound, 1, maxKeysound, 1);
         ImGui::SetItemTooltip("Decimal value: %d", settings.startingKeysound);

@@ -1,6 +1,6 @@
 #include "base_convert.hpp"
 
-int FromBaseToDec(const char* s, int b, const char* digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz") {
+int FromBaseToDec(const char* s, int b, const char* digits) {
     int res = 0;
     int len = strlen(s);
     for (int i = len - 1; i >= 0; i--) {

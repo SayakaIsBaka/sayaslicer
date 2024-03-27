@@ -34,6 +34,8 @@ bool OpenAudioFile(sf::SoundBuffer& buffer, SlicerSettings& settings, std::strin
             settings.cursorPos = 0.0; // Reset cursor position to avoid crashing
             if (settings.markers.size() == 0)
                 settings.markers.push_back(0.0);
+            if (settings.prefs.detectStartingKey)
+                GetStartingKeysoundFromBMS(settings);
             settings.updateHistory = true;
             ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Opened file:\n%s", settings.selectedFile.c_str() });
         }

@@ -21,10 +21,19 @@ void ShowPreferencesModal(UserPreferences& pref) {
 		pref.openPreferencesModalTemp = false;
 		ImGui::OpenPopup("Preferences");
 	}
+
+	static UserPreferences pTmp = pref;
 	if (ImGui::BeginPopupModal("Preferences", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize)) {
-		ImGui::Checkbox("Auto-detect starting keysound", &pref.detectStartingKey);
+		ImGui::Checkbox("Auto-detect starting keysound", &pTmp.detectStartingKey);
 		if (ImGui::Button("Save")) {
+			pref = pTmp;
+			pTmp = pref;
 			SavePreferences(pref);
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Close")) {
+			pTmp = pref;
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
