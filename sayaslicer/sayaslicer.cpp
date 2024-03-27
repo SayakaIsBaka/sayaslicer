@@ -53,6 +53,10 @@ void ShowMenuEdit(sf::SoundBuffer& buffer, SlicerSettings& settings)
         settings.markers.clear(true);
         settings.updateHistory = true;
     }
+    ImGui::Separator();
+    if (ImGui::MenuItem("Preferences")) {
+        settings.prefs.openPreferencesModalTemp = true;
+    }
 }
 
 void ShowMainMenuBar(sf::SoundBuffer& buffer, SlicerSettings &settings, sf::RenderWindow &window)
@@ -420,6 +424,8 @@ int main() {
     History history;
     settings.maxDisplayRange = minZoom;
 
+    LoadPreferences(settings.prefs);
+
 #if _WIN32
     HWND handle = window.getSystemHandle();
     DragAcceptFiles(handle, TRUE);
@@ -460,6 +466,8 @@ int main() {
         ShowWaveform(buffer, settings);
 
         ShowMidiTrackModal(buffer, settings);
+        ShowPreferencesModal(settings.prefs);
+
         if (settings.updateHistory) {
             settings.updateHistory = false;
             history.AddItem(settings);

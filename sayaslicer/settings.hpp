@@ -6,6 +6,7 @@
 #include <filesystem>
 #include "marker.hpp"
 #include "selection.hpp"
+#include "preferences.hpp"
 
 class SlicerSettings {
 public:
@@ -24,6 +25,7 @@ public:
 	MarkerSelection selection;
 	bool updateHistory = false;
 	bool openMidiModalTemp = false;
+	UserPreferences prefs;
 	float maxDisplayRange = 1.0;
 
 	template<class Archive>
