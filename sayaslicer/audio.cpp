@@ -23,7 +23,7 @@ bool OpenAudioFile(sf::SoundBuffer& buffer, SlicerSettings& settings, std::strin
         std::vector<char> bTmp;
         auto size = LoadFileUnicode(settings.selectedFile, bTmp);
         if (size == -1) {
-            ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Selected file does not exist!" });
+            InsertNotification({ ImGuiToastType::Error, 3000, "Selected file does not exist!" });
             return false;
         }
         bool res = buffer.loadFromMemory(bTmp.data(), size);
@@ -39,11 +39,11 @@ bool OpenAudioFile(sf::SoundBuffer& buffer, SlicerSettings& settings, std::strin
             if (settings.prefs.detectStartingKey)
                 GetStartingKeysoundFromBMS(settings);
             settings.updateHistory = true;
-            ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "%s:\n%s", "opened_file"_t.c_str(), settings.selectedFile.c_str() });
+            InsertNotification({ ImGuiToastType::Success, 3000, "%s:\n%s", "opened_file"_t.c_str(), settings.selectedFile.c_str() });
         }
         else {
             settings.selectedFile = prevFile;
-            ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "selected_file_not_supported"_t.c_str() });
+            InsertNotification({ ImGuiToastType::Error, 3000, "selected_file_not_supported"_t.c_str() });
         }
         return res;
     }
@@ -110,7 +110,7 @@ void ApplyFadeout(std::vector<sf::Int16>& buffer, int fadeTime, unsigned int sam
 
 void WriteKeysounds(sf::SoundBuffer& buffer, SlicerSettings& settings) {
     if (settings.selectedFile.size() == 0) {
-        ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Please load a file first!" });
+        InsertNotification({ ImGuiToastType::Error, 3000, "Please load a file first!" });
         return;
     }
     auto samples = buffer.getSamples();
@@ -173,7 +173,7 @@ void WriteKeysounds(sf::SoundBuffer& buffer, SlicerSettings& settings) {
         file.close();
         std::filesystem::rename(u8filename, finalPath);
     }
-    ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "%s:\n%s", "exported_keysounds_to_folder"_t.c_str(), p.parent_path().u8string().c_str() });
+    InsertNotification({ ImGuiToastType::Success, 3000, "%s:\n%s", "exported_keysounds_to_folder"_t.c_str(), p.parent_path().u8string().c_str() });
 }
 
 unsigned long long FindCrossing(sf::SoundBuffer& buffer, unsigned long long pos, bool searchRight) {
@@ -206,5 +206,5 @@ void ZeroCrossMarkers(sf::SoundBuffer& buffer, SlicerSettings& settings) {
             m.position = crossR;
     }
     settings.updateHistory = true;
-    ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Moved markers to zero-crossing points!" });
+    InsertNotification({ ImGuiToastType::Success, 3000, "Moved markers to zero-crossing points!" });
 }

@@ -3,7 +3,7 @@
 #include "settings.hpp"
 #include "utils.hpp"
 #include "waveform.hpp"
-#include <ImGuiNotify.hpp>
+#include "notifications.hpp"
 #include <SFML/Audio.hpp>
 #include <tinyfiledialogs/tinyfiledialogs.h>
 

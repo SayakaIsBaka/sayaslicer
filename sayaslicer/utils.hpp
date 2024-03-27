@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ImGuiNotify.hpp>
+#include "notifications.hpp"
 #include <filesystem>
 #include <tinyfiledialogs/tinyfiledialogs.h>
 #include <clip/clip.h>

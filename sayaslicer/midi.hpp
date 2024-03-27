@@ -3,7 +3,7 @@
 #include "settings.hpp"
 #include <midifile/include/MidiFile.h>
 #include <imgui.h>
-#include <ImGuiNotify.hpp>
+#include "notifications.hpp"
 #include <SFML/Audio.hpp>
 #include <tinyfiledialogs/tinyfiledialogs.h>
 

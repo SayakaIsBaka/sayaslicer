@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <list>
 #include <vector>
-#include <ImGuiNotify.hpp>
+#include "notifications.hpp"
 #include <SFML/Audio.hpp>
 #include <clip/clip.h>
 #include "marker.hpp"

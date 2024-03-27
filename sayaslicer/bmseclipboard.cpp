@@ -96,10 +96,10 @@ void AddMarkersFromBMSEClipboard(BMSEClipboard objs, sf::SoundBuffer& buffer, Sl
 				settings.markers.push_back(m);
 			}
 		}
-		ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Successfully imported markers from the clipboard!" });
+		InsertNotification({ ImGuiToastType::Success, 3000, "Successfully imported markers from the clipboard!" });
 	}
 	else {
-		ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Please load a file first!" });
+		InsertNotification({ ImGuiToastType::Error, 3000, "Please load a file first!" });
 	}
 }
 
@@ -112,7 +112,7 @@ void ProcessBMSEClipboard(sf::SoundBuffer& buffer, SlicerSettings& settings) {
 		settings.updateHistory = true;
 	}
 	else
-		ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Clipboard does not contain any BMSE data!" });
+		InsertNotification({ ImGuiToastType::Error, 3000, "Clipboard does not contain any BMSE data!" });
 }
 
 void GenerateBMSEClipboard(sf::SoundBuffer& buffer, SlicerSettings settings, bool useiBMSC) {
@@ -124,9 +124,9 @@ void GenerateBMSEClipboard(sf::SoundBuffer& buffer, SlicerSettings settings, boo
 			cb = BMSEClipboard::toBMSEClipboardData(settings.markers, settings.bpm, buffer.getSampleRate(), buffer.getChannelCount(), settings.startingKeysound);
 		std::cout << cb << std::endl;
 		clip::set_text(cb);
-		ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Copied markers as %s clipboard data!", useiBMSC ? "iBMSC" : "BMSE" });
+		InsertNotification({ ImGuiToastType::Success, 3000, "Copied markers as %s clipboard data!", useiBMSC ? "iBMSC" : "BMSE" });
 	}
 	else {
-		ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Please load a file first!" });
+		InsertNotification({ ImGuiToastType::Error, 3000, "Please load a file first!" });
 	}
 }

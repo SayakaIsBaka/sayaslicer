@@ -29,7 +29,7 @@ void ExportKeysoundList(SlicerSettings settings) {
         idx++;
     }
     clip::set_text(res);
-    ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Copied keysound list to clipboard!" });
+    InsertNotification({ ImGuiToastType::Success, 3000, "Copied keysound list to clipboard!" });
 }
 
 void ImportNamesFromMid2Bms(SlicerSettings& settings, std::string file) {
@@ -64,10 +64,10 @@ void ImportNamesFromMid2Bms(SlicerSettings& settings, std::string file) {
         }
         if (settings.markers.importNames(names)) {
             settings.updateHistory = true;
-            ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Successfully imported marker names!" });
+            InsertNotification({ ImGuiToastType::Success, 3000, "Successfully imported marker names!" });
         }
         else {
-            ImGui::InsertNotification({ ImGuiToastType::Warning, 3000, "Imported marker names but the number of names did not perfectly match the number of markers" });
+            InsertNotification({ ImGuiToastType::Warning, 3000, "Imported marker names but the number of names did not perfectly match the number of markers" });
         }
     }
 }

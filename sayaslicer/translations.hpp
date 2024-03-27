@@ -56,6 +56,9 @@ static i18n::translations translations{
 		{"opened_file", "Opened file"},
 		{"selected_file_not_supported", "Selected file isn't supported!"},
 		{"exported_keysounds_to_folder", "Exported keysounds to the following folder"},
+		{"success", "Success"},
+		{"warning", "Warning"},
+		{"error", "Error"},
 	}},
 	{"jp", {
 		{"_lang", u8"日本語"},
@@ -108,6 +111,9 @@ static i18n::translations translations{
 		{"opened_file", u8"ファイルを読み込みました"},
 		{"selected_file_not_supported", u8"未対応のファイル形式です"},
 		{"exported_keysounds_to_folder", u8"以下のフォルダーにキー音を出力しました"},
+		{"success", u8"成功"},
+		{"warning", u8"注意"},
+		{"error", u8"エラー"},
 	}},
 };
 
