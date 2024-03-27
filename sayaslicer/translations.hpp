@@ -75,7 +75,7 @@ static i18n::translations translations{
 		{"import_audio_file", u8"音声ファイルを読み込む"},
 		{"export_keysounds", u8"キー音を出力"},
 		{"quit", u8"終了"},
-	    {"edit", u8"編集"},
+		{"edit", u8"編集"},
 		{"import_midi", u8"MIDIファイルから切断配置を読み込む"},
 		{"import_mid2bms", u8"text5_renamer_array.txtを読み込む"},
 		{"export_bmse", u8"BMSEシーケンスをコーピ"},
