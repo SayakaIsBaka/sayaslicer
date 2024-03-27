@@ -71,6 +71,3 @@ sayaslicer uses the following libraries:
 - [midifile](https://github.com/craigsapp/midifile)
 - [i18n_keyval](https://github.com/stefandevai/i18n_keyval)
 - [Moonlight (ImGui theme)](https://github.com/Madam-Herta/Moonlight/)
-
-Translations:
-- Japanese: [AYhaz](http://yaritaihoudie.free.fr)
