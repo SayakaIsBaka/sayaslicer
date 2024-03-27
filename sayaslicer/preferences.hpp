@@ -4,16 +4,18 @@
 #include <cereal/archives/json.hpp>
 #include <imgui.h>
 #include <fstream>
+#include "translations.hpp"
 
 class UserPreferences {
 public:
 	bool detectStartingKey = false;
 	bool openPreferencesModalTemp = false;
+	std::string language = "en";
 
 	template<class Archive>
 	void serialize(Archive& archive)
 	{
-		archive(CEREAL_NVP(detectStartingKey));
+		archive(CEREAL_NVP(detectStartingKey), CEREAL_NVP(language));
 	}
 };
 

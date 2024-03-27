@@ -4,3 +4,6 @@
 [submodule "vcpkg"]
 	path = vcpkg
 	url = https://github.com/Microsoft/vcpkg
+[submodule "include/i18n_keyval"]
+	path = include/i18n_keyval
+	url = https://github.com/stefandevai/i18n_keyval.git

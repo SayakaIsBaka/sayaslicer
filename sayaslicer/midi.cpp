@@ -1,5 +1,7 @@
 #include "midi.hpp"
 
+using namespace i18n::literals;
+
 void GetTrackNames(smf::MidiFile midifile, std::vector<std::string>& out) {
     int tracks = midifile.getTrackCount();
     for (int i = 0; i < tracks; i++) {
@@ -94,13 +96,13 @@ void ShowMidiTrackModal(sf::SoundBuffer& buffer, SlicerSettings& settings) {
     if (ImGui::BeginPopupModal("Select MIDI track", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize)) {
         static std::vector<std::string> choices;
         if (choices.size() == 0) {
-            choices.push_back("All tracks");
+            choices.push_back("all_tracks"_t.c_str());
             GetTrackNames(settings.midiFile, choices);
         }
         static int choice = 0;
         static bool useMidiBPM = false;
         static bool clearMarkers = true;
-        ImGui::Text("Select the track to import:");
+        ImGui::Text("%s:", "select_track_import"_t.c_str());
         const char* combo_preview_value = choices[choice].c_str();
         if (ImGui::BeginCombo("##miditrack", combo_preview_value)) {
             for (int n = 0; n < choices.size(); n++)
@@ -115,9 +117,9 @@ void ShowMidiTrackModal(sf::SoundBuffer& buffer, SlicerSettings& settings) {
             ImGui::EndCombo();
         }
         //ImGui::Checkbox("Use BPM from the MIDI file", &useMidiBPM);
-        ImGui::Checkbox("Clear existing markers", &clearMarkers);
+        ImGui::Checkbox("clear_existing_markers"_t.c_str(), &clearMarkers);
 
-        if (ImGui::Button("Import")) {
+        if (ImGui::Button("import"_t.c_str())) {
             ImportMidiMarkers(buffer, settings, choice - 1, useMidiBPM, clearMarkers);
             choice = 0;
             choices.clear();
@@ -126,7 +128,7 @@ void ShowMidiTrackModal(sf::SoundBuffer& buffer, SlicerSettings& settings) {
             ImGui::CloseCurrentPopup();
         }
         ImGui::SameLine();
-        if (ImGui::Button("Cancel")) {
+        if (ImGui::Button("cancel"_t.c_str())) {
             choice = 0;
             choices.clear();
             settings.midiFile.clear();

@@ -23,6 +23,7 @@ A cross-platform audio slicer with BMS-related features. Aims to be a drop-in re
 - Copy / paste markers
 - Undo / redo
 - Zero-crossing
+- Multiple languages support (English, Japanese)
 
 ## Keyboard shortcuts
 Keyboard shortcuts are the same as woslicerII except the keyboard layout is taken into account:
@@ -68,4 +69,8 @@ sayaslicer uses the following libraries:
 - [ImGuiNotify](https://github.com/TyomaVader/ImGuiNotify)
 - [cereal](https://github.com/USCiLab/cereal)
 - [midifile](https://github.com/craigsapp/midifile)
+- [i18n_keyval](https://github.com/stefandevai/i18n_keyval)
 - [Moonlight (ImGui theme)](https://github.com/Madam-Herta/Moonlight/)
+
+Translations:
+- Japanese: [AYhaz](http://yaritaihoudie.free.fr)

@@ -1,60 +1,61 @@
 ﻿#include "sayaslicer.hpp"
 
 using namespace std;
+using namespace i18n::literals;
 
 void ShowMenuFile(sf::SoundBuffer& buffer, SlicerSettings &settings, sf::RenderWindow &window)
 {
-    if (ImGui::MenuItem("Open project", "Ctrl+O")) {
+    if (ImGui::MenuItem("open_project"_t.c_str(), "Ctrl+O")) {
         OpenProject(buffer, settings);
     }
-    if (ImGui::MenuItem("Save project", "Ctrl+S")) {
+    if (ImGui::MenuItem("save_project"_t.c_str(), "Ctrl+S")) {
         SaveProject(settings);
     }
     ImGui::Separator();
-    if (ImGui::MenuItem("Import audio file", "O")) {
+    if (ImGui::MenuItem("import_audio_file"_t.c_str(), "O")) {
         OpenAudioFile(buffer, settings);
     }
-    if (ImGui::MenuItem("Export keysounds", "M")) {
+    if (ImGui::MenuItem("export_keysounds"_t.c_str(), "M")) {
         WriteKeysounds(buffer, settings);
     }
     ImGui::Separator();
-    if (ImGui::MenuItem("Quit", "Alt+F4")) {
+    if (ImGui::MenuItem("quit"_t.c_str(), "Alt+F4")) {
         window.close();
     }
 }
 
 void ShowMenuEdit(sf::SoundBuffer& buffer, SlicerSettings& settings)
 {
-    if (ImGui::MenuItem("Import slices from MIDI")) {
+    if (ImGui::MenuItem("import_midi"_t.c_str())) {
         LoadMidi(buffer, settings);
     }
-    if (ImGui::MenuItem("Import Mid2BMS renamer file")) {
+    if (ImGui::MenuItem("import_mid2bms"_t.c_str())) {
         ImportNamesFromMid2Bms(settings);
     }
     ImGui::Separator();
-    if (ImGui::MenuItem("Copy BMSE clipboard data", "V")) {
+    if (ImGui::MenuItem("export_bmse"_t.c_str(), "V")) {
         GenerateBMSEClipboard(buffer, settings, false);
     }
-    if (ImGui::MenuItem("Copy iBMSC clipboard data", "Shift+V")) {
+    if (ImGui::MenuItem("export_ibmsc"_t.c_str(), "Shift+V")) {
         GenerateBMSEClipboard(buffer, settings, true);
     }
-    if (ImGui::MenuItem("Paste BMSE clipboard data", "B")) {
+    if (ImGui::MenuItem("import_bmse"_t.c_str(), "B")) {
         ProcessBMSEClipboard(buffer, settings);
     }
-    if (ImGui::MenuItem("Copy keysound list to clipboard", "K")) {
+    if (ImGui::MenuItem("export_keysound_list"_t.c_str(), "K")) {
         ExportKeysoundList(settings);
     }
     ImGui::Separator();
-    if (ImGui::MenuItem("Clear all markers", "C")) {
+    if (ImGui::MenuItem("clear_all_markers"_t.c_str(), "C")) {
         settings.markers.clear(false);
         settings.updateHistory = true;
     }
-    if (ImGui::MenuItem("Clear all markers (including 0)", "Shift+C")) {
+    if (ImGui::MenuItem("clear_all_markers_with_0"_t.c_str(), "Shift+C")) {
         settings.markers.clear(true);
         settings.updateHistory = true;
     }
     ImGui::Separator();
-    if (ImGui::MenuItem("Preferences")) {
+    if (ImGui::MenuItem("preferences"_t.c_str())) {
         settings.prefs.openPreferencesModalTemp = true;
     }
 }
@@ -63,12 +64,12 @@ void ShowMainMenuBar(sf::SoundBuffer& buffer, SlicerSettings &settings, sf::Rend
 {
     if (ImGui::BeginMainMenuBar())
     {
-        if (ImGui::BeginMenu("File"))
+        if (ImGui::BeginMenu("file"_t.c_str()))
         {
             ShowMenuFile(buffer, settings, window);
             ImGui::EndMenu();
         }
-        if (ImGui::BeginMenu("Edit"))
+        if (ImGui::BeginMenu("edit"_t.c_str()))
         {
             ShowMenuEdit(buffer, settings);
             ImGui::EndMenu();
@@ -119,17 +120,17 @@ void ShowSettingsPanel(sf::SoundBuffer& buffer, SlicerSettings& settings) {
         double maxPos = buffer.getSampleCount();
         static float zoom = 0;
 
-        ImGui::SeparatorText("General");
-        ImGui::SliderFloat("Zoom", &zoom, 0, minZoom - waveformReso * 2.0);
+        ImGui::SeparatorText("general"_t.c_str());
+        ImGui::SliderFloat("zoom"_t.c_str(), &zoom, 0, minZoom - waveformReso * 2.0);
         AddScalarScroll(ImGuiDataType_Float, &zoom, 0, minZoom - waveformReso * 2.0, 200);
         settings.maxDisplayRange = minZoom - zoom;
-        ImGui::DragInt("Offset", &settings.offset, 1, 0, 1000);
+        ImGui::DragInt("offset"_t.c_str(), &settings.offset, 1, 0, 1000);
         AddScalarScroll(ImGuiDataType_S32, &settings.offset, 0, 1000, 10);
-        ImGui::DragScalar("Position", ImGuiDataType_Double, &settings.cursorPos, 1, &minPos, &maxPos);
+        ImGui::DragScalar("position"_t.c_str(), ImGuiDataType_Double, &settings.cursorPos, 1, &minPos, &maxPos);
         AddScalarScroll(ImGuiDataType_Double, &settings.cursorPos, minPos, maxPos, 100);
-        ImGui::DragFloat("BPM", &settings.bpm, 1, 10, 3500);
+        ImGui::DragFloat("bpm"_t.c_str(), &settings.bpm, 1, 10, 3500);
         AddScalarScroll(ImGuiDataType_Float, &settings.bpm, 10, 3500, 1);
-        ImGui::DragInt("Snapping", &settings.snapping, 1, 1, 192);
+        ImGui::DragInt("snapping"_t.c_str(), &settings.snapping, 1, 1, 192);
         AddScalarScroll(ImGuiDataType_S32, &settings.snapping, 1, 192, 1);
         int base = settings.useBase62 ? 62 : 36;
         int maxKeysound = base * base - 1;
@@ -137,27 +138,27 @@ void ShowSettingsPanel(sf::SoundBuffer& buffer, SlicerSettings& settings) {
             settings.startingKeysound = maxKeysound;
         if (settings.startingKeysound <= 0)
             settings.startingKeysound = 1;
-        DragIntCustomBase("Starting key", &settings.startingKeysound, 1, 1, maxKeysound, base);
+        DragIntCustomBase("starting_key"_t.c_str(), &settings.startingKeysound, 1, 1, maxKeysound, base);
         AddScalarScroll(ImGuiDataType_S32, &settings.startingKeysound, 1, maxKeysound, 1);
-        ImGui::SetItemTooltip("Decimal value: %d", settings.startingKeysound);
-        ImGui::Checkbox("Enable base-62", &settings.useBase62);
-        if (ImGui::Button("Zero-cross markers", ImVec2(-FLT_MIN, 0.0f))) {
+        ImGui::SetItemTooltip("%s: %d", "decimal_value"_t.c_str(), settings.startingKeysound);
+        ImGui::Checkbox("enable_b62"_t.c_str(), &settings.useBase62);
+        if (ImGui::Button("zerocross_markers"_t.c_str(), ImVec2(-FLT_MIN, 0.0f))) {
             ZeroCrossMarkers(buffer, settings);
         }
 
-        ImGui::SeparatorText("Export settings");
+        ImGui::SeparatorText("export_settings"_t.c_str());
         char thres[64];
         if (settings.selectedGateThreshold == 0)
-            snprintf(thres, 64, "Disabled");
+            snprintf(thres, 64, "disabled"_t.c_str());
         else
             snprintf(thres, 64, "%ddB", gateThresholds[settings.selectedGateThreshold]);
         const char* combo_preview_value = thres;
-        if (ImGui::BeginCombo("Noise gate", combo_preview_value, 0))
+        if (ImGui::BeginCombo("noise_gate"_t.c_str(), combo_preview_value, 0))
         {
             for (int n = 0; n < IM_ARRAYSIZE(gateThresholds); n++)
             {
                 if (n == 0)
-                    snprintf(thres, 64, "Disabled");
+                    snprintf(thres, 64, "disabled"_t.c_str());
                 else
                     snprintf(thres, 64, "%ddB", gateThresholds[n]);
                 const bool is_selected = (settings.selectedGateThreshold == n);
@@ -169,11 +170,11 @@ void ShowSettingsPanel(sf::SoundBuffer& buffer, SlicerSettings& settings) {
             ImGui::EndCombo();
         }
         AddScalarScroll(ImGuiDataType_S32, &settings.selectedGateThreshold, 0, IM_ARRAYSIZE(gateThresholds) - 1, 1);
-        ImGui::DragInt("Fadeout", &settings.fadeout, 1, 0, 1000, "%dms");
+        ImGui::DragInt("fadeout"_t.c_str(), &settings.fadeout, 1, 0, 1000, "%dms");
         AddScalarScroll(ImGuiDataType_S32, &settings.fadeout, 0, 1000, 5);
 
-        ImGui::SeparatorText("Process");
-        if (ImGui::Button("Export keysounds", ImVec2(-FLT_MIN, 0.0f))) {
+        ImGui::SeparatorText("process"_t.c_str());
+        if (ImGui::Button("export_keysounds"_t.c_str(), ImVec2(-FLT_MIN, 0.0f))) {
             WriteKeysounds(buffer, settings);
         }
     }
@@ -300,16 +301,16 @@ void DisplayMarkersTable(SlicerSettings& settings) {
     if (ImGui::BeginTable("markerstable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY, outer_size))
     {
         ImGui::TableSetupScrollFreeze(0, 1);
-        ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed);
-        ImGui::TableSetupColumn("Position", ImGuiTableColumnFlags_WidthFixed);
-        ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn("id"_t.c_str(), ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableSetupColumn("position"_t.c_str(), ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableSetupColumn("name"_t.c_str(), ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableHeadersRow();
         if (settings.markers.size() == 0) {
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
             ImGui::TableNextColumn();
             ImGui::TableNextColumn();
-            ImGui::Text("No markers set...");
+            ImGui::Text("no_markers_set"_t.c_str());
         }
         else {
             settings.markers.sort();
@@ -362,10 +363,10 @@ void DisplayMarkersTable(SlicerSettings& settings) {
 void ShowWaveform(sf::SoundBuffer& buffer, SlicerSettings& settings) {
     if (ImGui::Begin("Waveform"))
     {
-        ImGui::SeparatorText("Waveform");
+        ImGui::SeparatorText("waveform"_t.c_str());
         DisplayWaveform(buffer, settings);
 
-        ImGui::SeparatorText("Markers");
+        ImGui::SeparatorText("markers"_t.c_str());
         DisplayMarkersTable(settings);
     }
     ImGui::End();
@@ -427,6 +428,7 @@ int main() {
     settings.maxDisplayRange = minZoom;
 
     LoadPreferences(settings.prefs);
+    InitTranslations(settings.prefs.language);
 
 #if _WIN32
     HWND handle = window.getSystemHandle();

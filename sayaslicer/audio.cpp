@@ -1,5 +1,7 @@
 #include "audio.hpp"
 
+using namespace i18n::literals;
+
 bool OpenAudioFile(sf::SoundBuffer& buffer, SlicerSettings& settings, std::string file)
 {
     auto prevFile = settings.selectedFile;
@@ -37,11 +39,11 @@ bool OpenAudioFile(sf::SoundBuffer& buffer, SlicerSettings& settings, std::strin
             if (settings.prefs.detectStartingKey)
                 GetStartingKeysoundFromBMS(settings);
             settings.updateHistory = true;
-            ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Opened file:\n%s", settings.selectedFile.c_str() });
+            ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "%s:\n%s", "opened_file"_t.c_str(), settings.selectedFile.c_str() });
         }
         else {
             settings.selectedFile = prevFile;
-            ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "Selected file isn't supported!" });
+            ImGui::InsertNotification({ ImGuiToastType::Error, 3000, "selected_file_not_supported"_t.c_str() });
         }
         return res;
     }
@@ -171,7 +173,7 @@ void WriteKeysounds(sf::SoundBuffer& buffer, SlicerSettings& settings) {
         file.close();
         std::filesystem::rename(u8filename, finalPath);
     }
-    ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "Exported keysounds to the following folder:\n%s", p.parent_path().u8string().c_str() });
+    ImGui::InsertNotification({ ImGuiToastType::Success, 3000, "%s:\n%s", "exported_keysounds_to_folder"_t.c_str(), p.parent_path().u8string().c_str() });
 }
 
 unsigned long long FindCrossing(sf::SoundBuffer& buffer, unsigned long long pos, bool searchRight) {

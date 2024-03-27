@@ -20,4 +20,5 @@ set(CLIP_TESTS OFF CACHE BOOL "Compile clip tests")
 # Incluez les sous-projets.
 add_subdirectory ("include/clip")
 add_subdirectory ("include/midifile")
+add_subdirectory ("include/i18n_keyval")
 add_subdirectory ("sayaslicer")

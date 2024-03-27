@@ -21,6 +21,7 @@
 #include "midi.hpp"
 #include "copy_paste.hpp"
 #include "preferences.hpp"
+#include "translations.hpp"
 
 #include <IconsFontAwesome6.h>
 #include <fonts/fa_solid_900.hpp>
