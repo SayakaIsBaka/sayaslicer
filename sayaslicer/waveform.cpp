@@ -1,5 +1,7 @@
 #include "waveform.hpp"
 
+using namespace i18n::literals;
+
 int MeterFormatter(double value, char* buff, int size, void* data) {
     SlicerSettings settings = *(SlicerSettings*)data;
     const double reducedSamplesPerMeasure = settings.samplesPerSnap * settings.snapping / waveformReso;
@@ -95,7 +97,7 @@ void DisplayWaveform(sf::SoundBuffer& buffer, SlicerSettings& settings) {
             double curDisplayPos = settings.cursorPos / waveformReso;
             ImPlot::DragLineX(555, &curDisplayPos, ImGui::GetStyleColorVec4(ImGuiCol_PlotLines), 0.5, ImPlotDragToolFlags_NoInputs);
             if (settings.selection.isSelectMode)
-                ImPlot::TagX(curDisplayPos, ImGui::GetStyleColorVec4(ImGuiCol_PlotHistogram), "Select");
+                ImPlot::TagX(curDisplayPos, ImGui::GetStyleColorVec4(ImGuiCol_PlotHistogram), "select"_t.c_str());
             else
                 ImPlot::TagX(curDisplayPos, ImGui::GetStyleColorVec4(ImGuiCol_PlotLines));
 

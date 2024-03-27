@@ -23,7 +23,7 @@ bool OpenAudioFile(sf::SoundBuffer& buffer, SlicerSettings& settings, std::strin
         std::vector<char> bTmp;
         auto size = LoadFileUnicode(settings.selectedFile, bTmp);
         if (size == -1) {
-            InsertNotification({ ImGuiToastType::Error, 3000, "Selected file does not exist!" });
+            InsertNotification({ ImGuiToastType::Error, 3000, "file_doesnt_exist"_t.c_str() });
             return false;
         }
         bool res = buffer.loadFromMemory(bTmp.data(), size);
@@ -110,7 +110,7 @@ void ApplyFadeout(std::vector<sf::Int16>& buffer, int fadeTime, unsigned int sam
 
 void WriteKeysounds(sf::SoundBuffer& buffer, SlicerSettings& settings) {
     if (settings.selectedFile.size() == 0) {
-        InsertNotification({ ImGuiToastType::Error, 3000, "Please load a file first!" });
+        InsertNotification({ ImGuiToastType::Error, 3000, "load_file_first"_t.c_str() });
         return;
     }
     auto samples = buffer.getSamples();
@@ -206,5 +206,5 @@ void ZeroCrossMarkers(sf::SoundBuffer& buffer, SlicerSettings& settings) {
             m.position = crossR;
     }
     settings.updateHistory = true;
-    InsertNotification({ ImGuiToastType::Success, 3000, "Moved markers to zero-crossing points!" });
+    InsertNotification({ ImGuiToastType::Success, 3000, "moved_markers_zerocrossing"_t.c_str() });
 }

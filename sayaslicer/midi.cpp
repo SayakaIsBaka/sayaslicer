@@ -23,7 +23,7 @@ void GetTrackNames(smf::MidiFile midifile, std::vector<std::string>& out) {
 
 void LoadMidi(sf::SoundBuffer& buffer, SlicerSettings& settings, std::string file) {
     if (!buffer.getSampleCount()) {
-        InsertNotification({ ImGuiToastType::Error, 3000, "Please load a file first!" });
+        InsertNotification({ ImGuiToastType::Error, 3000, "load_file_first"_t.c_str() });
         return;
     }
     if (file.size() == 0) {
@@ -85,7 +85,7 @@ void ImportMidiMarkers(sf::SoundBuffer& buffer, SlicerSettings& settings, int tr
             }
         }
     }
-    InsertNotification({ ImGuiToastType::Success, 3000, "Successfully imported markers from MIDI file!" });
+    InsertNotification({ ImGuiToastType::Success, 3000, "imported_midi_markers"_t.c_str() });
 }
 
 void ShowMidiTrackModal(sf::SoundBuffer& buffer, SlicerSettings& settings) {

@@ -8,7 +8,7 @@ void SaveProject(SlicerSettings settings) {
         std::ofstream outFile(p, std::ios::binary);
         cereal::BinaryOutputArchive oarchive(outFile);
         oarchive(settings);
-        InsertNotification({ ImGuiToastType::Success, 3000, "Saved project to:\n%s", s });
+        InsertNotification({ ImGuiToastType::Success, 3000, "%s:\n%s", "saved_project_to"_t.c_str(), s});
     }
 }
 
@@ -32,6 +32,6 @@ void OpenProject(sf::SoundBuffer& buffer, SlicerSettings& settings, std::string 
         else {
             OpenAudioFile(buffer, settings);
         }
-        InsertNotification({ ImGuiToastType::Success, 3000, "Opened project:\n%s", file.c_str() });
+        InsertNotification({ ImGuiToastType::Success, 3000, "%s:\n%s", "opened_project"_t.c_str(), file.c_str()});
     }
 }
