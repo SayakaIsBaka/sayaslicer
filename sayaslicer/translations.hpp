@@ -2,6 +2,7 @@
 
 #include <i18n_keyval/src/i18n_keyval/i18n.hpp>
 #include <i18n_keyval/src/i18n_keyval/translators/basic.hpp>
+#include <vector>
 
 static i18n::translations translations{
 	{"en", {
