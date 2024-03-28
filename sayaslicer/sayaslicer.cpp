@@ -454,6 +454,9 @@ int main() {
     ImGuiWindowClass window_class;
     window_class.DockNodeFlagsOverrideSet = ImGuiDockNodeFlags_NoTabBar;
 
+    if (settings.prefs.checkForUpdates)
+        CheckUpdates(true);
+
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {

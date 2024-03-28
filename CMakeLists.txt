@@ -11,6 +11,8 @@ find_package(imgui CONFIG REQUIRED)
 find_package(implot CONFIG REQUIRED)
 find_package(tinyfiledialogs CONFIG REQUIRED)
 find_package(cereal CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
+find_package(cpr CONFIG REQUIRED)
 
 include("${CMAKE_SOURCE_DIR}/scripts/CheckGit.cmake")
 include_directories("include")

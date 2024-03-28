@@ -1,6 +1,7 @@
 #include "about.hpp"
 
 using namespace i18n::literals;
+using json = nlohmann::json;
 
 // array size is 6412
 static const unsigned char logoArr[] = {
@@ -407,6 +408,35 @@ static const unsigned char logoArr[] = {
   0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82
 };
 
+void CheckUpdates(bool silent) {
+    cpr::GetCallback([silent](cpr::Response r) {
+        try {
+            if (r.error || r.status_code != 200)
+                throw std::invalid_argument("Error getting runs from GitHub");
+            auto resJson = json::parse(r.text);
+            std::string latestVerSha;
+            for (auto run : resJson["workflow_runs"]) {
+                if (run["conclusion"] == "success") {
+                    latestVerSha = run["head_sha"];
+                    break;
+                }
+            }
+            if (latestVerSha.empty())
+                throw std::invalid_argument("Invalid JSON response");
+            if (strncmp(latestVerSha.substr(0, 7).c_str(), kGitHash, 7) == 0) {
+                if (!silent)
+                    InsertNotification({ ImGuiToastType::Success, 3000, "latest_version"_t.c_str() });
+            }
+            else
+                InsertNotification({ ImGuiToastType::Info, 3000, "update_available"_t.c_str() });
+        }
+        catch (...) {
+            if (!silent)
+                InsertNotification({ ImGuiToastType::Error, 3000, "error_update_checking"_t.c_str() });
+        }
+    }, cpr::Url{ "https://api.github.com/repos/SayakaIsBaka/sayaslicer/actions/runs" });
+}
+
 void ShowAbout(SlicerSettings& settings, sf::Texture &logo) {
     if (settings.openAboutModalTemp) {
         settings.openAboutModalTemp = false;
@@ -435,6 +465,9 @@ void ShowAbout(SlicerSettings& settings, sf::Texture &logo) {
         }
 
         ImGui::Separator();
+        if (ImGui::Button("check_for_updates"_t.c_str())) {
+            CheckUpdates(false);
+        }
 
         if (ImGui::Button("close"_t.c_str())) {
             ImGui::CloseCurrentPopup();

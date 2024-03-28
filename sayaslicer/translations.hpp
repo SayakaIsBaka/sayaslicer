@@ -86,6 +86,12 @@ static i18n::translations translations{
 		{"close", "Close"},
 		{"about", "About..."},
 		{"help", "?"},
+		{"info", "Info"},
+		{"check_for_updates", "Check for updates"},
+		{"check_for_updates_startup", "Check for updates on startup"},
+		{"latest_version", "You have the latest version!"},
+		{"update_available", "An update is available!"},
+		{"error_update_checking", "Error checking for updates"},
 	}},
 	{"jp", {
 		{"_lang", u8"日本語"},
@@ -168,6 +174,12 @@ static i18n::translations translations{
 		{"close", u8"閉じる"},
 		{"about", u8"情報"},
 		{"help", u8"ヘルプ"},
+		{"info", u8"情報"},
+		{"check_for_updates", u8"最新バージョンの有無を確認"},
+		{"check_for_updates_startup", u8"起動時に最新バージョンの有無を確認"},
+		{"latest_version", u8"お使いのソフトは最新版です"},
+		{"update_available", u8"新しいバージョンがあります"},
+		{"error_update_checking", u8"最新バージョンの有無の確認に失敗しました"},
 	}},
 };
 

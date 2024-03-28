@@ -10,12 +10,13 @@ class UserPreferences {
 public:
 	bool detectStartingKey = false;
 	bool openPreferencesModalTemp = false;
+	bool checkForUpdates = false;
 	std::string language = "en";
 
 	template<class Archive>
 	void serialize(Archive& archive)
 	{
-		archive(CEREAL_NVP(detectStartingKey), CEREAL_NVP(language));
+		archive(CEREAL_NVP(detectStartingKey), CEREAL_NVP(language), CEREAL_NVP(checkForUpdates));
 	}
 };
 

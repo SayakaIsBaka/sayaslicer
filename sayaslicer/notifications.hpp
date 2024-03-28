@@ -19,7 +19,7 @@ inline void InsertNotification(ImGuiToast toast) {
 			tmpToast.setTitle("error"_t.c_str());
 			break;
 		case ImGuiToastType::Info:
-			tmpToast.setTitle("Info");
+			tmpToast.setTitle("info"_t.c_str());
 			break;
 	}
 	ImGui::InsertNotification(tmpToast);

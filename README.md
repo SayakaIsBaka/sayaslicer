@@ -70,4 +70,6 @@ sayaslicer uses the following libraries:
 - [cereal](https://github.com/USCiLab/cereal)
 - [midifile](https://github.com/craigsapp/midifile)
 - [i18n_keyval](https://github.com/stefandevai/i18n_keyval)
+- [cpr](https://github.com/libcpr/cpr)
+- [nlohmann_json](https://github.com/nlohmann/json)
 - [Moonlight (ImGui theme)](https://github.com/Madam-Herta/Moonlight/)

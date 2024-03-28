@@ -14,7 +14,10 @@ void LoadPreferences(UserPreferences& pref) {
 	std::ifstream inFile(settingsFile);
 	if (inFile.is_open()) {
 		cereal::JSONInputArchive iarchive(inFile);
-		iarchive(pref);
+		try {
+			iarchive(pref);
+		}
+		catch (cereal::Exception) {} // Do not crash if upgrading from an old config file
 	}
 }
 
@@ -27,6 +30,7 @@ void ShowPreferencesModal(UserPreferences& pref) {
 	static UserPreferences pTmp = pref;
 	if (ImGui::BeginPopupModal("Preferences", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize)) {
 		ImGui::Checkbox("autodetect_starting_keysound"_t.c_str(), &pTmp.detectStartingKey);
+		ImGui::Checkbox("check_for_updates_startup"_t.c_str(), &pTmp.checkForUpdates);
 		auto langs = GetLanguages();
 		auto langsPretty = GetLanguagesPretty();
 		const char* combo_preview_value = translations[pTmp.language]["_lang"].c_str();

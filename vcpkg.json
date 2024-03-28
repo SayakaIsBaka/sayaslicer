@@ -1,5 +1,6 @@
 {
   "dependencies": [
+    "cereal",
     {
       "name": "imgui",
       "features": [
@@ -8,8 +9,14 @@
     },
     "imgui-sfml",
     "implot",
+    "nlohmann-json",
     "sfml",
     "tinyfiledialogs",
-    "cereal"
+    {
+      "name": "cpr",
+      "features": [
+        "ssl"
+      ]
+    }
   ]
 }
