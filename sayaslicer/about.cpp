@@ -537,6 +537,63 @@ void ShowAbout(SlicerSettings& settings, sf::Texture &logo) {
             ImGui::EndChild();
         }
 
+        if (ImGui::CollapsingHeader("help"_t.c_str())) {
+            std::string help = u8R"(Keyboard shortcuts:
+___
+  * O: open audio file
+  * Z: add slice marker
+  * C: clear all markers (but adds a marker at 0, similar behaviour to woslicerII)
+  * Shift+C: clear ALL markers (including marker at 0)
+  * V: copy markers as BMSE clipboard data
+  * Shift+V: copy markers as iBMSC clipboard data
+  * B: import markers from clipboard (using BMSE clipboard data)
+  * K: copy keysound list to clipboard
+  * M: export keysounds
+  * P: preview current keysound and move to the next one
+  * Enter: preview current keysound
+  * LeftArrow / RightArrow: move position cursor
+  * Shift + LeftArrow / Shift + RightArrow: move position cursor (jump to closest snap)
+  * UpArrow / DownArrow: set snapping
+  * Ctrl+O: load project
+  * Ctrl+S: save project
+  * Home: jump to the beginning of the waveform
+  * End: jump to the end of the waveform
+  * Space: enter / exit select mode
+  * Ctrl+C: copy selected markers
+  * Ctrl+X: cut selected markers
+  * Ctrl+V: paste previously copied markers
+  * Del: delete selected markers
+  * Ctrl+Z: undo action
+  * Ctrl+Y: redo action
+)";
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 3.400000095367432f));
+            Markdown(help);
+            ImGui::PopStyleVar();
+        }
+
+        if (ImGui::CollapsingHeader("Credits")) {
+            std::string credits = u8R"(Used libraries:
+___
+  * [Dear ImGui](https://github.com/ocornut/imgui)
+  * [SFML](https://github.com/SFML/SFML)
+  * [imgui-sfml](https://github.com/SFML/imgui-sfml)
+  * [implot](https://github.com/epezent/implot)
+  * [tinyfiledialogs](https://sourceforge.net/projects/tinyfiledialogs/)
+  * [clip](https://github.com/dacap/clip)
+  * [ImGuiNotify](https://github.com/TyomaVader/ImGuiNotify)
+  * [cereal](https://github.com/USCiLab/cereal)
+  * [midifile](https://github.com/craigsapp/midifile)
+  * [i18n_keyval](https://github.com/stefandevai/i18n_keyval)
+  * [cpr](https://github.com/libcpr/cpr)
+  * [nlohmann_json](https://github.com/nlohmann/json)
+  * [imgui_markdown](https://github.com/juliettef/imgui_markdown)
+  * [Moonlight (ImGui theme)](https://github.com/Madam-Herta/Moonlight/)
+)";
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 3.400000095367432f));
+            Markdown(credits);
+            ImGui::PopStyleVar();
+        }
+
         ImGui::Separator();
         if (ImGui::Button("check_for_updates"_t.c_str())) {
             CheckUpdates(false);

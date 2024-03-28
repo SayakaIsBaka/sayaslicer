@@ -74,7 +74,7 @@ void ShowMainMenuBar(sf::SoundBuffer& buffer, SlicerSettings &settings, sf::Rend
             ShowMenuEdit(buffer, settings);
             ImGui::EndMenu();
         }
-        if (ImGui::BeginMenu("help"_t.c_str()))
+        if (ImGui::BeginMenu("help_menu"_t.c_str()))
         {
             if (ImGui::MenuItem("about"_t.c_str())) {
                 settings.openAboutModalTemp = true;

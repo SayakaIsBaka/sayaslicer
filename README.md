@@ -32,6 +32,7 @@ Keyboard shortcuts are the same as woslicerII except the keyboard layout is take
 - `C`: clear all markers (but adds a marker at 0, similar behaviour to woslicerII)
 - `Shift+C`: clear ALL markers (including marker at 0)
 - `V`: copy markers as BMSE clipboard data
+- `Shift+V`: copy markers as iBMSC clipboard data
 - `B`: import markers from clipboard (using BMSE clipboard data)
 - `K`: copy keysound list to clipboard
 - `M`: export keysounds
