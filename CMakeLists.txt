@@ -12,7 +12,7 @@ find_package(implot CONFIG REQUIRED)
 find_package(tinyfiledialogs CONFIG REQUIRED)
 find_package(cereal CONFIG REQUIRED)
 
-include(scripts/CheckGit.cmake)
+include("${CMAKE_SOURCE_DIR}/scripts/CheckGit.cmake")
 include_directories("include")
 CheckGitSetup()
 
