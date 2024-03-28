@@ -428,7 +428,7 @@ void ShowAbout(SlicerSettings& settings, sf::Texture &logo) {
                 ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_PlotHistogram]);
                 ImGui::Text("sayaslicer");
                 ImGui::PopStyleColor();
-                ImGui::Text("v%s\nhttps://github.com/SayakaIsBaka/sayaslicer", kGitHash);
+                ImGui::Text("v%s - %s\nhttps://github.com/SayakaIsBaka/sayaslicer", kGitHash, VERSIONDATE);
                 ImGui::EndChild();
             }
             ImGui::EndChild();
