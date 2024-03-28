@@ -7,3 +7,6 @@
 [submodule "include/i18n_keyval"]
 	path = include/i18n_keyval
 	url = https://github.com/stefandevai/i18n_keyval.git
+[submodule "include/imgui_markdown"]
+	path = include/imgui_markdown
+	url = https://github.com/juliettef/imgui_markdown.git

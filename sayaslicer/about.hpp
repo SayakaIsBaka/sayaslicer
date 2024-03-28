@@ -2,6 +2,7 @@
 
 #include "settings.hpp"
 #include "notifications.hpp"
+#include "markdown.hpp"
 #include <imgui-SFML.h>
 #include <SFML/Graphics.hpp>
 #include <cpr/cpr.h>

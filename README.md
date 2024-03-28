@@ -72,4 +72,5 @@ sayaslicer uses the following libraries:
 - [i18n_keyval](https://github.com/stefandevai/i18n_keyval)
 - [cpr](https://github.com/libcpr/cpr)
 - [nlohmann_json](https://github.com/nlohmann/json)
+- [imgui_markdown](https://github.com/juliettef/imgui_markdown)
 - [Moonlight (ImGui theme)](https://github.com/Madam-Herta/Moonlight/)
