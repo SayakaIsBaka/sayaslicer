@@ -83,6 +83,9 @@ static i18n::translations translations{
 		{"copied_keysound_list_clipboard", "Copied keysound list to clipboard!"},
 		{"marker_names_import_success", "Successfully imported marker names!"},
 		{"marker_names_import_warning", "Imported marker names but the number of names did not perfectly match the number of markers"},
+		{"close", "Close"},
+		{"about", "About..."},
+		{"help", "?"},
 	}},
 	{"jp", {
 		{"_lang", u8"日本語"},
@@ -162,6 +165,9 @@ static i18n::translations translations{
 		{"copied_keysound_list_clipboard", u8"WAV定義情報をクリップボードに書き出しました"},
 		{"marker_names_import_success", u8"ファイル名のインポートに成功しました"},
 		{"marker_names_import_warning", u8"ファイル名をインポートしましたがファイル名の数値と切断配置の数値が一致していません"},
+		{"close", u8"閉じる"},
+		{"about", u8"情報"},
+		{"help", u8"ヘルプ"},
 	}},
 };
 

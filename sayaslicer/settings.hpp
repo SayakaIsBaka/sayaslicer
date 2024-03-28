@@ -27,6 +27,7 @@ public:
 	bool openMidiModalTemp = false;
 	UserPreferences prefs;
 	float maxDisplayRange = 1.0;
+	bool openAboutModalTemp = false;
 
 	template<class Archive>
 	void serialize(Archive& archive)

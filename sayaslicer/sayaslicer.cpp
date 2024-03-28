@@ -74,6 +74,13 @@ void ShowMainMenuBar(sf::SoundBuffer& buffer, SlicerSettings &settings, sf::Rend
             ShowMenuEdit(buffer, settings);
             ImGui::EndMenu();
         }
+        if (ImGui::BeginMenu("help"_t.c_str()))
+        {
+            if (ImGui::MenuItem("about"_t.c_str())) {
+                settings.openAboutModalTemp = true;
+            }
+            ImGui::EndMenu();
+        }
         ImGui::EndMainMenuBar();
     }
 }
@@ -423,6 +430,7 @@ int main() {
     sf::SoundBuffer buffer;
     sf::SoundBuffer buffer2; // For keysound playing
     sf::Sound sound;
+    sf::Texture logo;
     SlicerSettings settings;
     History history;
     settings.maxDisplayRange = minZoom;
@@ -471,6 +479,7 @@ int main() {
 
         ShowMidiTrackModal(buffer, settings);
         ShowPreferencesModal(settings.prefs);
+        ShowAbout(settings, logo);
 
         if (settings.updateHistory) {
             settings.updateHistory = false;

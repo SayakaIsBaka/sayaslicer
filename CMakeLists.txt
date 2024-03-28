@@ -12,7 +12,9 @@ find_package(implot CONFIG REQUIRED)
 find_package(tinyfiledialogs CONFIG REQUIRED)
 find_package(cereal CONFIG REQUIRED)
 
+include(scripts/CheckGit.cmake)
 include_directories("include")
+CheckGitSetup()
 
 set(CLIP_EXAMPLES OFF CACHE BOOL "Compile clip examples")
 set(CLIP_TESTS OFF CACHE BOOL "Compile clip tests")

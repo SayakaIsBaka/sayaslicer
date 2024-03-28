@@ -4,7 +4,9 @@
 cmake_minimum_required (VERSION 3.8)
 
 # Ajoutez une source à l'exécutable de ce projet.
-add_executable (sayaslicer "sayaslicer.cpp" "sayaslicer.hpp" "bmseclipboard.hpp" "theme.hpp" "custom_widgets.hpp" "settings.hpp" "marker.hpp" "base_convert.hpp" "selection.hpp" "history.hpp" "audio.hpp" "utils.hpp" "waveform.hpp" "project.hpp" "midi.hpp" "copy_paste.hpp" "audio.cpp" "base_convert.cpp" "utils.cpp" "bmseclipboard.cpp" "copy_paste.cpp" "custom_widgets.cpp" "history.cpp" "marker.cpp" "midi.cpp" "project.cpp" "selection.cpp" "theme.cpp" "waveform.cpp" "preferences.hpp" "preferences.cpp" "translations.hpp" "translations.cpp" "notifications.hpp")
+add_executable (sayaslicer "sayaslicer.cpp" "sayaslicer.hpp" "bmseclipboard.hpp" "theme.hpp" "custom_widgets.hpp" "settings.hpp" "marker.hpp" "base_convert.hpp" "selection.hpp" "history.hpp" "audio.hpp" "utils.hpp" "waveform.hpp" "project.hpp" "midi.hpp" "copy_paste.hpp" "audio.cpp" "base_convert.cpp" "utils.cpp" "bmseclipboard.cpp" "copy_paste.cpp" "custom_widgets.cpp" "history.cpp" "marker.cpp" "midi.cpp" "project.cpp" "selection.cpp" "theme.cpp" "waveform.cpp" "preferences.hpp" "preferences.cpp" "translations.hpp" "translations.cpp" "notifications.hpp" "about.cpp")
+
+target_link_libraries(sayaslicer PRIVATE git_version)
 
 # TODO: Ajoutez des tests et installez des cibles si nécessaire.
 target_link_options(sayaslicer PRIVATE ${SUBSYSTEM_LINKER_OPTIONS})
