@@ -28,6 +28,7 @@ void ShowPreferencesModal(UserPreferences& pref) {
 	}
 
 	static UserPreferences pTmp = pref;
+	pTmp.updateAvailable = pref.updateAvailable; // Necessary since pTmp is initialized before updateAvailable is properly updated
 	if (ImGui::BeginPopupModal("Preferences", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize)) {
 		ImGui::Checkbox("autodetect_starting_keysound"_t.c_str(), &pTmp.detectStartingKey);
 		ImGui::Checkbox("check_for_updates_startup"_t.c_str(), &pTmp.checkForUpdates);
