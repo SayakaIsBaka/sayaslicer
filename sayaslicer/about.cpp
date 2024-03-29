@@ -493,7 +493,7 @@ void DownloadUpdate() {
     std::string os = "linux";
 #endif
     std::string filename = "sayaslicer-" + os + ".zip";
-    InsertNotification({ ImGuiToastType::Info, 3000, "Downloading update..." });
+    InsertNotification({ ImGuiToastType::Info, 3000, "downloading_update"_t.c_str() });
     cpr::GetCallback([filename](cpr::Response r) {
         try {
             if (r.error || r.status_code != 200)
@@ -502,11 +502,11 @@ void DownloadUpdate() {
                 std::ofstream of(filename, std::ios::binary);
                 of.write(r.text.c_str(), r.text.size());
                 of.close();
-                InsertNotification({ ImGuiToastType::Success, 3000, "Downloaded latest version to:\n%s", (std::filesystem::current_path() / filename).u8string().c_str() });
+                InsertNotification({ ImGuiToastType::Success, 3000, "%s:\n%s", "downloaded_update_to"_t.c_str(), (std::filesystem::current_path() / filename).u8string().c_str()});
             }
         }
         catch (...) {
-            InsertNotification({ ImGuiToastType::Error, 3000, "Error downloading update" });
+            InsertNotification({ ImGuiToastType::Error, 3000, "error_downloading_update"_t.c_str() });
         }
     }, cpr::Url{ "https://nightly.link/SayakaIsBaka/sayaslicer/workflows/main/master/" + filename });
 }
@@ -604,8 +604,8 @@ ___
             ImGui::PopStyleVar();
         }
 
-        if (ImGui::CollapsingHeader("Credits")) {
-            std::string credits = u8R"(Used libraries:
+        if (ImGui::CollapsingHeader("credits"_t.c_str())) {
+            std::string credits = "used_libraries"_t + u8R"(:
 ___
   * [Dear ImGui](https://github.com/ocornut/imgui)
   * [SFML](https://github.com/SFML/SFML)
@@ -637,7 +637,7 @@ ___
         }
         if (settings.prefs.updateAvailable) {
             ImGui::SameLine();
-            if (ImGui::Button("Download update")) {
+            if (ImGui::Button("download_update"_t.c_str())) {
                 DownloadUpdate();
             }
         }

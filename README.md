@@ -23,7 +23,7 @@ A cross-platform audio slicer with BMS-related features. Aims to be a drop-in re
 - Copy / paste markers
 - Undo / redo
 - Zero-crossing
-- Multiple languages support (English, Japanese)
+- Multiple languages support (English, Japanese, Korean)
 - Automatic update checker (disabled by default) and downloader
 
 ## Keyboard shortcuts
