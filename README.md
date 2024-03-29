@@ -36,6 +36,7 @@ Keyboard shortcuts are the same as woslicerII except the keyboard layout is take
 - `Shift+V`: copy markers as iBMSC clipboard data
 - `B`: import markers from clipboard (using BMSE clipboard data)
 - `K`: copy keysound list to clipboard
+- `Shift+K`: append keysound list to BMS (if in the same folder as the audio file)
 - `M`: export keysounds
 - `P`: preview current keysound and move to the next one
 - `Enter`: preview current keysound

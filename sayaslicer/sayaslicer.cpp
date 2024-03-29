@@ -43,7 +43,10 @@ void ShowMenuEdit(sf::SoundBuffer& buffer, SlicerSettings& settings)
         ProcessBMSEClipboard(buffer, settings);
     }
     if (ImGui::MenuItem("export_keysound_list"_t.c_str(), "K")) {
-        ExportKeysoundList(settings);
+        ExportKeysoundList(settings, false);
+    }
+    if (ImGui::MenuItem("Append keysound list to BMS"_t.c_str(), "Shift+K")) {
+        ExportKeysoundList(settings, true);
     }
     ImGui::Separator();
     if (ImGui::MenuItem("clear_all_markers"_t.c_str(), "C")) {
@@ -295,7 +298,7 @@ void ProcessShortcuts(ImGuiIO& io, sf::SoundBuffer& buffer, sf::SoundBuffer& buf
         HandleMarkerCopyPaste(settings, SelectionOperation::CUT);
     }
     if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_K), false)) {
-        ExportKeysoundList(settings);
+        ExportKeysoundList(settings, io.KeyShift);
     }
     if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space), false)) {
         ManageSelection(settings);

@@ -13,7 +13,30 @@ std::string GetTempMarkerName(std::string filename, size_t idx) {
     return filename + suffix + std::to_string(idx) + ".wav";
 }
 
-void ExportKeysoundList(SlicerSettings settings) {
+std::filesystem::path GetBmsFilePath(std::string audioFile, bool enforceOneFile) {
+    const std::string bmsExtensions[4] = { ".bms", ".bme", ".bml", ".pms" };
+    auto p = std::filesystem::u8path(audioFile);
+
+    std::filesystem::path selectedPath;
+    for (const auto& entry : std::filesystem::directory_iterator(p.parent_path())) {
+        auto ext = entry.path().extension().string();
+        std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) { return std::tolower(c); }); // To lowercase
+        if (std::find(std::begin(bmsExtensions), std::end(bmsExtensions), ext) != std::end(bmsExtensions)) {
+            if (enforceOneFile && !selectedPath.empty())
+                throw std::invalid_argument("More than one BMS file found");
+            selectedPath = entry.path();
+            if (!enforceOneFile)
+                break; // Only select the first BMS file found
+        }
+    }
+    return selectedPath;
+}
+
+void ExportKeysoundList(SlicerSettings settings, bool writeToFile) {
+    if (settings.selectedFile.empty()) {
+        InsertNotification({ ImGuiToastType::Error, 3000, "load_file_first"_t.c_str() });
+        return;
+    }
     size_t idx = 0;
     std::string res = "";
     auto p = std::filesystem::u8path(settings.selectedFile);
@@ -28,8 +51,25 @@ void ExportKeysoundList(SlicerSettings settings) {
         res = res + "#WAV" + std::string(kId) + " " + keysoundName + '\n';
         idx++;
     }
-    clip::set_text(res);
-    InsertNotification({ ImGuiToastType::Success, 3000, "copied_keysound_list_clipboard"_t.c_str() });
+    if (writeToFile) {
+        try {
+            auto bmsFile = GetBmsFilePath(settings.selectedFile, true);
+            if (bmsFile.empty()) {
+                InsertNotification({ ImGuiToastType::Error, 3000, "No suitable BMS file found"_t.c_str() });
+                return;
+            }
+            std::ofstream outFile(bmsFile, std::ios_base::app);
+            outFile << std::endl << res;
+            InsertNotification({ ImGuiToastType::Success, 3000, "Appended keysound list to the following file:\n%s"_t.c_str(), bmsFile.u8string().c_str() });
+        }
+        catch (std::invalid_argument) {
+            InsertNotification({ ImGuiToastType::Error, 3000, "More than one BMS file found in the folder"_t.c_str() });
+        }
+    }
+    else {
+        clip::set_text(res);
+        InsertNotification({ ImGuiToastType::Success, 3000, "copied_keysound_list_clipboard"_t.c_str() });
+    }
 }
 
 void ImportNamesFromMid2Bms(SlicerSettings& settings, std::string file) {
@@ -86,18 +126,7 @@ long long LoadFileUnicode(std::string path, std::vector<char>& buf) {
 }
 
 void GetStartingKeysoundFromBMS(SlicerSettings& settings) {
-    const std::string bmsExtensions[4] = { ".bms", ".bme", ".bml", ".pms" };
-
-    auto p = std::filesystem::u8path(settings.selectedFile);
-    std::filesystem::path selectedPath;
-    for (const auto& entry : std::filesystem::directory_iterator(p.parent_path())) {
-        auto ext = entry.path().extension().string();
-        std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) { return std::tolower(c); }); // To lowercase
-        if (std::find(std::begin(bmsExtensions), std::end(bmsExtensions), ext) != std::end(bmsExtensions)) {
-            selectedPath = entry.path();
-            break; // Only select the first BMS file found
-        }
-    }
+    auto selectedPath = GetBmsFilePath(settings.selectedFile, false);
     if (selectedPath.empty()) // No BMS file found in the folder
         return;
 
