@@ -24,6 +24,7 @@ A cross-platform audio slicer with BMS-related features. Aims to be a drop-in re
 - Undo / redo
 - Zero-crossing
 - Multiple languages support (English, Japanese)
+- Automatic update checker (disabled by default) and downloader
 
 ## Keyboard shortcuts
 Keyboard shortcuts are the same as woslicerII except the keyboard layout is taken into account:
