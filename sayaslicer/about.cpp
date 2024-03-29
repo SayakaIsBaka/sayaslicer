@@ -593,6 +593,7 @@ ___
   * [cpr](https://github.com/libcpr/cpr)
   * [nlohmann_json](https://github.com/nlohmann/json)
   * [imgui_markdown](https://github.com/juliettef/imgui_markdown)
+  * [libiconv](https://www.gnu.org/software/libiconv/)
   * [Moonlight (ImGui theme)](https://github.com/Madam-Herta/Moonlight/)
 
 Translations:

@@ -2,6 +2,12 @@
   "dependencies": [
     "cereal",
     {
+      "name": "cpr",
+      "features": [
+        "ssl"
+      ]
+    },
+    {
       "name": "imgui",
       "features": [
         "docking-experimental"
@@ -12,11 +18,6 @@
     "nlohmann-json",
     "sfml",
     "tinyfiledialogs",
-    {
-      "name": "cpr",
-      "features": [
-        "ssl"
-      ]
-    }
+    "libiconv"
   ]
 }

@@ -5,6 +5,7 @@
 #include <tinyfiledialogs/tinyfiledialogs.h>
 #include <clip/clip.h>
 #include <sstream>
+#include <iconv.h>
 #include "settings.hpp"
 #include "base_convert.hpp"
 

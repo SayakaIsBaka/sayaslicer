@@ -13,6 +13,7 @@ find_package(tinyfiledialogs CONFIG REQUIRED)
 find_package(cereal CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(cpr CONFIG REQUIRED)
+find_package(Iconv)
 
 include("${CMAKE_SOURCE_DIR}/scripts/CheckGit.cmake")
 include_directories("include")

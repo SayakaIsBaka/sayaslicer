@@ -32,6 +32,21 @@ std::filesystem::path GetBmsFilePath(std::string audioFile, bool enforceOneFile)
     return selectedPath;
 }
 
+std::string ConvertToShiftJIS(std::string s) {
+    auto t = iconv_open("SHIFT-JIS", "UTF-8");
+    std::string output;
+    output.reserve(s.size() * 2); // Better be safe than sorry
+    memset(&output[0], 0, s.size() * 2);
+    size_t inLeft = s.size();
+    size_t outLeft = s.size() * 2;
+    auto tmpIn = &s[0];
+    auto tmpOut = &output[0];
+    iconv(t, &tmpIn, &inLeft, &tmpOut, &outLeft);
+    iconv_close(t);
+    output = &output[0];
+    return output;
+}
+
 void ExportKeysoundList(SlicerSettings settings, bool writeToFile) {
     if (settings.selectedFile.empty()) {
         InsertNotification({ ImGuiToastType::Error, 3000, "load_file_first"_t.c_str() });
@@ -59,7 +74,7 @@ void ExportKeysoundList(SlicerSettings settings, bool writeToFile) {
                 return;
             }
             std::ofstream outFile(bmsFile, std::ios_base::app);
-            outFile << std::endl << res;
+            outFile << std::endl << ConvertToShiftJIS(res);
             InsertNotification({ ImGuiToastType::Success, 3000, "Appended keysound list to the following file:\n%s"_t.c_str(), bmsFile.u8string().c_str() });
         }
         catch (std::invalid_argument) {
