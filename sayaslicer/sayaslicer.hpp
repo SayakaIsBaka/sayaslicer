@@ -27,6 +27,7 @@
 #include <IconsFontAwesome6.h>
 #include <fonts/fa_solid_900.hpp>
 #include <fonts/noto_medium.hpp>
+#include <fonts/notokr_medium.hpp>
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <imgui-SFML.h>

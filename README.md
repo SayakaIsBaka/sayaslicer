@@ -1,4 +1,4 @@
-# sayaslicer
+﻿# sayaslicer
 
 > [!WARNING]
 > Currently a work-in-progress; nightly builds are available [here](https://github.com/SayakaIsBaka/sayaslicer/actions) (Windows, Linux and Mac, GitHub login required)
@@ -76,3 +76,6 @@ sayaslicer uses the following libraries:
 - [nlohmann_json](https://github.com/nlohmann/json)
 - [imgui_markdown](https://github.com/juliettef/imgui_markdown)
 - [Moonlight (ImGui theme)](https://github.com/Madam-Herta/Moonlight/)
+
+Translations:
+- Korean (한국어): [Sobrem](https://twitter.com/SobremMusic)

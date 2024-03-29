@@ -91,6 +91,10 @@ void SetupFonts(ImGuiIO& io) {
 
     io.Fonts->AddFontFromMemoryCompressedTTF(noto_compressed_data, noto_compressed_size, mainFontSize, 0, io.Fonts->GetGlyphRangesJapanese());
 
+    ImFontConfig krConfig;
+    krConfig.MergeMode = true;
+    io.Fonts->AddFontFromMemoryCompressedTTF(notokr_compressed_data, notokr_compressed_size, mainFontSize, &krConfig, io.Fonts->GetGlyphRangesKorean());
+
     static const ImWchar iconsRanges[] = { ICON_MIN_FA, ICON_MAX_16_FA, 0 };
     ImFontConfig iconsConfig;
     iconsConfig.MergeMode = true;

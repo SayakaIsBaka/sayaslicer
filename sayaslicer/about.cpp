@@ -1,4 +1,4 @@
-#include "about.hpp"
+﻿#include "about.hpp"
 
 using namespace i18n::literals;
 using json = nlohmann::json;
@@ -621,6 +621,10 @@ ___
   * [nlohmann_json](https://github.com/nlohmann/json)
   * [imgui_markdown](https://github.com/juliettef/imgui_markdown)
   * [Moonlight (ImGui theme)](https://github.com/Madam-Herta/Moonlight/)
+
+Translations:
+___
+  * Korean (한국어): [Sobrem](https://twitter.com/SobremMusic)
 )";
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 3.400000095367432f));
             Markdown(credits);
