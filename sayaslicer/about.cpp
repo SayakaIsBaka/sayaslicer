@@ -480,8 +480,39 @@ static const unsigned char logoArr[] = {
   0x4e, 0x44, 0xae, 0x42, 0x60, 0x82
 };
 
-void CheckUpdates(bool silent) {
-    cpr::GetCallback([silent](cpr::Response r) {
+void DownloadUpdate() {
+#ifdef _WIN32
+    std::string os = "windows";
+#elif __APPLE__
+    #if __arm64__
+    std::string os = "osx-arm64";
+    #else
+    std::string os = "osx-x64";
+    #endif
+#else
+    std::string os = "linux";
+#endif
+    std::string filename = "sayaslicer-" + os + ".zip";
+    InsertNotification({ ImGuiToastType::Info, 3000, "Downloading update..." });
+    cpr::GetCallback([filename](cpr::Response r) {
+        try {
+            if (r.error || r.status_code != 200)
+                throw std::invalid_argument("Error downloading update");
+            else {
+                std::ofstream of(filename, std::ios::binary);
+                of.write(r.text.c_str(), r.text.size());
+                of.close();
+                InsertNotification({ ImGuiToastType::Success, 3000, "Downloaded latest version to:\n%s", (std::filesystem::current_path() / filename).u8string().c_str() });
+            }
+        }
+        catch (...) {
+            InsertNotification({ ImGuiToastType::Error, 3000, "Error downloading update" });
+        }
+    }, cpr::Url{ "https://nightly.link/SayakaIsBaka/sayaslicer/workflows/main/master/" + filename });
+}
+
+void CheckUpdates(SlicerSettings& settings, bool silent) {
+    cpr::GetCallback([&settings, silent](cpr::Response r) {
         try {
             if (r.error || r.status_code != 200)
                 throw std::invalid_argument("Error getting runs from GitHub");
@@ -499,8 +530,10 @@ void CheckUpdates(bool silent) {
                 if (!silent)
                     InsertNotification({ ImGuiToastType::Success, 3000, "latest_version"_t.c_str() });
             }
-            else
+            else {
+                settings.prefs.updateAvailable = true;
                 InsertNotification({ ImGuiToastType::Info, 3000, "update_available"_t.c_str() });
+            }
         }
         catch (...) {
             if (!silent)
@@ -596,7 +629,13 @@ ___
 
         ImGui::Separator();
         if (ImGui::Button("check_for_updates"_t.c_str())) {
-            CheckUpdates(false);
+            CheckUpdates(settings, false);
+        }
+        if (settings.prefs.updateAvailable) {
+            ImGui::SameLine();
+            if (ImGui::Button("Download update")) {
+                DownloadUpdate();
+            }
         }
 
         if (ImGui::Button("close"_t.c_str())) {

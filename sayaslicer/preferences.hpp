@@ -11,6 +11,7 @@ public:
 	bool detectStartingKey = false;
 	bool openPreferencesModalTemp = false;
 	bool checkForUpdates = false;
+	bool updateAvailable = false;
 	std::string language = "en";
 
 	template<class Archive>

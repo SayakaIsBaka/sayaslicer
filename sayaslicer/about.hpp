@@ -11,4 +11,4 @@
 extern const char* kGitHash;
 
 void ShowAbout(SlicerSettings& settings, sf::Texture& logo);
-void CheckUpdates(bool silent);
+void CheckUpdates(SlicerSettings& settings, bool silent);
