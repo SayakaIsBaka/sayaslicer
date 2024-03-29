@@ -99,6 +99,33 @@ static i18n::translations translations{
 		{"downloading_update", "Downloading update..."},
 		{"downloaded_update_to", "Downloaded latest version to"},
 		{"error_downloading_update", "Error downloading update"},
+		{"keyboard_shortcuts", "Keyboard shortcuts"},
+		{"keyboard_shortcuts_list", u8R"(  * O: open audio file
+  * Z: add slice marker
+  * C: clear all markers (but adds a marker at 0, similar behaviour to woslicerII)
+  * Shift+C: clear ALL markers (including marker at 0)
+  * V: copy markers as BMSE clipboard data
+  * Shift+V: copy markers as iBMSC clipboard data
+  * B: import markers from clipboard (using BMSE clipboard data)
+  * K: copy keysound list to clipboard
+  * M: export keysounds
+  * P: preview current keysound and move to the next one
+  * Enter: preview current keysound
+  * LeftArrow / RightArrow: move position cursor
+  * Shift + LeftArrow / Shift + RightArrow: move position cursor (jump to closest snap)
+  * UpArrow / DownArrow: set snapping
+  * Ctrl+O: load project
+  * Ctrl+S: save project
+  * Home: jump to the beginning of the waveform
+  * End: jump to the end of the waveform
+  * Space: enter / exit select mode
+  * Ctrl+C: copy selected markers
+  * Ctrl+X: cut selected markers
+  * Ctrl+V: paste previously copied markers
+  * Del: delete selected markers
+  * Ctrl+Z: undo action
+  * Ctrl+Y: redo action
+)"},
 	}},
 	{"jp", {
 		{"_lang", u8"日本語"},
@@ -194,6 +221,33 @@ static i18n::translations translations{
 		{"downloading_update", u8"アップデートをダウンロード中"},
 		{"downloaded_update_to", u8"以下のフォルダーにアップデートをダウンロードしました"},
 		{"error_downloading_update", u8"アップデートのダウンロードに失敗しました"},
+		{"keyboard_shortcuts", u8"キーボード操作"},
+		{"keyboard_shortcuts_list", u8R"(  * O: 音声ファイルを開く
+  * Z: 切断配置を置く
+  * C: 切断配置を全消去、始点に切断配置を置く (woslicerIIと同様)
+  * Shift+C: 切断配置を全消去 (始点の切断配置も含めて)
+  * V: 切断配置をBMSEシーケンスデータとしてコーピする
+  * Shift+V: 切断配置をiBMSCシーケンスデータとしてコーピする
+  * B: 切断配置をクリップボードから読み込む (BMSEシーケンスデータのみ)
+  * K: WAV定義情報をクリップボードに書き出す
+  * M: キー音を出力
+  * P: ホバー中のキー音を再生してから次のキー音に移動
+  * Enter: ホバー中のキー音を再生
+  * [←] / [→]: カーソルの位置を移動
+  * Shift + [←] / Shift + [→]: 最も近い切断配置に飛ばす
+  * [↑] / [↓]: Gridの調整
+  * Ctrl+O: プロジェクトを開く
+  * Ctrl+S: プロジェクトを保存
+  * Home: 波形の始点に移動
+  * End: 波形の終点に移動
+  * Space: 選択モードに切り替える
+  * Ctrl+C: 切断配置をコーピ
+  * Ctrl+X: 切断配置をカット
+  * Ctrl+V: クリップボード内の切断配置をペースト
+  * Del: 選択中の切断配置を消す
+  * Ctrl+Z: 元に戻す
+  * Ctrl+Y: やり直す
+)"},
 	}},
 	{ "kr", {
 		{"_lang", u8"한국어"},
@@ -289,6 +343,33 @@ static i18n::translations translations{
 		{"downloading_update", u8"업데이트 받는 중"},
 		{"downloaded_update_to", u8"업데이트를 다음 경로에 받았습니다"},
 		{"error_downloading_update", u8"업데이트 다운로드 에러 발생"},
+		{"keyboard_shortcuts", u8"키보드 단축키"},
+		{"keyboard_shortcuts_list", u8R"(  * O: 오디오 파일 열기
+  * Z: 슬라이스 마커 추가
+  * C: 마커 초기화 (0에는 1개 추가. woslicerII와 같은 동작입니다)
+  * Shift+C: 마커 완전 초기화 (0까지도)
+  * V: BMSE 클립보드 데이터로 마커 복사
+  * Shift+V: iBMSC 클립보드 데이터로 마커 복사
+  * B: 클립보드에서 마커 가져오기 (BMSE 클립보드 데이터 사용)
+  * K: 클립보드로 키음 목록 복사
+  * M: 키음 내보내기
+  * P: 키음 미리듣기 및 다음 키음으로 이동
+  * Enter: 키음 미리듣기
+  * [←] / [→]: 커서 위치 이동
+  * Shift + [←] / Shift + [→]: 가장 가까운 격자선으로
+  * [↑] / [↓]: 격자 설정
+  * Ctrl+O: 프로젝트 불러오기
+  * Ctrl+S: 프로젝트 저장
+  * Home: 파형의 처음으로 이동
+  * End: 파형의 끝으로 이동
+  * Space: 선택 모드 시작/종료
+  * Ctrl+C: 선택된 마커 복사
+  * Ctrl+X: 선택된 마커 잘라내기
+  * Ctrl+V: 복사한 마커 붙여넣기
+  * Del: 선택된 마커 지우기
+  * Ctrl+Z: 실행 취소
+  * Ctrl+Y: 다시 실행
+)"},
 	}},
 };
 

@@ -571,34 +571,7 @@ void ShowAbout(SlicerSettings& settings, sf::Texture &logo) {
         }
 
         if (ImGui::CollapsingHeader("help"_t.c_str())) {
-            std::string help = u8R"(Keyboard shortcuts:
-___
-  * O: open audio file
-  * Z: add slice marker
-  * C: clear all markers (but adds a marker at 0, similar behaviour to woslicerII)
-  * Shift+C: clear ALL markers (including marker at 0)
-  * V: copy markers as BMSE clipboard data
-  * Shift+V: copy markers as iBMSC clipboard data
-  * B: import markers from clipboard (using BMSE clipboard data)
-  * K: copy keysound list to clipboard
-  * M: export keysounds
-  * P: preview current keysound and move to the next one
-  * Enter: preview current keysound
-  * LeftArrow / RightArrow: move position cursor
-  * Shift + LeftArrow / Shift + RightArrow: move position cursor (jump to closest snap)
-  * UpArrow / DownArrow: set snapping
-  * Ctrl+O: load project
-  * Ctrl+S: save project
-  * Home: jump to the beginning of the waveform
-  * End: jump to the end of the waveform
-  * Space: enter / exit select mode
-  * Ctrl+C: copy selected markers
-  * Ctrl+X: cut selected markers
-  * Ctrl+V: paste previously copied markers
-  * Del: delete selected markers
-  * Ctrl+Z: undo action
-  * Ctrl+Y: redo action
-)";
+            std::string help = "keyboard_shortcuts"_t + u8":\n___\n" + "keyboard_shortcuts_list"_t;
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 3.400000095367432f));
             Markdown(help);
             ImGui::PopStyleVar();

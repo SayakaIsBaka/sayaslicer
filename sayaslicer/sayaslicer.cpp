@@ -89,7 +89,12 @@ void SetupFonts(ImGuiIO& io) {
     float mainFontSize = 14.0f;
     float iconFontSize = mainFontSize * 2.0f / 3.0f;
 
-    io.Fonts->AddFontFromMemoryCompressedTTF(noto_compressed_data, noto_compressed_size, mainFontSize, 0, io.Fonts->GetGlyphRangesJapanese());
+    ImVector<ImWchar> ranges;
+    ImFontGlyphRangesBuilder builder;
+    builder.AddText(u8"←→↑↓");
+    builder.AddRanges(io.Fonts->GetGlyphRangesJapanese());
+    builder.BuildRanges(&ranges);
+    io.Fonts->AddFontFromMemoryCompressedTTF(noto_compressed_data, noto_compressed_size, mainFontSize, 0, ranges.Data);
 
     ImFontConfig krConfig;
     krConfig.MergeMode = true;
