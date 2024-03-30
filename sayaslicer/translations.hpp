@@ -211,7 +211,7 @@ static i18n::translations translations{
 		{"marker_names_import_success", u8"ファイル名のインポートに成功しました"},
 		{"marker_names_import_warning", u8"ファイル名をインポートしましたがファイル名の数値と切断配置の数値が一致していません"},
 		{"close", u8"閉じる"},
-		{"about", u8"情報"},
+		{"about", u8"このソフトについて"},
 		{"help", u8"ヘルプ"},
 		{"help_menu", u8"ヘルプ"},
 		{"info", u8"情報"},
