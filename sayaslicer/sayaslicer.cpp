@@ -45,7 +45,7 @@ void ShowMenuEdit(sf::SoundBuffer& buffer, SlicerSettings& settings)
     if (ImGui::MenuItem("export_keysound_list"_t.c_str(), "K")) {
         ExportKeysoundList(settings, false);
     }
-    if (ImGui::MenuItem("Append keysound list to BMS"_t.c_str(), "Shift+K")) {
+    if (ImGui::MenuItem("append_keysound_list_bms"_t.c_str(), "Shift+K")) {
         ExportKeysoundList(settings, true);
     }
     ImGui::Separator();

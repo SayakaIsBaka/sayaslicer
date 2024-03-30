@@ -70,15 +70,15 @@ void ExportKeysoundList(SlicerSettings settings, bool writeToFile) {
         try {
             auto bmsFile = GetBmsFilePath(settings.selectedFile, true);
             if (bmsFile.empty()) {
-                InsertNotification({ ImGuiToastType::Error, 3000, "No suitable BMS file found"_t.c_str() });
+                InsertNotification({ ImGuiToastType::Error, 3000, "no_suitable_bms_found"_t.c_str() });
                 return;
             }
             std::ofstream outFile(bmsFile, std::ios_base::app);
             outFile << std::endl << ConvertToShiftJIS(res);
-            InsertNotification({ ImGuiToastType::Success, 3000, "Appended keysound list to the following file:\n%s"_t.c_str(), bmsFile.u8string().c_str() });
+            InsertNotification({ ImGuiToastType::Success, 3000, "%s:\n%s"_t.c_str(), "appended_keysound_list_to_file"_t.c_str(), bmsFile.u8string().c_str()});
         }
         catch (std::invalid_argument) {
-            InsertNotification({ ImGuiToastType::Error, 3000, "More than one BMS file found in the folder"_t.c_str() });
+            InsertNotification({ ImGuiToastType::Error, 3000, "more_than_one_bms_found_in_folder"_t.c_str() });
         }
     }
     else {

@@ -108,6 +108,7 @@ static i18n::translations translations{
   * Shift+V: copy markers as iBMSC clipboard data
   * B: import markers from clipboard (using BMSE clipboard data)
   * K: copy keysound list to clipboard
+  * Shift+K: append keysound list to BMS (if in the same folder as the audio file)
   * M: export keysounds
   * P: preview current keysound and move to the next one
   * Enter: preview current keysound
@@ -126,6 +127,10 @@ static i18n::translations translations{
   * Ctrl+Z: undo action
   * Ctrl+Y: redo action
 )"},
+		{"append_keysound_list_bms", "Append keysound list to BMS"},
+		{"no_suitable_bms_found", "No suitable BMS file found"},
+		{"appended_keysound_list_to_file", "Appended keysound list to the following file"},
+		{"more_than_one_bms_found_in_folder", "More than one BMS file found in the folder"},
 	}},
 	{"jp", {
 		{"_lang", u8"日本語"},
@@ -230,6 +235,7 @@ static i18n::translations translations{
   * Shift+V: 切断配置をiBMSCシーケンスデータとしてコーピする
   * B: 切断配置をクリップボードから読み込む (BMSEシーケンスデータのみ)
   * K: WAV定義情報をクリップボードに書き出す
+  * Shift+K: BMSファイルにWAV定義情報をぶち込む (音声ファイルを収納しているフォルダーにBMSファイルが存在する場合のみ)
   * M: キー音を出力
   * P: ホバー中のキー音を再生してから次のキー音に移動
   * Enter: ホバー中のキー音を再生
@@ -248,6 +254,10 @@ static i18n::translations translations{
   * Ctrl+Z: 元に戻す
   * Ctrl+Y: やり直す
 )"},
+		{"append_keysound_list_bms", u8"BMSファイルにWAV定義情報をぶち込む"},
+		{"no_suitable_bms_found", u8"適切なBMSファイルが見つかりませんでした"},
+		{"appended_keysound_list_to_file", u8"以下のBMSファイルにWAV定義情報をぶち込みました"},
+		{"more_than_one_bms_found_in_folder", u8"フォルダー内に複数のBMSファイルがあります"},
 	}},
 	{ "kr", {
 		{"_lang", u8"한국어"},
@@ -352,6 +362,7 @@ static i18n::translations translations{
   * Shift+V: iBMSC 클립보드 데이터로 마커 복사
   * B: 클립보드에서 마커 가져오기 (BMSE 클립보드 데이터 사용)
   * K: 클립보드로 키음 목록 복사
+  * Shift+K: 키음 목록 BMS에 덧붙이기 (오디오 파일과 같은 경로라면)
   * M: 키음 내보내기
   * P: 키음 미리듣기 및 다음 키음으로 이동
   * Enter: 키음 미리듣기
@@ -370,6 +381,10 @@ static i18n::translations translations{
   * Ctrl+Z: 실행 취소
   * Ctrl+Y: 다시 실행
 )"},
+		{"append_keysound_list_bms", u8"키음 목록 BMS에 덧붙이기"},
+		{"no_suitable_bms_found", u8"적절한 BMS 파일을 찾지 못했습니다"},
+		{"appended_keysound_list_to_file", u8"다음 파일에 키음 목록을 덧붙였습니다"},
+		{"more_than_one_bms_found_in_folder", u8"폴더의 BMS 파일 수가 하나를 넘습니다"},
 	}},
 };
 
