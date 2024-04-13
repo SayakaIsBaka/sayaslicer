@@ -599,6 +599,7 @@ ___
 Translations:
 ___
   * Korean (한국어): [Sobrem](https://twitter.com/SobremMusic)
+  * Simplified Chinese (简体中文): [Zris](https://twitter.com/Zrisound)
 )";
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 3.400000095367432f));
             Markdown(credits);

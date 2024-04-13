@@ -81,3 +81,4 @@ sayaslicer uses the following libraries:
 
 Translations:
 - Korean (한국어): [Sobrem](https://twitter.com/SobremMusic)
+- Simplified Chinese (简体中文): [Zris](https://twitter.com/Zrisound)

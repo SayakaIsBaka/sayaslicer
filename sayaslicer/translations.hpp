@@ -386,6 +386,133 @@ static i18n::translations translations{
 		{"appended_keysound_list_to_file", u8"다음 파일에 키음 목록을 덧붙였습니다"},
 		{"more_than_one_bms_found_in_folder", u8"폴더의 BMS 파일 수가 하나를 넘습니다"},
 	}},
+	{ "cn", {
+		{"_lang", u8"简体中文"},
+		{"general", u8"常规"},
+		{"zoom", u8"缩放"},
+		{"offset", u8"偏移"},
+		{"position", u8"位置"},
+		{"bpm", u8"BPM"},
+		{"snapping", u8"格线"},
+		{"starting_key", u8"起始编号"},
+		{"decimal_value", u8"十进制数值"},
+		{"enable_b62", u8"62进制模式"},
+		{"zerocross_markers", u8"移动切割点至波形过零点"},
+		{"file", u8"文件"},
+		{"open_project", u8"打开工程"},
+		{"save_project", u8"保存工程"},
+		{"import_audio_file", u8"导入音频文件"},
+		{"export_keysounds", u8"导出key音"},
+		{"quit", u8"退出"},
+		{"edit", u8"编辑"},
+		{"import_midi", u8"从MIDI文件中导入切割点"},
+		{"import_mid2bms", u8"导入Mid2BMS renamer文件"},
+		{"export_bmse", u8"复制BMSE信息至剪贴板"},
+		{"export_ibmsc", u8"复制iBMSC信息至剪贴板"},
+		{"import_bmse", u8"从剪贴板粘贴BMSE信息"},
+		{"export_keysound_list", u8"复制WAV定义信息至剪贴板"},
+		{"clear_all_markers", u8"清除全部切割点"},
+		{"clear_all_markers_with_0", u8"清除全部切割点（包括起始位置）"},
+		{"preferences", u8"选项"},
+		{"export_settings", u8"导出设置"},
+		{"disabled", u8"无"},
+		{"noise_gate", u8"噪音阈值"},
+		{"fadeout", u8"淡出"},
+		{"process", u8"处理"},
+		{"waveform", u8"波形"},
+		{"markers", u8"切割点"},
+		{"id", u8"ID"},
+		{"name", u8"文件名"},
+		{"no_markers_set", u8"没有切割点…"},
+		{"select_midi_track", u8"选择MIDI轨道"},
+		{"select_track_import", u8"请选择要导入的MIDI轨道"},
+		{"all_tracks", u8"全部"},
+		{"clear_existing_markers", u8"清除已有切割点"},
+		{"import", u8"导入"},
+		{"cancel", u8"取消"},
+		{"autodetect_starting_keysound", u8"自动调整起始编号"},
+		{"language", u8"选择语言"},
+		{"save", u8"保存"},
+		{"opened_file", u8"已打开文件"},
+		{"selected_file_not_supported", u8"不支持所选文件！"},
+		{"exported_keysounds_to_folder", u8"导出key音至以下目录："},
+		{"success", u8"完成"},
+		{"warning", u8"注意"},
+		{"error", u8"错误"},
+		{"select", u8"选择"},
+		{"file_doesnt_exist", u8"指定的文件不存在！"},
+		{"load_file_first", u8"请先载入音频文件！"},
+		{"moved_markers_zerocrossing", u8"已移动切割点至波形过零点！"},
+		{"imported_markers_clipboard", u8"成功从剪贴板中读取切割点！"},
+		{"clipboard_no_bmse_data", u8"剪贴板中没有BMSE信息！"},
+		{"copied_markers_bmse_data", u8"已将切割点复制为BMSE剪贴板信息！"},
+		{"copied_markers_ibmsc_data", u8"已将切割点复制为iBMSC剪贴板信息！"},
+		{"select_region_first", u8"请先选择一个区域！"},
+		{"selected_region_no_markers", u8"所选区域中没有切割点！"},
+		{"clipboard_empty", u8"剪贴板为空！"},
+		{"cut_markers", u8"已剪切{count}个切割点！"},
+		{"cut_markers_plural", u8"已剪切{count}个切割点！"},
+		{"copied_markers", u8"已复制{count}个切割点！"},
+		{"copied_markers_plural", u8"已复制{count}个切割点！"},
+		{"pasted_markers", u8"已粘贴{count}个切割点！"},
+		{"pasted_markers_plural", u8"已粘贴{count}个切割点！"},
+		{"deleted_markers", u8"已删除{count}个切割点！"},
+		{"deleted_markers_plural", u8"已删除{count}个切割点！"},
+		{"imported_midi_markers", u8"成功从MIDI文件中读取切割点！"},
+		{"saved_project_to", u8"保存工程至以下目录："},
+		{"opened_project", u8"已打开工程"},
+		{"copied_keysound_list_clipboard", u8"已复制WAV定义信息至剪贴板！"},
+		{"marker_names_import_success", u8"成功导入切割点名称！"},
+		{"marker_names_import_warning", u8"已导入切割点名称，但名称数量与切割点数量不匹配。"},
+		{"close", u8"关闭"},
+		{"about", u8"关于…"},
+		{"help", u8"帮助"},
+		{"help_menu", u8"?"},
+		{"info", u8"信息"},
+		{"check_for_updates", u8"检查更新"},
+		{"check_for_updates_startup", u8"启动时检查更新"},
+		{"latest_version", u8"正在使用最新版本！"},
+		{"update_available", u8"有可用更新！"},
+		{"error_update_checking", u8"检查更新时出错。"},
+		{"credits", u8"贡献者"},
+		{"used_libraries", u8"所用库"},
+		{"download_update", u8"下载更新"},
+		{"downloading_update", u8"正在下载更新…"},
+		{"downloaded_update_to", u8"下载更新至以下目录："},
+		{"error_downloading_update", u8"更新下载失败。"},
+		{"keyboard_shortcuts", u8"快捷键"},
+		{"keyboard_shortcuts_list", u8R"(  * O: 打开音频文件
+  * Z: 添加切割点
+  * C: 清除全部切割点，然后在起始位置添加切割点 (与woslicerII类似)
+  * Shift+C: 清除全部切割点 (包括起始位置)
+  * V: 将切割点复制为BMSE剪贴板信息
+  * Shift+V: 将切割点复制为iBMSC剪贴板信息
+  * B: 从剪贴板导入切割点 (使用BMSE的剪贴板信息)
+  * K: 复制WAV定义至剪贴板
+  * Shift+K: 输出WAV定义至BMS文件 (当BMS文件和音频文件在同一目录时)
+  * M: 导出key音
+  * P: 预览当前key音并指向下一个key音
+  * Enter: 预览当前key音
+  * [←] / [→]: 移动光标
+  * Shift + [←] / Shift + [→]: 移动光标至最近的切割点
+  * [↑] / [↓]: 格线设置
+  * Ctrl+O: 载入工程
+  * Ctrl+S: 保存工程
+  * Home: 移动光标至波形起始点
+  * End: 移动光标至波形终点
+  * Space: 开启/关闭选择模式
+  * Ctrl+C: 复制切割点
+  * Ctrl+X: 剪切切割点
+  * Ctrl+V: 粘贴切割点
+  * Del: 删除所选切割点
+  * Ctrl+Z: 撤消
+  * Ctrl+Y: 重做
+)"},
+		{"append_keysound_list_bms", u8"输出WAV定义至BMS文件"},
+		{"no_suitable_bms_found", u8"找不到适合的BMS文件。"},
+		{"appended_keysound_list_to_file", u8"输出WAV定义至以下BMS文件："},
+		{"more_than_one_bms_found_in_folder", u8"目录内有多个BMS文件。"},
+	}},
 };
 
 void InitTranslations(std::string locale);
