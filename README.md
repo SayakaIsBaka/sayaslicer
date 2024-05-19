@@ -57,6 +57,9 @@ Keyboard shortcuts are the same as woslicerII except the keyboard layout is take
 
 Additionally, clicking on a marker in the table will jump the cursor to its position; right-clicking it will delete it.
 
+## Important notes
+- Zero-crossing markers can help with reducing clicks during keysound export; however, doing so also moves the markers, which may affect iBMSC clipboard data copying (as it supports an arbitrary maximum resolution). If you encounter issues with the BMS file after pasting iBMSC clipboard data into your editor and saving (such as missing keysounds or gamemode change), please use BMSE clipboard data instead, which automatically rounds all markers to the nearest 192th.
+
 ## Planned features
 The following features are less likely to be implemented but might be done depending on whether I feel like it or if there's enough demand for it:
 - Better BPM change support (BMSE clipboard support, import BPM changes from MIDI and proper grid display)
