@@ -75,7 +75,7 @@ void PlayKeysound(sf::Sound& sound, sf::SoundBuffer& buffer, sf::SoundBuffer& bu
     }
     keyStart = keyStart - keyStart % buffer.getChannelCount();
     keyEnd = keyEnd - keyEnd % buffer.getChannelCount();
-    printf("playing keysound with range start: %llu, range end: %llu\n", keyStart, keyEnd);
+    std::cout << "Playing keysound with range start: " << keyStart << ", range end: " << keyEnd << std::endl;
     auto bufsize = (keyEnd - keyStart) + 4 - ((keyEnd - keyStart) % 4); // Buffer size must be a multiple of 4
     buffer2.loadFromSamples(&samples[keyStart], bufsize, buffer.getChannelCount(), buffer.getSampleRate());
     sound.setBuffer(buffer2);
@@ -132,7 +132,7 @@ void WriteKeysounds(sf::SoundBuffer& buffer, SlicerSettings& settings) {
             keyEnd = settings.markers.get(i + 1).position + offsetSamples;
         }
         keyEnd = keyEnd - keyEnd % buffer.getChannelCount();
-        printf("exporting keysound with range start: %llu, range end: %llu\n", keyStart, keyEnd);
+        std::cout << "Exporting keysound with range start: " << keyStart << ", range end: " << keyEnd << std::endl;
         auto bufsize = keyEnd - keyStart;
         sf::OutputSoundFile file;
 
@@ -167,7 +167,7 @@ void WriteKeysounds(sf::SoundBuffer& buffer, SlicerSettings& settings) {
 
         std::cout << finalPath.u8string() << std::endl;
         if (!file.openFromFile(filename, buffer.getSampleRate(), buffer.getChannelCount())) {
-            puts("Error opening temp file for writing");
+            std::cerr << "Error opening temp file for writing" << std::endl;
         }
         file.write(bufOut, bufsize);
         file.close();

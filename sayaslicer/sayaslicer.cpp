@@ -131,6 +131,7 @@ void SetupDock() {
         ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Left, 0.3f, &dock_id_left, &dock_id_right);
         ImGui::DockBuilderDockWindow("Settings", dock_id_left);
         ImGui::DockBuilderDockWindow("Waveform", dock_id_right);
+        ImGui::DockBuilderDockWindow("Console", dock_id_right);
 
         ImGui::DockBuilderFinish(dockspace_id);
     }
@@ -395,6 +396,15 @@ void ShowWaveform(sf::SoundBuffer& buffer, SlicerSettings& settings) {
     ImGui::End();
 }
 
+void ShowConsole(ConsoleLog &console) {
+    if (ImGui::Begin("Console"))
+    {
+        ImGui::SeparatorText("Console");
+        console.Draw();
+    }
+    ImGui::End();
+}
+
 #if _WIN32 // Modified from https://gist.github.com/FRex/3f7b8d1ad1289a2117553ff3702f04af
 LRESULT CALLBACK myCallback(HWND handle, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -432,7 +442,7 @@ LRESULT CALLBACK myCallback(HWND handle, UINT message, WPARAM wParam, LPARAM lPa
 #endif
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(800, 456), "sayaslicer");
+    sf::RenderWindow window(sf::VideoMode(800, 477), "sayaslicer");
     window.setFramerateLimit(60);
     ImGui::SFML::Init(window, false);
     auto &io = ImGui::GetIO();
@@ -449,6 +459,7 @@ int main() {
     sf::Texture logo;
     SlicerSettings settings;
     History history;
+    ConsoleLog consoleLog;
     settings.maxDisplayRange = minZoom;
 
     LoadPreferences(settings.prefs);
@@ -468,10 +479,16 @@ int main() {
     sf::Clock deltaClock;
 
     ImGuiWindowClass window_class;
-    window_class.DockNodeFlagsOverrideSet = ImGuiDockNodeFlags_NoTabBar;
+    window_class.DockNodeFlagsOverrideSet = ImGuiDockNodeFlags_AutoHideTabBar;
 
     if (settings.prefs.checkForUpdates)
         CheckUpdates(settings, true);
+    int frame = 0;
+
+    std::stringstream logBuffer;
+    std::streambuf *oldCout = std::cout.rdbuf(logBuffer.rdbuf());
+    std::streambuf *oldSfmlErr = sf::err().rdbuf(logBuffer.rdbuf());
+    std::streambuf* oldCerr = std::cerr.rdbuf(logBuffer.rdbuf());
 
     while (window.isOpen()) {
         sf::Event event;
@@ -494,7 +511,14 @@ int main() {
         ProcessShortcuts(io, buffer, buffer2, sound, settings, history);
 
         ImGui::SetNextWindowClass(&window_class);
+        if (frame < 2) { // Issue #5289, needed to set tab focus to waveform on init
+            if (frame == 1)
+                ImGui::SetNextWindowFocus();
+            frame += 1;
+        }
         ShowWaveform(buffer, settings);
+
+        ShowConsole(consoleLog);
 
         ShowMidiTrackModal(buffer, settings);
         ShowPreferencesModal(settings.prefs);
@@ -503,6 +527,14 @@ int main() {
         if (settings.updateHistory) {
             settings.updateHistory = false;
             history.AddItem(settings);
+        }
+
+        if (!logBuffer.str().empty()) {
+            auto time = std::chrono::system_clock::now();
+            auto time_t = std::chrono::system_clock::to_time_t(time);
+            consoleLog.AddLog("[+] %s", std::ctime(&time_t));
+            consoleLog.AddLog("%s\n", logBuffer.str().c_str());
+            logBuffer.str(""); // Clear stream
         }
 
         ImGui::RenderNotifications();

@@ -23,6 +23,7 @@
 #include "preferences.hpp"
 #include "translations.hpp"
 #include "about.hpp"
+#include "console.hpp"
 
 #include <IconsFontAwesome6.h>
 #include <fonts/fa_solid_900.hpp>
