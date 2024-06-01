@@ -405,41 +405,17 @@ void ShowConsole(ConsoleLog &console) {
     ImGui::End();
 }
 
-#if _WIN32 // Modified from https://gist.github.com/FRex/3f7b8d1ad1289a2117553ff3702f04af
-LRESULT CALLBACK myCallback(HWND handle, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    if (message == WM_DROPFILES)
-    {
-        HDROP hdrop = reinterpret_cast<HDROP>(wParam);
-
-        const UINT filescount = DragQueryFileW(hdrop, 0xFFFFFFFF, NULL, 0);
-        if (filescount != 1) {
-            std::cout << "Please drag only one file!" << std::endl;
-        }
-        else {
-            const UINT bufsize = DragQueryFileW(hdrop, 0, NULL, 0);
-            std::wstring str;
-            str.resize(bufsize + 1);
-            if (DragQueryFileW(hdrop, 0, &str[0], bufsize + 1))
-            {
-                std::string stdstr;
-                sf::Utf8::fromWide(str.begin(), str.end(), std::back_inserter(stdstr));
-                auto ext = stdstr.substr(stdstr.find_last_of(".") + 1);
-                if (strcmp(ext.c_str(), "mid") == 0 || strcmp(ext.c_str(), "midi") == 0)
-                    LoadMidi(*(sf::SoundBuffer*)bufferPtr, *(SlicerSettings*)settingsPtr, stdstr);
-                else if (strcmp(ext.c_str(), "syp") == 0)
-                    OpenProject(*(sf::SoundBuffer*)bufferPtr, *(SlicerSettings*)settingsPtr, stdstr);
-                else if (strcmp(ext.c_str(), "txt") == 0)
-                    ImportNamesFromMid2Bms(*(SlicerSettings*)settingsPtr, stdstr);
-                else
-                    OpenAudioFile(*(sf::SoundBuffer*)bufferPtr, *(SlicerSettings*)settingsPtr, stdstr);
-            }
-        }
-        DragFinish(hdrop);
-    }
-    return CallWindowProcW(reinterpret_cast<WNDPROC>(originalSFMLCallback), handle, message, wParam, lParam);
+void HandleDragDropDispatch(sf::SoundBuffer& buffer, SlicerSettings& settings, std::string path) {
+    auto ext = path.substr(path.find_last_of(".") + 1);
+    if (strcmp(ext.c_str(), "mid") == 0 || strcmp(ext.c_str(), "midi") == 0)
+        LoadMidi(buffer, settings, path);
+    else if (strcmp(ext.c_str(), "syp") == 0)
+        OpenProject(buffer, settings, path);
+    else if (strcmp(ext.c_str(), "txt") == 0)
+        ImportNamesFromMid2Bms(settings, path);
+    else
+        OpenAudioFile(buffer, settings, path);
 }
-#endif
 
 int main() {
     sf::RenderWindow window(sf::VideoMode(800, 477), "sayaslicer");
@@ -471,11 +447,10 @@ int main() {
     InitTranslations(settings.prefs.language);
 
 #if _WIN32
+    OleInitialize(NULL);
     HWND handle = window.getSystemHandle();
-    DragAcceptFiles(handle, TRUE);
-    originalSFMLCallback = SetWindowLongPtrW(handle, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(myCallback));
-    bufferPtr = (LONG_PTR)&buffer;
-    settingsPtr = (LONG_PTR)&settings;
+    DropManager dm;
+    RegisterDragDrop(handle, &dm);
 
     SetConsoleOutputCP(CP_UTF8);
 #endif
@@ -505,8 +480,21 @@ int main() {
         SetupDock();
         ShowMainMenuBar(buffer, settings, window);
 
+#if _WIN32
+        if (dm.droppedFile.size() != 0) {
+            HandleDragDropDispatch(buffer, settings, dm.droppedFile);
+            dm.droppedFile = "";
+        }
+#endif
+
         ImGui::SetNextWindowClass(&window_class);
+#if _WIN32
+        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, dm.isDragged);
+#endif
         ShowSettingsPanel(buffer, settings);
+#if _WIN32
+        ImGui::PopItemFlag();
+#endif
 
         ProcessShortcuts(io, buffer, buffer2, sound, settings, history);
 
@@ -545,7 +533,8 @@ int main() {
     }
 
 #if _WIN32
-    DragAcceptFiles(handle, FALSE);
+    RevokeDragDrop(handle);
+    OleUninitialize();
 #endif
 
     ImPlot::DestroyContext();

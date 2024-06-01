@@ -1,12 +1,8 @@
 ﻿#pragma once
 
-#if _WIN32 // Include required headers and pointers for drag and drop on Windows
+#if _WIN32 // Include required headers for drag and drop on Windows
 	#define NOMINMAX
 	#include <Windows.h>
-	LONG_PTR originalSFMLCallback = 0x0;
-	LONG_PTR originalUserData = 0x0;
-	LONG_PTR bufferPtr = 0x0;
-	LONG_PTR settingsPtr = 0x0;
 #endif
 
 #include "bmseclipboard.hpp"
@@ -24,6 +20,7 @@
 #include "translations.hpp"
 #include "about.hpp"
 #include "console.hpp"
+#include "dropmanager.hpp"
 
 #include <IconsFontAwesome6.h>
 #include <fonts/fa_solid_900.hpp>

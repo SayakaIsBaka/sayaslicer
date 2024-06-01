@@ -2,7 +2,7 @@
 
 string(TIMESTAMP VERSIONDATE "%Y-%m-%d")
 
-add_executable (sayaslicer WIN32 "sayaslicer.cpp" "sayaslicer.hpp" "bmseclipboard.hpp" "theme.hpp" "custom_widgets.hpp" "settings.hpp" "marker.hpp" "base_convert.hpp" "selection.hpp" "history.hpp" "audio.hpp" "utils.hpp" "waveform.hpp" "project.hpp" "midi.hpp" "copy_paste.hpp" "audio.cpp" "base_convert.cpp" "utils.cpp" "bmseclipboard.cpp" "copy_paste.cpp" "custom_widgets.cpp" "history.cpp" "marker.cpp" "midi.cpp" "project.cpp" "selection.cpp" "theme.cpp" "waveform.cpp" "preferences.hpp" "preferences.cpp" "translations.hpp" "translations.cpp" "notifications.hpp" "about.cpp" "markdown.hpp" "markdown.cpp" "console.hpp" "console.cpp")
+add_executable (sayaslicer WIN32 "sayaslicer.cpp" "sayaslicer.hpp" "bmseclipboard.hpp" "theme.hpp" "custom_widgets.hpp" "settings.hpp" "marker.hpp" "base_convert.hpp" "selection.hpp" "history.hpp" "audio.hpp" "utils.hpp" "waveform.hpp" "project.hpp" "midi.hpp" "copy_paste.hpp" "audio.cpp" "base_convert.cpp" "utils.cpp" "bmseclipboard.cpp" "copy_paste.cpp" "custom_widgets.cpp" "history.cpp" "marker.cpp" "midi.cpp" "project.cpp" "selection.cpp" "theme.cpp" "waveform.cpp" "preferences.hpp" "preferences.cpp" "translations.hpp" "translations.cpp" "notifications.hpp" "about.cpp" "markdown.hpp" "markdown.cpp" "console.hpp" "console.cpp" "dropmanager.hpp")
 target_compile_definitions(sayaslicer PRIVATE VERSIONDATE="${VERSIONDATE}")
 
 target_link_libraries(sayaslicer PRIVATE git_version)
