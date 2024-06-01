@@ -122,7 +122,7 @@ void SetupDock() {
     ImGuiID dockspace_id = ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
     static bool init = true;
     ImGuiID dock_id_left, dock_id_right;
-    if (init) {
+    if (init && ImGui::GetCurrentContext()->SettingsIniData.size() == 0) {
         init = false;
         ImGui::DockBuilderRemoveNode(dockspace_id);
         ImGui::DockBuilderAddNode(dockspace_id);
