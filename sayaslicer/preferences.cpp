@@ -34,12 +34,12 @@ void ShowPreferencesModal(UserPreferences& pref) {
 		ImGui::Checkbox("check_for_updates_startup"_t.c_str(), &pTmp.checkForUpdates);
 		auto langs = GetLanguages();
 		auto langsPretty = GetLanguagesPretty();
-		const char* combo_preview_value = translations[pTmp.language]["_lang"].c_str();
+		auto combo_preview_value = GetLangPrettyFromId(pTmp.language);
 		ImGui::Text("%s:", "language"_t.c_str());
-		if (ImGui::BeginCombo("##miditrack", combo_preview_value)) {
+		if (ImGui::BeginCombo("##language_select", combo_preview_value.c_str())) {
 			for (int n = 0; n < langsPretty.size(); n++)
 			{
-				const bool is_selected = (translations[pTmp.language]["_lang"] == langsPretty[n]);
+				const bool is_selected = (GetLangPrettyFromId(pTmp.language) == langsPretty[n]);
 				if (ImGui::Selectable(langsPretty[n].c_str(), is_selected)) {
 					pTmp.language = langs[n];
 					i18n::set_locale(pTmp.language);

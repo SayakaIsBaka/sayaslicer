@@ -462,6 +462,11 @@ int main() {
     ConsoleLog consoleLog;
     settings.maxDisplayRange = minZoom;
 
+    std::stringstream logBuffer;
+    std::streambuf* oldCout = std::cout.rdbuf(logBuffer.rdbuf());
+    std::streambuf* oldSfmlErr = sf::err().rdbuf(logBuffer.rdbuf());
+    std::streambuf* oldCerr = std::cerr.rdbuf(logBuffer.rdbuf());
+
     LoadPreferences(settings.prefs);
     InitTranslations(settings.prefs.language);
 
@@ -484,11 +489,6 @@ int main() {
     if (settings.prefs.checkForUpdates)
         CheckUpdates(settings, true);
     int frame = 0;
-
-    std::stringstream logBuffer;
-    std::streambuf *oldCout = std::cout.rdbuf(logBuffer.rdbuf());
-    std::streambuf *oldSfmlErr = sf::err().rdbuf(logBuffer.rdbuf());
-    std::streambuf* oldCerr = std::cerr.rdbuf(logBuffer.rdbuf());
 
     while (window.isOpen()) {
         sf::Event event;
