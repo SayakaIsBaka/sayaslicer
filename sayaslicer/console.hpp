@@ -2,6 +2,7 @@
 
 #include <imgui.h>
 #include <iostream>
+#include <i18n_keyval/src/i18n_keyval/i18n.hpp>
 
 // Mostly copied from the demo code
 class ConsoleLog

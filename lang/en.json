@@ -124,5 +124,11 @@
 	"append_keysound_list_bms": "Append keysound list to BMS",
 	"no_suitable_bms_found": "No suitable BMS file found",
 	"appended_keysound_list_to_file": "Appended keysound list to the following file",
-	"more_than_one_bms_found_in_folder": "More than one BMS file found in the folder"
+	"more_than_one_bms_found_in_folder": "More than one BMS file found in the folder",
+	"console": "Console",
+	"options": "Options",
+	"clear": "Clear",
+	"copy": "Copy",
+	"filter": "Filter",
+	"autoscroll": "Auto-scroll"
 }

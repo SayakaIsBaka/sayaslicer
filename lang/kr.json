@@ -124,5 +124,11 @@
 	"append_keysound_list_bms": "키음 목록 BMS에 덧붙이기",
 	"no_suitable_bms_found": "적절한 BMS 파일을 찾지 못했습니다",
 	"appended_keysound_list_to_file": "다음 파일에 키음 목록을 덧붙였습니다",
-	"more_than_one_bms_found_in_folder": "폴더의 BMS 파일 수가 하나를 넘습니다"
+	"more_than_one_bms_found_in_folder": "폴더의 BMS 파일 수가 하나를 넘습니다",
+	"console": "콘솔",
+	"options": "설정",
+	"clear": "초기화",
+	"copy": "복사",
+	"filter": "필터",
+	"autoscroll": "자동 스크롤"
 }

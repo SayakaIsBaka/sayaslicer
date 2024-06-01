@@ -399,7 +399,7 @@ void ShowWaveform(sf::SoundBuffer& buffer, SlicerSettings& settings) {
 void ShowConsole(ConsoleLog &console) {
     if (ImGui::Begin("Console"))
     {
-        ImGui::SeparatorText("Console");
+        ImGui::SeparatorText("console"_t.c_str());
         console.Draw();
     }
     ImGui::End();

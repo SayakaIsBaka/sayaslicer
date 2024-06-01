@@ -124,5 +124,11 @@
 	"append_keysound_list_bms": "输出WAV定义至BMS文件",
 	"no_suitable_bms_found": "找不到适合的BMS文件。",
 	"appended_keysound_list_to_file": "输出WAV定义至以下BMS文件：",
-	"more_than_one_bms_found_in_folder": "目录内有多个BMS文件。"
+	"more_than_one_bms_found_in_folder": "目录内有多个BMS文件。",
+	"console": "控制台",
+	"options": "选项",
+	"clear": "清空",
+	"copy": "复制",
+	"filter": "过滤",
+	"autoscroll": "自动滚屏"
 }

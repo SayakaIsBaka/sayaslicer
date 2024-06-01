@@ -1,5 +1,7 @@
 #include "console.hpp"
 
+using namespace i18n::literals;
+
 ConsoleLog::ConsoleLog()
 {
     AutoScroll = true;
@@ -30,19 +32,19 @@ void ConsoleLog::Draw()
     // Options menu
     if (ImGui::BeginPopup("Options"))
     {
-        ImGui::Checkbox("Auto-scroll", &AutoScroll);
+        ImGui::Checkbox("autoscroll"_t.c_str(), &AutoScroll);
         ImGui::EndPopup();
     }
 
     // Main window
-    if (ImGui::Button("Options"))
+    if (ImGui::Button("options"_t.c_str()))
         ImGui::OpenPopup("Options");
     ImGui::SameLine();
-    bool clear = ImGui::Button("Clear");
+    bool clear = ImGui::Button("clear"_t.c_str());
     ImGui::SameLine();
-    bool copy = ImGui::Button("Copy");
+    bool copy = ImGui::Button("copy"_t.c_str());
     ImGui::SameLine();
-    Filter.Draw("Filter", -100.0f);
+    Filter.Draw("filter"_t.c_str(), -100.0f);
 
     ImGui::Separator();
 

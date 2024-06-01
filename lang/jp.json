@@ -124,5 +124,11 @@
 	"append_keysound_list_bms": "BMSファイルにWAV定義情報をぶち込む",
 	"no_suitable_bms_found": "適切なBMSファイルが見つかりませんでした",
 	"appended_keysound_list_to_file": "以下のBMSファイルにWAV定義情報をぶち込みました",
-	"more_than_one_bms_found_in_folder": "フォルダー内に複数のBMSファイルがあります"
+	"more_than_one_bms_found_in_folder": "フォルダー内に複数のBMSファイルがあります",
+	"console": "コンソール",
+	"options": "オプション",
+	"clear": "クリア",
+	"copy": "コーピ",
+	"filter": "フィルター",
+	"autoscroll": "オートスクロール"
 }
