@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include <tinyfiledialogs/tinyfiledialogs.h>
 
 static i18n::translations translations = {};
 

@@ -31,11 +31,23 @@ void LoadTranslations(std::string path) {
 void InitTranslations(std::string locale) {
 	try {
 		LoadTranslations("lang");
+	}
+	catch (std::exception e) {
+		std::cerr << "Error loading language files, make sure the lang folder exists and is in the same folder as sayaslicer" << std::endl;
+	}
+	try {
 		i18n::set_locale(locale);
 		i18n::initialize_translator(translations);
 	}
 	catch (std::exception e) {
-		std::cerr << "Error loading language files, make sure the lang folder exists and is in the same folder as sayaslicer" << std::endl;
+		if (translations.find("en") == translations.end()) {
+			tinyfd_messageBox("Error", "Error loading English language file, please redownload sayaslicer and make sure the lang folder is in the same folder as the executable.", "ok", "error", 1);
+			abort();
+		}
+		else {
+			std::cerr << "Locale " << locale << " not found, falling back to english" << std::endl;
+			InitTranslations("en");
+		}
 	}
 }
 
@@ -58,5 +70,7 @@ std::vector<std::string> GetLanguagesPretty() {
 }
 
 std::string GetLangPrettyFromId(std::string id) {
-	return translations[id]["_lang"];
+	if (translations.find(id) != translations.end())
+		return translations[id]["_lang"];
+	return "";
 }

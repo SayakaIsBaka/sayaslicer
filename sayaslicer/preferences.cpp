@@ -35,6 +35,8 @@ void ShowPreferencesModal(UserPreferences& pref) {
 		auto langs = GetLanguages();
 		auto langsPretty = GetLanguagesPretty();
 		auto combo_preview_value = GetLangPrettyFromId(pTmp.language);
+		if (combo_preview_value.empty())
+			pTmp.language = pref.language = "en"; // Fallback to english
 		ImGui::Text("%s:", "language"_t.c_str());
 		if (ImGui::BeginCombo("##language_select", combo_preview_value.c_str())) {
 			for (int n = 0; n < langsPretty.size(); n++)
