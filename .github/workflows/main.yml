@@ -39,7 +39,9 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         with:
           name: sayaslicer-linux
-          path: out/build/x64-Release/sayaslicer/sayaslicer
+          path: |
+            out/build/x64-Release/sayaslicer/sayaslicer
+            out/build/x64-Release/sayaslicer/lang/
 
       - name: Upload artifact (Windows)
         uses: actions/upload-artifact@v4.3.1
@@ -49,17 +51,22 @@ jobs:
           path: |
             out/build/x64-Release/sayaslicer/*.dll
             out/build/x64-Release/sayaslicer/*.exe
+            out/build/x64-Release/sayaslicer/lang/
 
       - name: Upload artifact (macOS x64)
         uses: actions/upload-artifact@v4.3.1
         if: matrix.os == 'macos-latest'
         with:
           name: sayaslicer-osx-x64
-          path: out/build/x64-Release/sayaslicer/sayaslicer
+          path: |
+            out/build/x64-Release/sayaslicer/sayaslicer
+            out/build/x64-Release/sayaslicer/lang/
 
       - name: Upload artifact (macOS ARM)
         uses: actions/upload-artifact@v4.3.1
         if: matrix.os == 'macos-14'
         with:
           name: sayaslicer-osx-arm64
-          path: out/build/x64-Release/sayaslicer/sayaslicer
+          path: |
+            out/build/x64-Release/sayaslicer/sayaslicer
+            out/build/x64-Release/sayaslicer/lang/
