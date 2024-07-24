@@ -130,5 +130,7 @@
 	"clear": "清空",
 	"copy": "复制",
 	"filter": "过滤",
-	"autoscroll": "自动滚屏"
+	"autoscroll": "自动滚屏",
+	"keysound_end_offset": "Key end offset",
+	"keysound_export_error": "Errors occured when exporting some keysounds, please check the Console tab for more details"
 }

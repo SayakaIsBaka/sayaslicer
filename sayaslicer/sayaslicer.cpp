@@ -196,6 +196,8 @@ void ShowSettingsPanel(sf::SoundBuffer& buffer, SlicerSettings& settings) {
         AddScalarScroll(ImGuiDataType_S32, &settings.selectedGateThreshold, 0, IM_ARRAYSIZE(gateThresholds) - 1, 1);
         ImGui::DragInt("fadeout"_t.c_str(), &settings.fadeout, 1, 0, 1000, "%dms");
         AddScalarScroll(ImGuiDataType_S32, &settings.fadeout, 0, 1000, 5);
+        ImGui::DragInt("keysound_end_offset"_t.c_str(), &settings.keysoundOffsetEnd, 1, -1000, 1000, "%dms");
+        AddScalarScroll(ImGuiDataType_S32, &settings.keysoundOffsetEnd, -1000, 1000, 5);
 
         ImGui::SeparatorText("process"_t.c_str());
         if (ImGui::Button("export_keysounds"_t.c_str(), ImVec2(-FLT_MIN, 0.0f))) {
@@ -418,7 +420,7 @@ void HandleDragDropDispatch(sf::SoundBuffer& buffer, SlicerSettings& settings, s
 }
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(800, 477), "sayaslicer");
+    sf::RenderWindow window(sf::VideoMode(870, 477), "sayaslicer");
     window.setFramerateLimit(60);
     ImGui::SFML::Init(window, false);
     auto &io = ImGui::GetIO();

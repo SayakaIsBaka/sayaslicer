@@ -130,5 +130,7 @@
 	"clear": "Clear",
 	"copy": "Copy",
 	"filter": "Filter",
-	"autoscroll": "Auto-scroll"
+	"autoscroll": "Auto-scroll",
+	"keysound_end_offset": "Key end offset",
+	"keysound_export_error": "Errors occured when exporting some keysounds, please check the Console tab for more details"
 }

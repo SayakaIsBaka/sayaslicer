@@ -113,10 +113,11 @@ void WriteKeysounds(sf::SoundBuffer& buffer, SlicerSettings& settings) {
         InsertNotification({ ImGuiToastType::Error, 3000, "load_file_first"_t.c_str() });
         return;
     }
+    bool hasError = false;
     auto samples = buffer.getSamples();
     settings.markers.sort();
     unsigned long long keyStart = 0;
-    unsigned long long keyEnd = 0;
+    long long keyEnd = 0;
     unsigned long long offsetSamples = (long long)settings.offset * (long long)waveformReso;
     auto p = std::filesystem::u8path(settings.selectedFile);
     auto origFilename = p.filename().replace_extension();
@@ -129,9 +130,14 @@ void WriteKeysounds(sf::SoundBuffer& buffer, SlicerSettings& settings) {
             keyEnd = buffer.getSampleCount();
         }
         else {
-            keyEnd = settings.markers.get(i + 1).position + offsetSamples;
+            keyEnd = std::min(settings.markers.get(i + 1).position + offsetSamples + ((long long)buffer.getSampleRate() * settings.keysoundOffsetEnd / 1000), (double)buffer.getSampleCount());
         }
         keyEnd = keyEnd - keyEnd % buffer.getChannelCount();
+        if (keyEnd < (long long)keyStart) {
+            std::cout << "WARNING: Keysound range end is lower than range start, exported file will be silent!" << std::endl;
+            hasError = true;
+            keyEnd = keyStart;
+        }
         std::cout << "Exporting keysound with range start: " << keyStart << ", range end: " << keyEnd << std::endl;
         auto bufsize = keyEnd - keyStart;
         sf::OutputSoundFile file;
@@ -173,6 +179,8 @@ void WriteKeysounds(sf::SoundBuffer& buffer, SlicerSettings& settings) {
         file.close();
         std::filesystem::rename(u8filename, finalPath);
     }
+    if (hasError)
+        InsertNotification({ ImGuiToastType::Warning, 3000, "keysound_export_error"_t.c_str() });
     InsertNotification({ ImGuiToastType::Success, 3000, "%s:\n%s", "exported_keysounds_to_folder"_t.c_str(), p.parent_path().u8string().c_str() });
 }
 

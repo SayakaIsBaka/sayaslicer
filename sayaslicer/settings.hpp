@@ -28,10 +28,11 @@ public:
 	UserPreferences prefs;
 	float maxDisplayRange = 1.0;
 	bool openAboutModalTemp = false;
+	int keysoundOffsetEnd = 0;
 
 	template<class Archive>
 	void serialize(Archive& archive)
 	{
-		archive(offset, cursorPos, bpm, snapping, startingKeysound, useBase62, fadeout, selectedGateThreshold, selectedFile, markers);
+		archive(offset, cursorPos, bpm, snapping, startingKeysound, useBase62, fadeout, selectedGateThreshold, selectedFile, markers, keysoundOffsetEnd);
 	}
 };

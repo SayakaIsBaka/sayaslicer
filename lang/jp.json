@@ -130,5 +130,7 @@
 	"clear": "クリア",
 	"copy": "コーピ",
 	"filter": "フィルター",
-	"autoscroll": "オートスクロール"
+	"autoscroll": "オートスクロール",
+	"keysound_end_offset": "Key end offset",
+	"keysound_export_error": "Errors occured when exporting some keysounds, please check the Console tab for more details"
 }
