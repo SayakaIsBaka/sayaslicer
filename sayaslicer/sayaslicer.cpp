@@ -88,8 +88,8 @@ void ShowMainMenuBar(sf::SoundBuffer& buffer, SlicerSettings &settings, sf::Rend
     }
 }
 
-void SetupFonts(ImGuiIO& io) {
-    float mainFontSize = 14.0f;
+void SetupFonts(ImGuiIO& io, int fontSize) {
+    float mainFontSize = (float)fontSize;
     float iconFontSize = mainFontSize * 2.0f / 3.0f;
 
     ImVector<ImWchar> ranges;
@@ -425,7 +425,6 @@ int main() {
     ImGui::SFML::Init(window, false);
     auto &io = ImGui::GetIO();
 
-    SetupFonts(io);
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     
     SetupImGuiStyle();
@@ -447,6 +446,8 @@ int main() {
 
     LoadPreferences(settings.prefs);
     InitTranslations(settings.prefs.language);
+
+    SetupFonts(io, settings.prefs.fontSize);
 
 #if _WIN32
     OleInitialize(NULL);

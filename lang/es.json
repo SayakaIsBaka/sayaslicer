@@ -132,5 +132,7 @@
 	"filter": "Filtro",
 	"autoscroll": "Autodesplazamiento",
 	"keysound_end_offset": "Offset de final de tecla",
-	"keysound_export_error": "Se ocurrieron errores al exportar algunos sonidos de tecla, favor de revisar la pestaña Console para más detalles" 
+	"keysound_export_error": "Se ocurrieron errores al exportar algunos sonidos de tecla, favor de revisar la pestaña Console para más detalles",
+	"font_size": "Font size",
+	"restart_sayaslicer_font": "Restart sayaslicer for font changes to take effect!"
 }
