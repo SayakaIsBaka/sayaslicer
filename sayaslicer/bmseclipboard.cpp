@@ -86,7 +86,7 @@ BMSEClipboard::BMSEClipboard(std::string s) {
 
 
 
-void AddMarkersFromBMSEClipboard(BMSEClipboard objs, sf::SoundBuffer& buffer, SlicerSettings& settings) {
+void AddMarkersFromBMSEClipboard(BMSEClipboard objs, SoundBuffer& buffer, SlicerSettings& settings) {
 	if (buffer.getSampleCount() > 0) {
 		auto sampleRate = buffer.getSampleRate();
 		auto numChannels = buffer.getChannelCount();
@@ -103,7 +103,7 @@ void AddMarkersFromBMSEClipboard(BMSEClipboard objs, sf::SoundBuffer& buffer, Sl
 	}
 }
 
-void ProcessBMSEClipboard(sf::SoundBuffer& buffer, SlicerSettings& settings) {
+void ProcessBMSEClipboard(SoundBuffer& buffer, SlicerSettings& settings) {
 	std::string cb;
 	clip::get_text(cb);
 	BMSEClipboard objs(cb);
@@ -115,7 +115,7 @@ void ProcessBMSEClipboard(sf::SoundBuffer& buffer, SlicerSettings& settings) {
 		InsertNotification({ ImGuiToastType::Error, 3000, "clipboard_no_bmse_data"_t.c_str() });
 }
 
-void GenerateBMSEClipboard(sf::SoundBuffer& buffer, SlicerSettings settings, bool useiBMSC) {
+void GenerateBMSEClipboard(SoundBuffer& buffer, SlicerSettings settings, bool useiBMSC) {
 	if (buffer.getSampleCount() > 0) {
 		std::string cb;
 		if (useiBMSC)

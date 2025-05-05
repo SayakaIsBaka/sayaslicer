@@ -12,7 +12,7 @@ void SaveProject(SlicerSettings settings) {
     }
 }
 
-void OpenProject(sf::SoundBuffer& buffer, SlicerSettings& settings, std::string file) {
+void OpenProject(SoundBuffer& buffer, SlicerSettings& settings, std::string file) {
     if (file.size() == 0) {
         char const* lFilterPatterns[1] = { "*.syp" };
         char* s = tinyfd_openFileDialog("Open project file...", 0, 1, lFilterPatterns, "sayaslicer Project (*.syp)", 0);

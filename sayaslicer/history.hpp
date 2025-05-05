@@ -20,11 +20,11 @@ private:
 	size_t curPos = 0;
 
 	HistoryItem get(int _i);
-	void UpdateSettings(SlicerSettings& dst, SlicerSettings src, sf::SoundBuffer& buffer);
+	void UpdateSettings(SlicerSettings& dst, SlicerSettings src, SoundBuffer& buffer);
 	bool IsSameSettings(SlicerSettings a, SlicerSettings b);
 
 public:
 	bool AddItem(SlicerSettings item);
-	bool Undo(SlicerSettings& item, sf::SoundBuffer& buffer);
-	bool Redo(SlicerSettings& item, sf::SoundBuffer& buffer);
+	bool Undo(SlicerSettings& item, SoundBuffer& buffer);
+	bool Redo(SlicerSettings& item, SoundBuffer& buffer);
 };

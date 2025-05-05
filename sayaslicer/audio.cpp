@@ -2,7 +2,7 @@
 
 using namespace i18n::literals;
 
-bool OpenAudioFile(sf::SoundBuffer& buffer, SlicerSettings& settings, std::string file)
+bool OpenAudioFile(SoundBuffer& buffer, SlicerSettings& settings, std::string file)
 {
     auto prevFile = settings.selectedFile;
     if (file.size() == 0) {
@@ -21,15 +21,14 @@ bool OpenAudioFile(sf::SoundBuffer& buffer, SlicerSettings& settings, std::strin
         std::cout << "Loading file: " << settings.selectedFile << std::endl;
 
         std::vector<char> bTmp;
-        auto size = LoadFileUnicode(settings.selectedFile, bTmp);
-        if (size == -1) {
+        int res = buffer.loadFromFile(settings.selectedFile);
+        if (res == -1) {
             InsertNotification({ ImGuiToastType::Error, 3000, "file_doesnt_exist"_t.c_str() });
             return false;
         }
-        bool res = buffer.loadFromMemory(bTmp.data(), size);
 
-        if (res) {
-            std::cout << "Duration: " << buffer.getDuration().asSeconds() << std::endl;
+        if (res == 0) {
+            std::cout << "Duration: " << buffer.getDuration() << std::endl;
             std::cout << "Channels: " << buffer.getChannelCount() << std::endl;
             std::cout << "Sample rate: " << buffer.getSampleRate() << std::endl;
             std::cout << "Sample count: " << buffer.getSampleCount() << std::endl;
@@ -52,7 +51,7 @@ bool OpenAudioFile(sf::SoundBuffer& buffer, SlicerSettings& settings, std::strin
     }
 }
 
-void PlayKeysound(sf::Sound& sound, sf::SoundBuffer& buffer, sf::SoundBuffer& buffer2, SlicerSettings& settings, bool jumpToNext) {
+void PlayKeysound(SoundBuffer& buffer, SlicerSettings& settings, bool jumpToNext) {
     if (buffer.getSampleCount() == 0 || settings.markers.size() == 0)
         return;
     auto samples = buffer.getSamples();
@@ -77,15 +76,14 @@ void PlayKeysound(sf::Sound& sound, sf::SoundBuffer& buffer, sf::SoundBuffer& bu
     keyEnd = keyEnd - keyEnd % buffer.getChannelCount();
     std::cout << "Playing keysound with range start: " << keyStart << ", range end: " << keyEnd << std::endl;
     auto bufsize = (keyEnd - keyStart) + 4 - ((keyEnd - keyStart) % 4); // Buffer size must be a multiple of 4
-    buffer2.loadFromSamples(&samples[keyStart], bufsize, buffer.getChannelCount(), buffer.getSampleRate());
-    sound.setBuffer(buffer2);
-    sound.play();
+    buffer.play(keyStart, bufsize);
+
     if (jumpToNext && keyEnd != buffer.getSampleCount())
         settings.cursorPos = settings.markers.get(i + 1).position - (double)offsetSamples;
 }
 
-int ApplyNoiseGate(std::vector<sf::Int16>& buffer, int threshold, int nbChannels) {
-    double limit = pow(10.0, (double)threshold / 20.0) * 0x7fff; // dB to amplitude and multiply with max Int16
+int ApplyNoiseGate(std::vector<float>& buffer, int threshold, int nbChannels) {
+    double limit = pow(10.0, (double)threshold / 20.0); // dB to amplitude
     auto result = std::find_if(buffer.rbegin(), buffer.rend(),
         [limit](int i) { return abs(i) > limit; });
 
@@ -96,7 +94,7 @@ int ApplyNoiseGate(std::vector<sf::Int16>& buffer, int threshold, int nbChannels
     return pos;
 }
 
-void ApplyFadeout(std::vector<sf::Int16>& buffer, int fadeTime, unsigned int sampleRate, int nbChannels) {
+void ApplyFadeout(std::vector<float>& buffer, int fadeTime, unsigned int sampleRate, int nbChannels) {
     size_t fadeoutSampleLen = (size_t)(sampleRate * fadeTime / 1000);
     unsigned int startFadeoutSample = buffer.size() <= fadeoutSampleLen * nbChannels ? 0 : buffer.size() - fadeoutSampleLen * nbChannels - 1;
     double volRatio = 0.0;
@@ -108,7 +106,7 @@ void ApplyFadeout(std::vector<sf::Int16>& buffer, int fadeTime, unsigned int sam
     }
 }
 
-void WriteKeysounds(sf::SoundBuffer& buffer, SlicerSettings& settings) {
+void WriteKeysounds(SoundBuffer& buffer, SlicerSettings& settings) {
     if (settings.selectedFile.size() == 0) {
         InsertNotification({ ImGuiToastType::Error, 3000, "load_file_first"_t.c_str() });
         return;
@@ -140,13 +138,12 @@ void WriteKeysounds(sf::SoundBuffer& buffer, SlicerSettings& settings) {
         }
         std::cout << "Exporting keysound with range start: " << keyStart << ", range end: " << keyEnd << std::endl;
         auto bufsize = keyEnd - keyStart;
-        sf::OutputSoundFile file;
 
         if (keyStart > buffer.getSampleCount())
             continue;
 
         auto bufOut = &samples[keyStart];
-        std::vector<sf::Int16> newBuf;
+        std::vector<float> newBuf;
         if (settings.selectedGateThreshold != 0 || settings.fadeout != 0) {
             newBuf.insert(newBuf.end(), &bufOut[0], &bufOut[bufsize]);
             if (settings.selectedGateThreshold != 0)
@@ -159,38 +156,32 @@ void WriteKeysounds(sf::SoundBuffer& buffer, SlicerSettings& settings) {
         std::string filename;
         std::filesystem::path u8filename;
         std::filesystem::path finalPath;
-        // Write to temp file first because SFML 2.6 doesn't support unicode paths
+
         if (m.name.empty()) {
-            filename = GetTempMarkerName(origFilename.string(), i);
-            u8filename = std::filesystem::u8path(GetTempMarkerName(origFilename.u8string(), i));
             finalPath = std::filesystem::u8path(folder.u8string() + GetTempMarkerName(origFilename.u8string(), i));
         }
         else {
-            filename = m.name;
-            u8filename = std::filesystem::u8path(m.name);
             finalPath = std::filesystem::u8path(folder.u8string() + m.name);
         }
 
         std::cout << finalPath.u8string() << std::endl;
-        if (!file.openFromFile(filename, buffer.getSampleRate(), buffer.getChannelCount())) {
-            std::cerr << "Error opening temp file for writing" << std::endl;
+        
+        if (!SoundBuffer::writeFile(finalPath, buffer.getSampleRate(), buffer.getChannelCount(), bufOut, bufsize)) {
+            std::cerr << "Error writing audio file" << std::endl;
         }
-        file.write(bufOut, bufsize);
-        file.close();
-        std::filesystem::rename(u8filename, finalPath);
     }
     if (hasError)
         InsertNotification({ ImGuiToastType::Warning, 3000, "keysound_export_error"_t.c_str() });
     InsertNotification({ ImGuiToastType::Success, 3000, "%s:\n%s", "exported_keysounds_to_folder"_t.c_str(), p.parent_path().u8string().c_str() });
 }
 
-unsigned long long FindCrossing(sf::SoundBuffer& buffer, unsigned long long pos, bool searchRight) {
+unsigned long long FindCrossing(SoundBuffer& buffer, unsigned long long pos, bool searchRight) {
     auto buf = buffer.getSamples();
     auto sampleCount = buffer.getSampleCount();
     auto channelCount = buffer.getChannelCount();
     auto origVal = buf[pos];
     auto prevPos = pos;
-    int delta = 500;
+    auto delta = 0.015f;
     if (pos == 0 || (-delta <= origVal && origVal <= delta))
         return pos;
     while (pos >= 0 && pos < sampleCount && buf[pos] != 0 && ((origVal < 0) == (buf[pos] < 0))) {
@@ -202,7 +193,7 @@ unsigned long long FindCrossing(sf::SoundBuffer& buffer, unsigned long long pos,
     return std::abs(buf[prevPos]) > std::abs(buf[pos]) ? prevPos : pos; // Start marker on the sample right after the crossing and not the other way around
 }
 
-void ZeroCrossMarkers(sf::SoundBuffer& buffer, SlicerSettings& settings) {
+void ZeroCrossMarkers(SoundBuffer& buffer, SlicerSettings& settings) {
     for (auto& m : settings.markers) {
         unsigned long long p = m.position;
         auto pos = p - p % buffer.getChannelCount();

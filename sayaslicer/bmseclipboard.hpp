@@ -8,7 +8,7 @@
 #include <list>
 #include <vector>
 #include "notifications.hpp"
-#include <SFML/Audio.hpp>
+#include "sound_buffer.hpp"
 #include <clip/clip.h>
 #include "marker.hpp"
 #include "settings.hpp"
@@ -48,6 +48,6 @@ public:
 	BMSEClipboard(std::string s);
 };
 
-void AddMarkersFromBMSEClipboard(BMSEClipboard objs, sf::SoundBuffer& buffer, SlicerSettings& settings);
-void ProcessBMSEClipboard(sf::SoundBuffer& buffer, SlicerSettings& settings);
-void GenerateBMSEClipboard(sf::SoundBuffer& buffer, SlicerSettings settings, bool useiBMSC);
+void AddMarkersFromBMSEClipboard(BMSEClipboard objs, SoundBuffer& buffer, SlicerSettings& settings);
+void ProcessBMSEClipboard(SoundBuffer& buffer, SlicerSettings& settings);
+void GenerateBMSEClipboard(SoundBuffer& buffer, SlicerSettings settings, bool useiBMSC);

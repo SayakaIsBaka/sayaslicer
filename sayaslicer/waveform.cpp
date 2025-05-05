@@ -15,15 +15,15 @@ int MeterFormatter(double value, char* buff, int size, void* data) {
 
 void DrawSelection(SlicerSettings& settings) {
     if (settings.selection.start != -1.0) {
-        double yMinLimit = -32768;
-        double yMaxLimit = 32768;
+        double yMinLimit = -1.0;
+        double yMaxLimit = 1.0;
         double startRect = settings.selection.start / waveformReso;
         double endRect = (settings.selection.isSelectMode ? settings.cursorPos : settings.selection.end) / waveformReso;
         ImPlot::DragRect(0, &startRect, &yMinLimit, &endRect, &yMaxLimit, ImGui::GetStyleColorVec4(ImGuiCol_PlotHistogram), ImPlotDragToolFlags_NoInputs);
     }
 }
 
-void DisplayWaveform(sf::SoundBuffer& buffer, SlicerSettings& settings) {
+void DisplayWaveform(SoundBuffer& buffer, SlicerSettings& settings) {
     double maxDisplayRange = settings.maxDisplayRange;
     double marginConst = 1600.0 * maxDisplayRange / minZoom;
     double leftMargin = (buffer.getSampleCount() < marginConst * waveformReso ? 0 : marginConst) * waveformReso;
@@ -32,7 +32,7 @@ void DisplayWaveform(sf::SoundBuffer& buffer, SlicerSettings& settings) {
         double plotStart = (settings.cursorPos - leftMargin) / waveformReso;
         double plotEnd = plotStart + maxDisplayRange;
         ImPlot::SetupAxisLinks(ImAxis_X1, &plotStart, &plotEnd);
-        ImPlot::SetupAxisLimits(ImAxis_Y1, -32768, 32768);
+        ImPlot::SetupAxisLimits(ImAxis_Y1, -1.0f, 1.0f);
 
         ImPlot::SetupAxis(ImAxis_Y1, "", ImPlotAxisFlags_NoGridLines | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Lock | ImPlotAxisFlags_NoTickMarks);
         ImPlot::SetupAxis(ImAxis_X1, "", ImPlotAxisFlags_Foreground | ImPlotAxisFlags_NoTickLabels);

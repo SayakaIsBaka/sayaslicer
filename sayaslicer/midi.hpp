@@ -4,8 +4,8 @@
 #include <midifile/include/MidiFile.h>
 #include <imgui.h>
 #include "notifications.hpp"
-#include <SFML/Audio.hpp>
+#include "sound_buffer.hpp"
 #include <tinyfiledialogs/tinyfiledialogs.h>
 
-void LoadMidi(sf::SoundBuffer& buffer, SlicerSettings& settings, std::string file = "");
-void ShowMidiTrackModal(sf::SoundBuffer& buffer, SlicerSettings& settings);
+void LoadMidi(SoundBuffer& buffer, SlicerSettings& settings, std::string file = "");
+void ShowMidiTrackModal(SoundBuffer& buffer, SlicerSettings& settings);

@@ -3,7 +3,7 @@
 using namespace std;
 using namespace i18n::literals;
 
-void ShowMenuFile(sf::SoundBuffer& buffer, SlicerSettings &settings, sf::RenderWindow &window)
+void ShowMenuFile(SoundBuffer& buffer, SlicerSettings &settings, sf::RenderWindow &window)
 {
     if (ImGui::MenuItem("open_project"_t.c_str(), "Ctrl+O")) {
         OpenProject(buffer, settings);
@@ -24,7 +24,7 @@ void ShowMenuFile(sf::SoundBuffer& buffer, SlicerSettings &settings, sf::RenderW
     }
 }
 
-void ShowMenuEdit(sf::SoundBuffer& buffer, SlicerSettings& settings)
+void ShowMenuEdit(SoundBuffer& buffer, SlicerSettings& settings)
 {
     if (ImGui::MenuItem("import_midi"_t.c_str())) {
         LoadMidi(buffer, settings);
@@ -63,7 +63,7 @@ void ShowMenuEdit(sf::SoundBuffer& buffer, SlicerSettings& settings)
     }
 }
 
-void ShowMainMenuBar(sf::SoundBuffer& buffer, SlicerSettings &settings, sf::RenderWindow &window)
+void ShowMainMenuBar(SoundBuffer& buffer, SlicerSettings &settings, sf::RenderWindow &window)
 {
     if (ImGui::BeginMainMenuBar())
     {
@@ -137,7 +137,7 @@ void SetupDock() {
     }
 }
 
-void ShowSettingsPanel(sf::SoundBuffer& buffer, SlicerSettings& settings) {
+void ShowSettingsPanel(SoundBuffer& buffer, SlicerSettings& settings) {
     if (ImGui::Begin("Settings"))
     {
         double minPos = 0;
@@ -207,7 +207,7 @@ void ShowSettingsPanel(sf::SoundBuffer& buffer, SlicerSettings& settings) {
     ImGui::End();
 }
 
-void ProcessShortcuts(ImGuiIO& io, sf::SoundBuffer& buffer, sf::SoundBuffer& buffer2, sf::Sound& sound, SlicerSettings& settings, History& history) {
+void ProcessShortcuts(ImGuiIO& io, SoundBuffer& buffer, SlicerSettings& settings, History& history) {
     if (!io.WantTextInput && !io.WantCaptureKeyboard && io.KeyCtrl && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_O), false)) {
         OpenProject(buffer, settings);
         io.ClearInputKeys(); // Flush Ctrl key (it gets stuck otherwise)
@@ -225,8 +225,8 @@ void ProcessShortcuts(ImGuiIO& io, sf::SoundBuffer& buffer, sf::SoundBuffer& buf
                 settings.cursorPos += settings.samplesPerSnap;
             }
         }
-        if (sound.getStatus() == sf::Sound::Playing) {
-            sound.stop();
+        if (buffer.isPlaying()) {
+            buffer.stop();
         }
     }
     else if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_LeftArrow)) && settings.cursorPos > 0.0) {
@@ -241,8 +241,8 @@ void ProcessShortcuts(ImGuiIO& io, sf::SoundBuffer& buffer, sf::SoundBuffer& buf
                 settings.cursorPos -= settings.samplesPerSnap;
             }
         }
-        if (sound.getStatus() == sf::Sound::Playing) {
-            sound.stop();
+        if (buffer.isPlaying()) {
+            buffer.stop();
         }
     }
     if (!io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_UpArrow)) && settings.snapping < 192) {
@@ -270,10 +270,10 @@ void ProcessShortcuts(ImGuiIO& io, sf::SoundBuffer& buffer, sf::SoundBuffer& buf
         history.Redo(settings, buffer);
     }
     if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
-        PlayKeysound(sound, buffer, buffer2, settings, false);
+        PlayKeysound(buffer, settings, false);
     }
     if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_P))) {
-        PlayKeysound(sound, buffer, buffer2, settings, true);
+        PlayKeysound(buffer, settings, true);
     }
     if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_M), false)) {
         WriteKeysounds(buffer, settings);
@@ -386,7 +386,7 @@ void DisplayMarkersTable(SlicerSettings& settings) {
     }
 }
 
-void ShowWaveform(sf::SoundBuffer& buffer, SlicerSettings& settings) {
+void ShowWaveform(SoundBuffer& buffer, SlicerSettings& settings) {
     if (ImGui::Begin("Waveform"))
     {
         ImGui::SeparatorText("waveform"_t.c_str());
@@ -407,7 +407,7 @@ void ShowConsole(ConsoleLog &console) {
     ImGui::End();
 }
 
-void HandleDragDropDispatch(sf::SoundBuffer& buffer, SlicerSettings& settings, std::string path) {
+void HandleDragDropDispatch(SoundBuffer& buffer, SlicerSettings& settings, std::string path) {
     auto ext = path.substr(path.find_last_of(".") + 1);
     if (strcmp(ext.c_str(), "mid") == 0 || strcmp(ext.c_str(), "midi") == 0)
         LoadMidi(buffer, settings, path);
@@ -425,14 +425,16 @@ int main() {
     ImGui::SFML::Init(window, false);
     auto &io = ImGui::GetIO();
 
+    if (Pa_Initialize() != paNoError) {
+        throw std::exception("Error initializing PortAudio");
+    }
+
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     
     SetupImGuiStyle();
     ImPlot::CreateContext();
 
-    sf::SoundBuffer buffer;
-    sf::SoundBuffer buffer2; // For keysound playing
-    sf::Sound sound;
+    SoundBuffer buffer;
     sf::Texture logo;
     SlicerSettings settings;
     History history;
@@ -499,7 +501,7 @@ int main() {
         ImGui::PopItemFlag();
 #endif
 
-        ProcessShortcuts(io, buffer, buffer2, sound, settings, history);
+        ProcessShortcuts(io, buffer, settings, history);
 
         ImGui::SetNextWindowClass(&window_class);
         if (frame < 2) { // Issue #5289, needed to set tab focus to waveform on init
@@ -539,6 +541,10 @@ int main() {
     RevokeDragDrop(handle);
     OleUninitialize();
 #endif
+
+    if (Pa_Terminate() != paNoError) {
+        throw std::exception("Error terminating PortAudio");
+    }
 
     ImPlot::DestroyContext();
     ImGui::SFML::Shutdown();

@@ -18,6 +18,13 @@
     "nlohmann-json",
     "sfml",
     "tinyfiledialogs",
-    "libiconv"
+    "libiconv",
+    "portaudio",
+    {
+      "name": "libsndfile",
+      "features": [
+        "external-libs"
+      ]
+    }
   ]
 }

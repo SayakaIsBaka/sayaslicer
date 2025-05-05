@@ -21,7 +21,7 @@ void GetTrackNames(smf::MidiFile midifile, std::vector<std::string>& out) {
     }
 }
 
-void LoadMidi(sf::SoundBuffer& buffer, SlicerSettings& settings, std::string file) {
+void LoadMidi(SoundBuffer& buffer, SlicerSettings& settings, std::string file) {
     if (!buffer.getSampleCount()) {
         InsertNotification({ ImGuiToastType::Error, 3000, "load_file_first"_t.c_str() });
         return;
@@ -55,7 +55,7 @@ bool HasBPMData(SlicerSettings& settings, int selectedTrack) {
     return false;
 }
 
-void ImportMidiMarkers(sf::SoundBuffer& buffer, SlicerSettings& settings, int track, bool useMidiBPM, bool clearMarkers) {
+void ImportMidiMarkers(SoundBuffer& buffer, SlicerSettings& settings, int track, bool useMidiBPM, bool clearMarkers) {
     int selectedTrack = 0;
     if (track == -1) {
         settings.midiFile.joinTracks();
@@ -88,7 +88,7 @@ void ImportMidiMarkers(sf::SoundBuffer& buffer, SlicerSettings& settings, int tr
     InsertNotification({ ImGuiToastType::Success, 3000, "imported_midi_markers"_t.c_str() });
 }
 
-void ShowMidiTrackModal(sf::SoundBuffer& buffer, SlicerSettings& settings) {
+void ShowMidiTrackModal(SoundBuffer& buffer, SlicerSettings& settings) {
     if (settings.openMidiModalTemp) {
         settings.openMidiModalTemp = false;
         ImGui::OpenPopup("Select MIDI track");

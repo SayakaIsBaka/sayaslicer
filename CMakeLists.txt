@@ -5,7 +5,7 @@ cmake_minimum_required (VERSION 3.8)
 
 project ("sayaslicer")
 
-find_package(SFML COMPONENTS system window graphics audio CONFIG REQUIRED)
+find_package(SFML COMPONENTS system window graphics CONFIG REQUIRED)
 find_package(ImGui-SFML CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(implot CONFIG REQUIRED)
@@ -13,6 +13,8 @@ find_package(tinyfiledialogs CONFIG REQUIRED)
 find_package(cereal CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(cpr CONFIG REQUIRED)
+find_package(portaudio CONFIG REQUIRED)
+find_package(SndFile CONFIG REQUIRED)
 find_package(Iconv)
 
 include("${CMAKE_SOURCE_DIR}/scripts/CheckGit.cmake")

@@ -15,7 +15,7 @@ HistoryItem History::get(int _i) {
 
 
 
-void History::UpdateSettings(SlicerSettings& dst, SlicerSettings src, sf::SoundBuffer& buffer) {
+void History::UpdateSettings(SlicerSettings& dst, SlicerSettings src, SoundBuffer& buffer) {
 	bool fileChange = dst.selectedFile != src.selectedFile;
 	dst.markers = src.markers;
 	dst.startingKeysound = src.startingKeysound;
@@ -59,7 +59,7 @@ bool History::AddItem(SlicerSettings item) {
 	return true;
 }
 
-bool History::Undo(SlicerSettings& item, sf::SoundBuffer& buffer) {
+bool History::Undo(SlicerSettings& item, SoundBuffer& buffer) {
 	if (curPos >= maxSize - 1 || curPos >= items.size() - 1 || items.size() == 0)
 		return false;
 	SlicerSettings newItem = get(++curPos).item;
@@ -67,7 +67,7 @@ bool History::Undo(SlicerSettings& item, sf::SoundBuffer& buffer) {
 	return true;
 }
 
-bool History::Redo(SlicerSettings& item, sf::SoundBuffer& buffer) {
+bool History::Redo(SlicerSettings& item, SoundBuffer& buffer) {
 	if (curPos <= 0 || items.size() < 2)
 		return false;
 	SlicerSettings newItem = get(--curPos).item;

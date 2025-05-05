@@ -21,6 +21,7 @@
 #include "about.hpp"
 #include "console.hpp"
 #include "dropmanager.hpp"
+#include "sound_buffer.hpp"
 
 #include <IconsFontAwesome6.h>
 #include <fonts/fa_solid_900.hpp>
@@ -34,8 +35,8 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Clock.hpp>
 #include <SFML/Window/Event.hpp>
-#include <SFML/Audio.hpp>
 #include <list>
 #include <filesystem>
 #include <iostream>
 #include <fstream>
+#include <portaudio.h>
