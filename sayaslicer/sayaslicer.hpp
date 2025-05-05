@@ -5,6 +5,9 @@
 	#include <Windows.h>
 #endif
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
 #include "bmseclipboard.hpp"
 #include "theme.hpp"
 #include "custom_widgets.hpp"
@@ -30,13 +33,18 @@
 #include <fonts/notosc_medium.hpp>
 #include <imgui.h>
 #include <imgui_internal.h>
-#include <imgui-SFML.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+#include <GLFW/glfw3.h>
 #include <implot.h>
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/System/Clock.hpp>
-#include <SFML/Window/Event.hpp>
 #include <list>
 #include <filesystem>
 #include <iostream>
 #include <fstream>
 #include <portaudio.h>
+
+#if _WIN32
+	#define GLFW_EXPOSE_NATIVE_WIN32
+	#define GLFW_NATIVE_INCLUDE_NONE
+	#include <GLFW/glfw3native.h>
+#endif

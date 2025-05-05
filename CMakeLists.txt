@@ -5,8 +5,8 @@ cmake_minimum_required (VERSION 3.8)
 
 project ("sayaslicer")
 
-find_package(SFML COMPONENTS system window graphics CONFIG REQUIRED)
-find_package(ImGui-SFML CONFIG REQUIRED)
+find_package(glfw3 REQUIRED)
+find_package(OpenGL REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(implot CONFIG REQUIRED)
 find_package(tinyfiledialogs CONFIG REQUIRED)

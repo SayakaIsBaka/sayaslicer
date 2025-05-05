@@ -3,6 +3,7 @@
 
 #include <imgui.h>
 #include <oleidl.h>
+#include <codecvt>
 
 // Mostly copy pasted from https://github.com/ocornut/imgui/issues/2602
 class DropManager : public IDropTarget
@@ -72,7 +73,8 @@ public:
 				str.resize(bufsize + 1);
 				if (DragQueryFileW(hdrop, 0, &str[0], bufsize + 1))
 				{
-					sf::Utf8::fromWide(str.begin(), str.end(), std::back_inserter(droppedFile));
+					std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
+					droppedFile = conv.to_bytes(str);
 				}
 			}
 

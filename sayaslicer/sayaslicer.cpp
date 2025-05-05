@@ -1,9 +1,13 @@
 ﻿#include "sayaslicer.hpp"
 
+#if _WIN32
+    #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+#endif
+
 using namespace std;
 using namespace i18n::literals;
 
-void ShowMenuFile(SoundBuffer& buffer, SlicerSettings &settings, sf::RenderWindow &window)
+void ShowMenuFile(SoundBuffer& buffer, SlicerSettings &settings, GLFWwindow* window)
 {
     if (ImGui::MenuItem("open_project"_t.c_str(), "Ctrl+O")) {
         OpenProject(buffer, settings);
@@ -20,7 +24,7 @@ void ShowMenuFile(SoundBuffer& buffer, SlicerSettings &settings, sf::RenderWindo
     }
     ImGui::Separator();
     if (ImGui::MenuItem("quit"_t.c_str(), "Alt+F4")) {
-        window.close();
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
 }
 
@@ -63,7 +67,7 @@ void ShowMenuEdit(SoundBuffer& buffer, SlicerSettings& settings)
     }
 }
 
-void ShowMainMenuBar(SoundBuffer& buffer, SlicerSettings &settings, sf::RenderWindow &window)
+void ShowMainMenuBar(SoundBuffer& buffer, SlicerSettings &settings, GLFWwindow* window)
 {
     if (ImGui::BeginMainMenuBar())
     {
@@ -115,7 +119,6 @@ void SetupFonts(ImGuiIO& io, int fontSize) {
     io.Fonts->AddFontFromMemoryCompressedTTF(fa_solid_900_compressed_data, fa_solid_900_compressed_size, iconFontSize, &iconsConfig, iconsRanges);
 
     io.Fonts->Build();
-    ImGui::SFML::UpdateFontTexture();
 }
 
 void SetupDock() {
@@ -419,10 +422,67 @@ void HandleDragDropDispatch(SoundBuffer& buffer, SlicerSettings& settings, std::
         OpenAudioFile(buffer, settings, path);
 }
 
+// Copied from https://github.com/ocornut/imgui/wiki/Image-Loading-and-Displaying-Examples#example-for-opengl-users
+bool LoadTextureFromMemory(const void* data, size_t data_size, GLuint* out_texture, int* out_width, int* out_height) {
+    // Load from file
+    int image_width = 0;
+    int image_height = 0;
+    unsigned char* image_data = stbi_load_from_memory((const unsigned char*)data, (int)data_size, &image_width, &image_height, NULL, 4);
+    if (image_data == NULL)
+        return false;
+
+    // Create a OpenGL texture identifier
+    GLuint image_texture;
+    glGenTextures(1, &image_texture);
+    glBindTexture(GL_TEXTURE_2D, image_texture);
+
+    // Setup filtering parameters for display
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Upload pixels into texture
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_width, image_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_data);
+    stbi_image_free(image_data);
+
+    *out_texture = image_texture;
+    *out_width = image_width;
+    *out_height = image_height;
+
+    return true;
+}
+
+void glfw_error_callback(int error, const char* description)
+{
+    fprintf(stderr, "GLFW Error %d: %s\n", error, description);
+}
+
 int main() {
-    sf::RenderWindow window(sf::VideoMode(870, 477), "sayaslicer");
-    window.setFramerateLimit(60);
-    ImGui::SFML::Init(window, false);
+    glfwSetErrorCallback(glfw_error_callback);
+    if (!glfwInit())
+        return 1;
+
+#if defined(__APPLE__)
+    // GL 3.2 + GLSL 150
+    const char* glsl_version = "#version 150";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
+#else
+    // GL 3.0 + GLSL 130
+    const char* glsl_version = "#version 130";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+#endif
+
+    GLFWwindow* window = glfwCreateWindow(870, 477, "sayaslicer", nullptr, nullptr);
+    if (window == nullptr)
+        return 1;
+    glfwMakeContextCurrent(window);
+    glfwSwapInterval(1); // Enable vsync
+
+    ImGui::CreateContext();
     auto &io = ImGui::GetIO();
 
     if (Pa_Initialize() != paNoError) {
@@ -434,8 +494,13 @@ int main() {
     SetupImGuiStyle();
     ImPlot::CreateContext();
 
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+
     SoundBuffer buffer;
-    sf::Texture logo;
+    Texture logo;
+    bool ret = LoadTextureFromMemory(logoArr, IM_ARRAYSIZE(logoArr), &logo.texture, &logo.width, &logo.height);
+    IM_ASSERT(ret);
     SlicerSettings settings;
     History history;
     ConsoleLog consoleLog;
@@ -443,7 +508,6 @@ int main() {
 
     std::stringstream logBuffer;
     std::streambuf* oldCout = std::cout.rdbuf(logBuffer.rdbuf());
-    std::streambuf* oldSfmlErr = sf::err().rdbuf(logBuffer.rdbuf());
     std::streambuf* oldCerr = std::cerr.rdbuf(logBuffer.rdbuf());
 
     LoadPreferences(settings.prefs);
@@ -453,15 +517,12 @@ int main() {
 
 #if _WIN32
     OleInitialize(NULL);
-    HWND handle = window.getSystemHandle();
+    HWND handle = glfwGetWin32Window(window);
     DropManager dm;
     RegisterDragDrop(handle, &dm);
 
     SetConsoleOutputCP(CP_UTF8);
 #endif
-
-    window.resetGLStates();
-    sf::Clock deltaClock;
 
     ImGuiWindowClass window_class;
     window_class.DockNodeFlagsOverrideSet = ImGuiDockNodeFlags_AutoHideTabBar;
@@ -470,17 +531,21 @@ int main() {
         CheckUpdates(settings, true);
     int frame = 0;
 
-    while (window.isOpen()) {
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            ImGui::SFML::ProcessEvent(window, event);
-
-            if (event.type == sf::Event::Closed) {
-                window.close();
-            }
+    while (!glfwWindowShouldClose(window)) {
+        glfwPollEvents();
+        if (glfwGetWindowAttrib(window, GLFW_ICONIFIED) != 0)
+        {
+#ifdef _WIN32
+            ::Sleep(10);
+#else
+            usleep(10 * 1000);
+#endif
+            continue;
         }
 
-        ImGui::SFML::Update(window, deltaClock.restart());
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
 
         SetupDock();
         ShowMainMenuBar(buffer, settings, window);
@@ -532,9 +597,14 @@ int main() {
 
         ImGui::RenderNotifications();
 
-        window.clear();
-        ImGui::SFML::Render(window);
-        window.display();
+        ImGui::Render();
+        int display_w, display_h;
+        glfwGetFramebufferSize(window, &display_w, &display_h);
+        glViewport(0, 0, display_w, display_h);
+        glClear(GL_COLOR_BUFFER_BIT);
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        glfwSwapBuffers(window);
     }
 
 #if _WIN32
@@ -546,6 +616,10 @@ int main() {
         throw std::exception("Error terminating PortAudio");
     }
 
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
     ImPlot::DestroyContext();
-    ImGui::SFML::Shutdown();
+
+    glfwDestroyWindow(window);
+    glfwTerminate();
 }

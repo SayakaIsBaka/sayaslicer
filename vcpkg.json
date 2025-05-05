@@ -10,13 +10,13 @@
     {
       "name": "imgui",
       "features": [
-        "docking-experimental"
+        "docking-experimental",
+        "glfw-binding",
+        "opengl3-binding"
       ]
     },
-    "imgui-sfml",
     "implot",
     "nlohmann-json",
-    "sfml",
     "tinyfiledialogs",
     "libiconv",
     "portaudio",
