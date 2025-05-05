@@ -1,5 +1,7 @@
 #include <filesystem>
 #include <sndfile.h>
+#include <exception>
+#include <cstring>
 
 #include "sound_buffer.hpp"
 
