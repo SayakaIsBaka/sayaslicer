@@ -85,7 +85,7 @@ void PlayKeysound(SoundBuffer& buffer, SlicerSettings& settings, bool jumpToNext
 int ApplyNoiseGate(std::vector<float>& buffer, int threshold, int nbChannels) {
     double limit = pow(10.0, (double)threshold / 20.0); // dB to amplitude
     auto result = std::find_if(buffer.rbegin(), buffer.rend(),
-        [limit](int i) { return abs(i) > limit; });
+        [limit](float i) { return abs(i) > limit; });
 
     auto pos = std::distance(result, buffer.rend());
     if (pos % nbChannels != 0)
