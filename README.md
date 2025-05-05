@@ -67,8 +67,10 @@ The following features are less likely to be implemented but might be done depen
 ## Credits
 sayaslicer uses the following libraries:
 - [Dear ImGui](https://github.com/ocornut/imgui)
-- [SFML](https://github.com/SFML/SFML)
-- [imgui-sfml](https://github.com/SFML/imgui-sfml)
+- [GLFW](https://github.com/glfw/glfw)
+- [PortAudio](https://github.com/PortAudio/portaudio)
+- [libsndfile](https://github.com/libsndfile/libsndfile)
+- [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h)
 - [implot](https://github.com/epezent/implot)
 - [tinyfiledialogs](https://sourceforge.net/projects/tinyfiledialogs/)
 - [clip](https://github.com/dacap/clip)
