@@ -75,7 +75,7 @@ void PlayKeysound(SoundBuffer& buffer, SlicerSettings& settings, bool jumpToNext
     keyStart = keyStart - keyStart % buffer.getChannelCount();
     keyEnd = keyEnd - keyEnd % buffer.getChannelCount();
     std::cout << "Playing keysound with range start: " << keyStart << ", range end: " << keyEnd << std::endl;
-    auto bufsize = (keyEnd - keyStart) + 4 - ((keyEnd - keyStart) % 4); // Buffer size must be a multiple of 4
+    auto bufsize = keyEnd - keyStart;
     buffer.play(keyStart, bufsize);
 
     if (jumpToNext && keyEnd != buffer.getSampleCount())
@@ -153,10 +153,7 @@ void WriteKeysounds(SoundBuffer& buffer, SlicerSettings& settings) {
             bufOut = &newBuf[0];
         }
 
-        std::string filename;
-        std::filesystem::path u8filename;
         std::filesystem::path finalPath;
-
         if (m.name.empty()) {
             finalPath = std::filesystem::u8path(folder.u8string() + GetTempMarkerName(origFilename.u8string(), i));
         }
