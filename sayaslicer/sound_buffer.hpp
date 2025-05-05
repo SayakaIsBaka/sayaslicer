@@ -18,7 +18,7 @@ public:
 	float getDuration();
 	unsigned int getChannelCount();
 	unsigned int getSampleRate();
-	std::vector<float> getSamples();
+	std::vector<float>& getSamples();
 	unsigned long long getSampleCount();
 	int loadFromFile(std::string path);
 	void play(unsigned long long samplePos, unsigned long long length);

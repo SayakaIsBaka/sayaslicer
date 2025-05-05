@@ -54,7 +54,6 @@ bool OpenAudioFile(SoundBuffer& buffer, SlicerSettings& settings, std::string fi
 void PlayKeysound(SoundBuffer& buffer, SlicerSettings& settings, bool jumpToNext) {
     if (buffer.getSampleCount() == 0 || settings.markers.size() == 0)
         return;
-    auto samples = buffer.getSamples();
     settings.markers.sort();
     unsigned long long keyStart = 0;
     unsigned long long keyEnd = 0;
@@ -112,7 +111,7 @@ void WriteKeysounds(SoundBuffer& buffer, SlicerSettings& settings) {
         return;
     }
     bool hasError = false;
-    auto samples = buffer.getSamples();
+    auto& samples = buffer.getSamples();
     settings.markers.sort();
     unsigned long long keyStart = 0;
     long long keyEnd = 0;
@@ -173,7 +172,7 @@ void WriteKeysounds(SoundBuffer& buffer, SlicerSettings& settings) {
 }
 
 unsigned long long FindCrossing(SoundBuffer& buffer, unsigned long long pos, bool searchRight) {
-    auto buf = buffer.getSamples();
+    auto& buf = buffer.getSamples();
     auto sampleCount = buffer.getSampleCount();
     auto channelCount = buffer.getChannelCount();
     auto origVal = buf[pos];

@@ -16,7 +16,7 @@ int callback(const void* input, void* output, unsigned long frameCount, const Pa
 	unsigned int channelCount = callbackData->sound->getChannelCount();
 
 	memset(out, 0, sizeof(float) * frameCount * channelCount);
-	auto buffer = callbackData->sound->getSamples();
+	auto& buffer = callbackData->sound->getSamples();
 
 	if (callbackData->currentPos >= callbackData->length) {
 		return paComplete;
@@ -59,7 +59,7 @@ float SoundBuffer::getDuration() {
 	return this->duration;
 }
 
-std::vector<float> SoundBuffer::getSamples() {
+std::vector<float>& SoundBuffer::getSamples() {
 	return this->buffer;
 }
 
@@ -90,20 +90,22 @@ int SoundBuffer::loadFromFile(std::string path) {
 	this->duration = (float)info.frames / (float)info.samplerate;
 
 	this->buffer.clear();
+	this->buffer.shrink_to_fit();
 	this->buffer.reserve(info.frames * info.channels);
 
 	size_t totalFramesRead = 0;
+	float* tmp = (float*)malloc(sizeof(float) * 4096 * info.channels);
+
 	while (totalFramesRead < info.frames) {
-		float* tmp = (float*)malloc(sizeof(float) * 512 * info.channels);
-		size_t framesRead = sf_readf_float(file, tmp, 512);
+		size_t framesRead = sf_readf_float(file, tmp, 4096);
 		if (framesRead == 0)
 			break;
 		totalFramesRead += framesRead;
 		for (size_t i = 0; i < framesRead * info.channels; i++)
 			this->buffer.push_back(tmp[i]);
-		free(tmp);
 	}
 
+	free(tmp);
 	sf_close(file);
 
 	return 0;
@@ -144,7 +146,7 @@ void SoundBuffer::play(unsigned long long samplePos, unsigned long long length) 
 	data->currentPos = 0;
 	data->sound = this;
 
-	if (Pa_OpenDefaultStream(&stream, 0, channelCount, paFloat32, sampleRate, 1024, callback, data) != paNoError) {
+	if (Pa_OpenDefaultStream(&stream, 0, channelCount, paFloat32, sampleRate, 512, callback, data) != paNoError) {
 		throw std::exception("Error opening PortAudio stream");
 	}
 
