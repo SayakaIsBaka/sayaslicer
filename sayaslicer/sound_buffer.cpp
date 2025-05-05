@@ -1,6 +1,6 @@
 #include <filesystem>
 #include <sndfile.h>
-#include <exception>
+#include <stdexcept>
 #include <cstring>
 
 #include "sound_buffer.hpp"
@@ -142,22 +142,22 @@ void SoundBuffer::play(unsigned long long samplePos, unsigned long long length) 
 
 	struct callbackData* data = (struct callbackData*)calloc(1, sizeof(struct callbackData));
 	if (!data)
-		throw std::exception("Cannot allocate PortAudio user data (this should not happen)");
+		throw std::runtime_error("Cannot allocate PortAudio user data (this should not happen)");
 	data->samplePos = samplePos;
 	data->length = length;
 	data->currentPos = 0;
 	data->sound = this;
 
 	if (Pa_OpenDefaultStream(&stream, 0, channelCount, paFloat32, sampleRate, 512, callback, data) != paNoError) {
-		throw std::exception("Error opening PortAudio stream");
+		throw std::runtime_error("Error opening PortAudio stream");
 	}
 
 	if (Pa_SetStreamFinishedCallback(stream, streamFinishedCallback) != paNoError) {
-		throw std::exception("Error setting PortAudio stream finished callback");
+		throw std::runtime_error("Error setting PortAudio stream finished callback");
 	}
 
 	if (Pa_StartStream(stream) != paNoError) {
-		throw std::exception("Error starting PortAudio stream");
+		throw std::runtime_error("Error starting PortAudio stream");
 	}
 }
 

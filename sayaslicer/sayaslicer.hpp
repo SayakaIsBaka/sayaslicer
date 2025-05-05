@@ -42,7 +42,7 @@
 #include <iostream>
 #include <fstream>
 #include <portaudio.h>
-#include <exception>
+#include <stdexcept>
 
 #if _WIN32
 	#define GLFW_EXPOSE_NATIVE_WIN32

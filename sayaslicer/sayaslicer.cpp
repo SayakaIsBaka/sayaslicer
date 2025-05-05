@@ -1,7 +1,9 @@
 ﻿#include "sayaslicer.hpp"
 
 #if _WIN32
-    #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+    #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup") // Hide console on Windows
+#else
+    #include <unistd.h> // For usleep
 #endif
 
 using namespace std;
@@ -486,7 +488,7 @@ int main() {
     auto &io = ImGui::GetIO();
 
     if (Pa_Initialize() != paNoError) {
-        throw std::exception("Error initializing PortAudio");
+        throw std::runtime_error("Error initializing PortAudio");
     }
 
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
