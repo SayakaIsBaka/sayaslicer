@@ -20,7 +20,7 @@ jobs:
           submodules: true
 
       - name: Install dependencies (Linux)
-        run: sudo apt-get install libx11-dev libxrandr-dev libxcursor-dev libxi-dev libudev-dev libgl1-mesa-dev
+        run: sudo apt-get install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev pkg-config
         if: matrix.os == 'ubuntu-latest'
 
       - uses: lukka/get-cmake@latest
