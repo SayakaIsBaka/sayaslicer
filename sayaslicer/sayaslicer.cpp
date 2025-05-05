@@ -615,7 +615,7 @@ int main() {
 #endif
 
     if (Pa_Terminate() != paNoError) {
-        throw std::exception("Error terminating PortAudio");
+        throw std::runtime_error("Error terminating PortAudio");
     }
 
     ImGui_ImplOpenGL3_Shutdown();
