@@ -7,7 +7,7 @@
 	"bpm": "BPM",
 	"snapping": "Grid",
 	"starting_key": "始番号",
-	"decimal_value": "10進数値",
+	"decimal_value": "キー音定義",
 	"enable_b62": "62進数モード",
 	"zerocross_markers": "ゼロクロス切断配置",
 	"file": "ファイル",
