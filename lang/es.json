@@ -131,7 +131,7 @@
 	"copy": "Copiar",
 	"filter": "Filtro",
 	"autoscroll": "Autodesplazamiento",
-	"keysound_end_offset": "Offset de final de tecla",
+	"keysound_end_offset": "Offset de fin de sonido de tecla",
 	"keysound_export_error": "Se ocurrieron errores al exportar algunos sonidos de tecla, favor de revisar la pestaña Console para más detalles",
 	"font_size": "Tamaño de fuente",
 	"restart_sayaslicer_font": "¡Reinicie sayaslicer para que se apliquen los cambios en la fuente!"
