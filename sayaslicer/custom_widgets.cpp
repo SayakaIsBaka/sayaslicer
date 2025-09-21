@@ -99,6 +99,7 @@ bool MyTempInputScalar(const ImRect& bb, ImGuiID id, const char* label, ImGuiDat
 {
     // FIXME: May need to clarify display behavior if format doesn't contain %.
     // "%d" -> "%d" / "There are %d items" -> "%d" / "items" -> "%d" (fallback). Also see #6405
+    ImGuiContext& g = *GImGui;
     const ImGuiDataTypeInfo* type_info = DataTypeGetInfo(data_type);
     char fmt_buf[32];
     char data_buf[32];
@@ -108,14 +109,14 @@ bool MyTempInputScalar(const ImRect& bb, ImGuiID id, const char* label, ImGuiDat
     DataTypeFormatString(data_buf, IM_ARRAYSIZE(data_buf), data_type, p_data, format);
     ImStrTrimBlanks(data_buf);
 
-    ImGuiInputTextFlags flags = ImGuiInputTextFlags_AutoSelectAll | (ImGuiInputTextFlags)ImGuiInputTextFlags_NoMarkEdited;
-
+    ImGuiInputTextFlags flags = ImGuiInputTextFlags_AutoSelectAll | (ImGuiInputTextFlags)ImGuiInputTextFlags_LocalizeDecimalPoint;
+    g.LastItemData.ItemFlags |= ImGuiItemFlags_NoMarkEdited; // Because TempInputText() uses ImGuiInputTextFlags_MergedItem it doesn't submit a new item, so we poke LastItemData.
     bool value_changed = false;
     if (TempInputText(bb, id, label, data_buf, IM_ARRAYSIZE(data_buf), flags))
     {
         // Backup old value
         size_t data_type_size = type_info->Size;
-        ImGuiDataTypeTempStorage data_backup;
+        ImGuiDataTypeStorage data_backup;
         memcpy(&data_backup, p_data, data_type_size);
 
         auto new_data_buf = VerifyBaseAndConvert(data_buf, base);
@@ -161,12 +162,12 @@ bool MyDragScalar(const char* label, ImGuiDataType data_type, void* p_data, floa
     if (format == NULL)
         format = DataTypeGetInfo(data_type)->PrintFmt;
 
-    const bool hovered = ItemHoverable(frame_bb, id, g.LastItemData.InFlags);
+    const bool hovered = ItemHoverable(frame_bb, id, g.LastItemData.ItemFlags);
     bool temp_input_is_active = temp_input_allowed && TempInputIsActive(id);
     if (!temp_input_is_active)
     {
         // Tabbing or CTRL-clicking on Drag turns it into an InputText
-        const bool clicked = hovered && IsMouseClicked(0, id);
+        const bool clicked = hovered && IsMouseClicked(0, ImGuiInputFlags_None, id);
         const bool double_clicked = (hovered && g.IO.MouseClickedCount[0] == 2 && TestKeyOwner(ImGuiKey_MouseLeft, id));
         const bool make_active = (clicked || double_clicked || g.NavActivateId == id);
         if (make_active && (clicked || double_clicked))
