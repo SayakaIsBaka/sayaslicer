@@ -124,7 +124,7 @@ void SetupFonts(ImGuiIO& io, int fontSize) {
 }
 
 void SetupDock() {
-    ImGuiID dockspace_id = ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+    ImGuiID dockspace_id = ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport());
     static bool init = true;
     ImGuiID dock_id_left, dock_id_right;
     if (init && ImGui::GetCurrentContext()->SettingsIniData.size() == 0) {
@@ -213,15 +213,15 @@ void ShowSettingsPanel(SoundBuffer& buffer, SlicerSettings& settings) {
 }
 
 void ProcessShortcuts(ImGuiIO& io, SoundBuffer& buffer, SlicerSettings& settings, History& history) {
-    if (!io.WantTextInput && !io.WantCaptureKeyboard && io.KeyCtrl && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_O), false)) {
+    if (!io.WantTextInput && !io.WantCaptureKeyboard && io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_O, false)) {
         OpenProject(buffer, settings);
         io.ClearInputKeys(); // Flush Ctrl key (it gets stuck otherwise)
     }
-    if (!io.WantTextInput && !io.WantCaptureKeyboard && io.KeyCtrl && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_S), false)) {
+    if (!io.WantTextInput && !io.WantCaptureKeyboard && io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_S, false)) {
         SaveProject(settings);
         io.ClearInputKeys();
     }
-    if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_RightArrow))) {
+    if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGuiKey_RightArrow)) {
         if (settings.cursorPos + settings.samplesPerSnap < buffer.getSampleCount()) {
             if (io.KeyShift) {
                 settings.cursorPos += settings.samplesPerSnap - fmod(settings.cursorPos, settings.samplesPerSnap);
@@ -234,7 +234,7 @@ void ProcessShortcuts(ImGuiIO& io, SoundBuffer& buffer, SlicerSettings& settings
             buffer.stop();
         }
     }
-    else if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_LeftArrow)) && settings.cursorPos > 0.0) {
+    else if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGuiKey_LeftArrow) && settings.cursorPos > 0.0) {
         if (settings.cursorPos - settings.samplesPerSnap < 0.0)
             settings.cursorPos = 0.0;
         else {
@@ -250,13 +250,13 @@ void ProcessShortcuts(ImGuiIO& io, SoundBuffer& buffer, SlicerSettings& settings
             buffer.stop();
         }
     }
-    if (!io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_UpArrow)) && settings.snapping < 192) {
+    if (!io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGuiKey_UpArrow) && settings.snapping < 192) {
         settings.snapping += 1;
     }
-    else if (!io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_DownArrow)) && settings.snapping > 1) {
+    else if (!io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGuiKey_DownArrow) && settings.snapping > 1) {
         settings.snapping -= 1;
     }
-    if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Z))) {
+    if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGuiKey_Z)) {
         if (io.KeyCtrl) {
             history.Undo(settings, buffer);
         }
@@ -271,25 +271,25 @@ void ProcessShortcuts(ImGuiIO& io, SoundBuffer& buffer, SlicerSettings& settings
             settings.updateHistory = true;
         }
     }
-    if (!io.WantTextInput && !io.WantCaptureKeyboard && io.KeyCtrl && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Y))) {
+    if (!io.WantTextInput && !io.WantCaptureKeyboard && io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Y)) {
         history.Redo(settings, buffer);
     }
-    if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter))) {
+    if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGuiKey_Enter)) {
         PlayKeysound(buffer, settings, false);
     }
-    if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_P))) {
+    if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGuiKey_P)) {
         PlayKeysound(buffer, settings, true);
     }
-    if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_M), false)) {
+    if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGuiKey_M, false)) {
         WriteKeysounds(buffer, settings);
     }
-    if (!io.WantTextInput && !io.WantCaptureKeyboard && !io.KeyCtrl && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_O), false)) {
+    if (!io.WantTextInput && !io.WantCaptureKeyboard && !io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_O, false)) {
         OpenAudioFile(buffer, settings);
     }
-    if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_B), false)) {
+    if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGuiKey_B, false)) {
         ProcessBMSEClipboard(buffer, settings);
     }
-    if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_V), false)) {
+    if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGuiKey_V, false)) {
         if (io.KeyCtrl) {
             HandleMarkerCopyPaste(settings, SelectionOperation::PASTE);
         }
@@ -297,7 +297,7 @@ void ProcessShortcuts(ImGuiIO& io, SoundBuffer& buffer, SlicerSettings& settings
             GenerateBMSEClipboard(buffer, settings, io.KeyShift);
         }
     }
-    if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_C), false)) {
+    if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGuiKey_C, false)) {
         if (io.KeyCtrl) {
             HandleMarkerCopyPaste(settings, SelectionOperation::COPY);
         }
@@ -306,22 +306,22 @@ void ProcessShortcuts(ImGuiIO& io, SoundBuffer& buffer, SlicerSettings& settings
             settings.updateHistory = true;
         }
     }
-    if (!io.WantTextInput && !io.WantCaptureKeyboard && io.KeyCtrl && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_X), false)) {
+    if (!io.WantTextInput && !io.WantCaptureKeyboard && io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_X, false)) {
         HandleMarkerCopyPaste(settings, SelectionOperation::CUT);
     }
-    if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_K), false)) {
+    if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGuiKey_K, false)) {
         ExportKeysoundList(settings, io.KeyShift);
     }
-    if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space), false)) {
+    if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGuiKey_Space, false)) {
         ManageSelection(settings);
     }
-    if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Delete), false)) {
+    if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGuiKey_Delete, false)) {
         HandleMarkerCopyPaste(settings, SelectionOperation::DEL);
     }
-    if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Home))) {
+    if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGuiKey_Home)) {
         settings.cursorPos = 0.0;
     }
-    if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_End))) {
+    if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGuiKey_End)) {
         size_t endPos = settings.samplesPerSnap * (int)(buffer.getSampleCount() / settings.samplesPerSnap);
         settings.cursorPos = endPos - settings.samplesPerSnap * (endPos > 0 && (size_t)(endPos - buffer.getSampleCount()) == 0);
     }
