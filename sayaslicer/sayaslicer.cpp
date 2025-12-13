@@ -102,6 +102,7 @@ void SetupFonts(ImGuiIO& io, int fontSize) {
     ImFontGlyphRangesBuilder builder;
     builder.AddText(u8"←→↑↓");
     builder.AddRanges(io.Fonts->GetGlyphRangesJapanese());
+    builder.AddRanges(io.Fonts->GetGlyphRangesCyrillic());
     builder.BuildRanges(&ranges);
     io.Fonts->AddFontFromMemoryCompressedTTF(noto_compressed_data, noto_compressed_size, mainFontSize, 0, ranges.Data);
 
