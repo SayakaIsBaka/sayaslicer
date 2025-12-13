@@ -200,6 +200,7 @@ void ShowSettingsPanel(SoundBuffer& buffer, SlicerSettings& settings) {
             ImGui::EndCombo();
         }
         AddScalarScroll(ImGuiDataType_S32, &settings.selectedGateThreshold, 0, IM_ARRAYSIZE(gateThresholds) - 1, 1);
+        ImGui::DragInt("fadein"_t.c_str(), &settings.fadein, 1, 0, 1000, "%dms");
         ImGui::DragInt("fadeout"_t.c_str(), &settings.fadeout, 1, 0, 1000, "%dms");
         AddScalarScroll(ImGuiDataType_S32, &settings.fadeout, 0, 1000, 5);
         ImGui::DragInt("keysound_end_offset"_t.c_str(), &settings.keysoundOffsetEnd, 1, -1000, 1000, "%dms");

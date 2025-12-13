@@ -29,7 +29,7 @@
 	"export_settings": "Export settings",
 	"disabled": "Disabled",
 	"noise_gate": "Noise gate",
-	"fadeout": "Fadeout",
+	"fadeout": "Fade-out",
 	"process": "Process",
 	"waveform": "Waveform",
 	"markers": "Markers",
@@ -134,5 +134,6 @@
 	"keysound_end_offset": "Key end offset",
 	"keysound_export_error": "Errors occured when exporting some keysounds, please check the Console tab for more details",
 	"font_size": "Font size",
-	"restart_sayaslicer_font": "Restart sayaslicer for font changes to take effect!"
+	"restart_sayaslicer_font": "Restart sayaslicer for font changes to take effect!",
+	"fadein":  "Fade-in"
 }

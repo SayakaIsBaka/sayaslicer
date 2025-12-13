@@ -93,6 +93,18 @@ int ApplyNoiseGate(std::vector<float>& buffer, int threshold, int nbChannels) {
     return pos;
 }
 
+void ApplyFadein(std::vector<float>& buffer, int fadeTime, unsigned int sampleRate, int nbChannels) {
+    size_t fadeinSampleLen = (size_t)(sampleRate * fadeTime / 1000);
+    unsigned int endFadeinSample = buffer.size() <= fadeinSampleLen * nbChannels ? buffer.size() : fadeinSampleLen * nbChannels;
+    double volRatio = 0.0;
+    for (size_t i = 0; i < endFadeinSample; i += nbChannels) {
+        for (size_t j = 0; j < nbChannels && i + j < buffer.size(); j++) {
+            buffer[i + j] *= volRatio * volRatio;
+        }
+        volRatio += 1.0 / fadeinSampleLen;
+    }
+}
+
 void ApplyFadeout(std::vector<float>& buffer, int fadeTime, unsigned int sampleRate, int nbChannels) {
     size_t fadeoutSampleLen = (size_t)(sampleRate * fadeTime / 1000);
     unsigned int startFadeoutSample = buffer.size() <= fadeoutSampleLen * nbChannels ? 0 : buffer.size() - fadeoutSampleLen * nbChannels - 1;
@@ -143,10 +155,12 @@ void WriteKeysounds(SoundBuffer& buffer, SlicerSettings& settings) {
 
         auto bufOut = &samples[keyStart];
         std::vector<float> newBuf;
-        if (settings.selectedGateThreshold != 0 || settings.fadeout != 0) {
+        if (settings.selectedGateThreshold != 0 || settings.fadeout != 0 || settings.fadein != 0) {
             newBuf.insert(newBuf.end(), &bufOut[0], &bufOut[bufsize]);
             if (settings.selectedGateThreshold != 0)
                 bufsize = ApplyNoiseGate(newBuf, gateThresholds[settings.selectedGateThreshold], buffer.getChannelCount());
+            if (settings.fadein != 0)
+                ApplyFadein(newBuf, settings.fadein, buffer.getSampleRate(), buffer.getChannelCount());
             if (settings.fadeout != 0)
                 ApplyFadeout(newBuf, settings.fadeout, buffer.getSampleRate(), buffer.getChannelCount());
             bufOut = &newBuf[0];
