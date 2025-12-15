@@ -78,7 +78,7 @@ void PlayKeysound(SoundBuffer& buffer, SlicerSettings& settings, bool jumpToNext
     buffer.play(keyStart, bufsize);
 
     if (jumpToNext && keyEnd != buffer.getSampleCount())
-        settings.cursorPos = settings.markers.get(i + 1).position - (double)offsetSamples;
+        settings.cursorPos = settings.markers.get(i + 1).position;
 }
 
 int ApplyNoiseGate(std::vector<float>& buffer, int threshold, int nbChannels) {
