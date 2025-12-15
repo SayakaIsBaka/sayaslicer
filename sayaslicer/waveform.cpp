@@ -89,7 +89,7 @@ void DisplayWaveform(SoundBuffer& buffer, SlicerSettings& settings) {
             ImPlot::SetNextLineStyle(ImGui::GetStyleColorVec4(ImGuiCol_PlotHistogram));
             size_t arrLen = maxDisplayRange;
             size_t arrayOffset = (std::max((long long)(settings.cursorPos - leftMargin), (long long)0) / (waveformReso * numChannels)) * (waveformReso * numChannels);
-            int stride = (waveformReso / 2) * numChannels;
+            int stride = waveformReso;
             if (lastTick > sampleCount)
                 arrLen = (samples.size() - arrayOffset) / stride;
             ImPlot::PlotLine("Waveform", &samples[arrayOffset], arrLen, 1.0, arrayOffset / (waveformReso), 0, settings.offset, stride * sizeof(float)); // Buffer stores samples as [channel1_i, channel2_i, channel1_i+1, etc.]
