@@ -9,6 +9,7 @@
 
 #ifdef __APPLE__
 #include <unistd.h>
+#include <pwd.h>
 #endif
 
 extern const char* kGitHash;

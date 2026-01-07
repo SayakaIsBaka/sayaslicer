@@ -23,10 +23,10 @@ void DownloadUpdate() {
                 throw std::invalid_argument("Error downloading update");
             else {
             #ifdef __APPLE__
-                char *username = getlogin();
+                struct passwd *pwent = getpwuid(getuid());
                 std::string downloadPath = "/tmp/" + filename;
-                if (username)
-                    downloadPath = "/Users/" + std::string(username) + "/Downloads/" + filename;
+                if (pwent)
+                    downloadPath = "/Users/" + std::string(pwent->pw_name) + "/Downloads/" + filename;
             #else
                 std::string downloadPath = (std::filesystem::current_path() / filename).u8string();
             #endif
