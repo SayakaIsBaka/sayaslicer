@@ -53,13 +53,21 @@ jobs:
             out/build/x64-Release/sayaslicer/*.exe
             out/build/x64-Release/sayaslicer/lang/
 
+      - name: 'Tar files (macOS x64)'
+        if: matrix.os == 'macos-15-intel'
+        run: tar -cvf sayaslicer.tar out/build/x64-Release/sayaslicer/sayaslicer.app
+
       - name: Upload artifact (macOS x64)
         uses: actions/upload-artifact@v4.3.1
         if: matrix.os == 'macos-15-intel'
         with:
           name: sayaslicer-osx-x64
           path: |
-            out/build/x64-Release/sayaslicer/sayaslicer.ap*
+            sayaslicer.tar
+
+      - name: 'Tar files (macOS ARM)'
+        if: matrix.os == 'macos-latest'
+        run: tar -cvf sayaslicer.tar out/build/x64-Release/sayaslicer/sayaslicer.app
 
       - name: Upload artifact (macOS ARM)
         uses: actions/upload-artifact@v4.3.1
@@ -67,4 +75,4 @@ jobs:
         with:
           name: sayaslicer-osx-arm64
           path: |
-            out/build/x64-Release/sayaslicer/sayaslicer.ap*
+            sayaslicer.tar
