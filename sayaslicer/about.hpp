@@ -7,6 +7,10 @@
 #include <nlohmann/json.hpp>
 #include "texture.hpp"
 
+#ifdef __APPLE__
+#include <unistd.h>
+#endif
+
 extern const char* kGitHash;
 
 void ShowAbout(SlicerSettings& settings, Texture& logo);

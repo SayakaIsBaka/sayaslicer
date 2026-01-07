@@ -22,10 +22,18 @@ void DownloadUpdate() {
             if (r.error || r.status_code != 200)
                 throw std::invalid_argument("Error downloading update");
             else {
-                std::ofstream of(filename, std::ios::binary);
+            #ifdef __APPLE__
+                char *username = getlogin();
+                std::string downloadPath = "/tmp/" + filename;
+                if (username)
+                    downloadPath = "/Users/" + std::string(username) + "/Downloads/" + filename;
+            #else
+                std::string downloadPath = (std::filesystem::current_path() / filename).u8string();
+            #endif
+                std::ofstream of(downloadPath, std::ios::binary);
                 of.write(r.text.c_str(), r.text.size());
                 of.close();
-                InsertNotification({ ImGuiToastType::Success, 3000, "%s:\n%s", "downloaded_update_to"_t.c_str(), (std::filesystem::current_path() / filename).u8string().c_str()});
+                InsertNotification({ ImGuiToastType::Success, 3000, "%s:\n%s", "downloaded_update_to"_t.c_str(), downloadPath.c_str()});
             }
         }
         catch (...) {
