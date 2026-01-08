@@ -46,6 +46,7 @@ jobs:
           runVcpkgInstall: true
         env:
           VCPKG_DEFAULT_TRIPLET: arm64-osx
+          VCPKG_INSTALLED_DIR: vcpkg_installed
 
       - name: Install packages (x64) (macOS)
         if: matrix.os == 'macos-latest'
