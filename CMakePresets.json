@@ -20,6 +20,20 @@
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
       }
+    },
+    {
+      "name": "uni-osx-Release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_OSX_ARCHITECTURES": "arm64;x86_64",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+        "CMAKE_PREFIX_PATH": "${sourceDir}/vcpkg_installed/uni-osx",
+        "VCPKG_TARGET_TRIPLET": "uni-osx",
+        "VCPKG_MANIFEST_INSTALL": "OFF"
+      }
     }
   ],
   "buildPresets": [
@@ -30,6 +44,10 @@
     {
       "name": "x64-Release",
       "configurePreset": "x64-Release"
+    },
+    {
+      "name": "uni-osx-Release",
+      "configurePreset": "uni-osx-Release"
     }
   ]
 }
