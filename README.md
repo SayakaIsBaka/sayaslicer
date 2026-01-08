@@ -12,7 +12,7 @@ A cross-platform audio slicer with BMS-related features. Aims to be a drop-in re
 ## Features
 - BMSE clipboard support (copy and paste, can be used with [BMHelper](https://excln.github.io/bmhelper.html))
 - iBMSC clipboard export support (useful for markers with a resolution over 192th)
-- File drag and drop (only on Windows)
+- File drag and drop
 - Offset setting
 - Arbitrary snapping (from 1/1 to 1/192)
 - Toggleable base-62 support for BMSE clipboard data copy
@@ -26,7 +26,7 @@ A cross-platform audio slicer with BMS-related features. Aims to be a drop-in re
 - Copy / paste markers
 - Undo / redo
 - Zero-crossing
-- Multiple languages support (English, Japanese, Korean)
+- Multiple languages support (English, Japanese, Korean, etc.)
 - Automatic update checker (disabled by default) and downloader
 
 ## Keyboard shortcuts

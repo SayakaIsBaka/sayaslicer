@@ -526,6 +526,18 @@ int main() {
     RegisterDragDrop(handle, &dm);
 
     SetConsoleOutputCP(CP_UTF8);
+#else
+    auto callbackData = std::make_pair(&buffer, &settings);
+    glfwSetWindowUserPointer(window, (void*)&callbackData);
+
+    glfwSetDropCallback(window, [](GLFWwindow *window, int count, const char **paths){
+        if (count > 1)
+            std::cout << "Please drag only one file!" << std::endl;
+        else {
+            std::pair<SoundBuffer*, SlicerSettings*> *userData = (std::pair<SoundBuffer*, SlicerSettings*>*)glfwGetWindowUserPointer(window);
+            HandleDragDropDispatch(*(userData->first), *(userData->second), paths[0]);
+        }
+    });
 #endif
 
     ImGuiWindowClass window_class;
