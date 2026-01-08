@@ -41,7 +41,20 @@ jobs:
 
       - name: Install packages (arm64) (macOS)
         if: matrix.os == 'macos-latest'
-        run: vcpkg/vcpkg install --triplet=arm64-osx && vcpkg/vcpkg install --triplet=x64-osx --x-install-root=vcpkg_installed/tmp
+        uses: lukka/run-vcpkg@v11.5
+        with:
+          runVcpkgInstall: true
+        env:
+          VCPKG_DEFAULT_TRIPLET: arm64-osx
+
+      - name: Install packages (x64) (macOS)
+        if: matrix.os == 'macos-latest'
+        uses: lukka/run-vcpkg@v11.5
+        with:
+          runVcpkgInstall: true
+        env:
+          VCPKG_DEFAULT_TRIPLET: x64-osx
+          VCPKG_INSTALLED_DIR: vcpkg_installed/tmp
 
       - name: Merge packages into universal libraries (macOS)
         if: matrix.os == 'macos-latest'
@@ -75,12 +88,12 @@ jobs:
 
       - name: Tar files (macOS)
         if: matrix.os == 'macos-latest'
-        run: tar -C out/build/osx-uni-Release/sayaslicer/ -cvf sayaslicer.tar sayaslicer.app
+        run: tar -C out/build/uni-osx-Release/sayaslicer/ -cvf sayaslicer.tar sayaslicer.app
 
       - name: Upload artifact (macOS)
         uses: actions/upload-artifact@v4.3.1
         if: matrix.os == 'macos-latest'
         with:
-          name: sayaslicer-osx
+          name: sayaslicer-osx.tar
           path: |
             sayaslicer.tar
