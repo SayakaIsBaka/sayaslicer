@@ -9,6 +9,7 @@ struct callbackData {
 	unsigned long long samplePos;
 	unsigned long long length;
 	unsigned long long currentPos;
+	std::vector<float>* buffer;
 	SoundBuffer *sound;
 };
 
@@ -18,7 +19,11 @@ int callback(const void* input, void* output, unsigned long frameCount, const Pa
 	unsigned int channelCount = callbackData->sound->getChannelCount();
 
 	memset(out, 0, sizeof(float) * frameCount * channelCount);
-	auto& buffer = callbackData->sound->getSamples();
+	std::vector<float> buffer;
+	if (!callbackData->buffer)
+		buffer = callbackData->sound->getSamples();
+	else
+		buffer = *callbackData->buffer;
 
 	if (callbackData->currentPos >= callbackData->length) {
 		return paComplete;
@@ -41,6 +46,8 @@ int callback(const void* input, void* output, unsigned long frameCount, const Pa
 }
 
 void streamFinishedCallback(void* userData) {
+	if (((struct callbackData*)userData)->buffer)
+		delete ((struct callbackData*)userData)->buffer;
 	free(userData);
 }
 
@@ -136,7 +143,7 @@ bool SoundBuffer::writeFile(std::filesystem::path path, unsigned int sampleRate,
 	return true;
 }
 
-void SoundBuffer::play(unsigned long long samplePos, unsigned long long length) {
+void SoundBuffer::play(unsigned long long samplePos, unsigned long long length, const float* buffer) {
 	if (stream != NULL)
 		Pa_CloseStream(stream);
 
@@ -147,6 +154,9 @@ void SoundBuffer::play(unsigned long long samplePos, unsigned long long length) 
 	data->length = length;
 	data->currentPos = 0;
 	data->sound = this;
+
+	if (buffer)
+		data->buffer = new std::vector<float>(buffer, buffer + length);
 
 	if (Pa_OpenDefaultStream(&stream, 0, channelCount, paFloat32, sampleRate, 512, callback, data) != paNoError) {
 		throw std::runtime_error("Error opening PortAudio stream");
@@ -159,6 +169,14 @@ void SoundBuffer::play(unsigned long long samplePos, unsigned long long length) 
 	if (Pa_StartStream(stream) != paNoError) {
 		throw std::runtime_error("Error starting PortAudio stream");
 	}
+}
+
+void SoundBuffer::play(unsigned long long samplePos, unsigned long long length) {
+	this->play(samplePos, length, nullptr);
+}
+
+void SoundBuffer::play(std::vector<float>& buffer) {
+	this->play(0, buffer.size(), buffer.data());
 }
 
 bool SoundBuffer::isPlaying() {

@@ -12,6 +12,8 @@ private:
 	float duration = 0.0f;
 	PaStream* stream = NULL;
 
+	void play(unsigned long long samplePos, unsigned long long length, const float* buffer);
+
 public:
 	~SoundBuffer();
 
@@ -22,6 +24,7 @@ public:
 	unsigned long long getSampleCount();
 	int loadFromFile(std::string path);
 	void play(unsigned long long samplePos, unsigned long long length);
+	void play(std::vector<float>& buffer);
 	bool isPlaying();
 	void stop();
 

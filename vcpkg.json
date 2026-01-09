@@ -25,6 +25,7 @@
       "features": [
         "external-libs"
       ]
-    }
+    },
+    "tcb-span"
   ]
 }
