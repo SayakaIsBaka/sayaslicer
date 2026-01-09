@@ -56,7 +56,7 @@ void PlayKeysound(SoundBuffer& buffer, SlicerSettings& settings, bool jumpToNext
         return;
     settings.markers.sort();
     unsigned long long keyStart = 0;
-    unsigned long long keyEnd = 0;
+    long long keyEnd = 0;
     unsigned long long offsetSamples = (long long)settings.offset * (long long)waveformReso;
     int i = 0;
     for (; i < settings.markers.size(); i++) {
@@ -67,7 +67,7 @@ void PlayKeysound(SoundBuffer& buffer, SlicerSettings& settings, bool jumpToNext
         }
         else if ((float)settings.cursorPos < (float)settings.markers.get(i + 1).position) {
             keyStart = settings.markers.get(i).position + offsetSamples;
-            keyEnd = settings.markers.get(i + 1).position + offsetSamples;
+            keyEnd = std::min(settings.markers.get(i + 1).position + offsetSamples + ((long long)buffer.getSampleRate() * settings.keysoundOffsetEnd / 1000), (double)buffer.getSampleCount());
             break;
         }
     }
@@ -88,6 +88,9 @@ void PlayKeysound(SoundBuffer& buffer, SlicerSettings& settings, bool jumpToNext
         if (settings.fadeout != 0)
             ApplyFadeout(tmpBuf, settings.fadeout, buffer.getSampleRate(), buffer.getChannelCount());
         buffer.play(tmpBuf);
+    }
+    else if (keyEnd < (long long)keyStart) {
+        std::cout << "WARNING: Keysound range end is lower than range start, keysound will be silent!" << std::endl;
     }
     else {
         buffer.play(keyStart, bufsize);
