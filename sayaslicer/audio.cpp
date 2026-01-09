@@ -61,12 +61,12 @@ void PlayKeysound(SoundBuffer& buffer, SlicerSettings& settings, bool jumpToNext
     int i = 0;
     for (; i < settings.markers.size(); i++) {
         if (i + 1.0 >= settings.markers.size()) {
-            keyStart = settings.markers.get(i).position + offsetSamples;
+            keyStart = std::min(settings.markers.get(i).position + offsetSamples, (double)buffer.getSampleCount());
             keyEnd = buffer.getSampleCount();
             break;
         }
         else if ((float)settings.cursorPos < (float)settings.markers.get(i + 1).position) {
-            keyStart = settings.markers.get(i).position + offsetSamples;
+            keyStart = std::min(settings.markers.get(i).position + offsetSamples, (double)buffer.getSampleCount());
             keyEnd = std::min(settings.markers.get(i + 1).position + offsetSamples + ((long long)buffer.getSampleRate() * settings.keysoundOffsetEnd / 1000), (double)buffer.getSampleCount());
             break;
         }
@@ -76,7 +76,9 @@ void PlayKeysound(SoundBuffer& buffer, SlicerSettings& settings, bool jumpToNext
     std::cout << "Playing keysound with range start: " << keyStart << ", range end: " << keyEnd << std::endl;
     auto bufsize = keyEnd - keyStart;
 
-    if (settings.selectedGateThreshold != 0 || settings.fadeout != 0 || settings.fadein != 0) {
+    if (keyEnd <= (long long)keyStart) {
+        std::cout << "WARNING: Keysound range end is equal or lower than range start, keysound will be silent!" << std::endl;
+    } else if (settings.selectedGateThreshold != 0 || settings.fadeout != 0 || settings.fadein != 0) {
         auto& buf = buffer.getSamples();
         std::vector<float> tmpBuf(&buf[keyStart], &buf[keyEnd - 1]);
         if (settings.selectedGateThreshold != 0) {
@@ -88,9 +90,6 @@ void PlayKeysound(SoundBuffer& buffer, SlicerSettings& settings, bool jumpToNext
         if (settings.fadeout != 0)
             ApplyFadeout(tmpBuf, settings.fadeout, buffer.getSampleRate(), buffer.getChannelCount());
         buffer.play(tmpBuf);
-    }
-    else if (keyEnd < (long long)keyStart) {
-        std::cout << "WARNING: Keysound range end is lower than range start, keysound will be silent!" << std::endl;
     }
     else {
         buffer.play(keyStart, bufsize);
