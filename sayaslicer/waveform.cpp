@@ -25,7 +25,7 @@ void DrawSelection(SlicerSettings& settings) {
     }
 }
 
-std::vector<float> ApplyAudioEffects(SoundBuffer& buffer, SlicerSettings& settings, size_t arrayOffset, size_t arrLen) { // TODO: optimize by reducing the amount to copy on each pass
+std::vector<float> ApplyAudioEffects(SoundBuffer& buffer, SlicerSettings& settings, size_t arrayOffset, size_t arrLen) {
     auto& samples = buffer.getSamples();
     unsigned long long offsetSamples = (long long)settings.offset * (long long)waveformReso;
     std::vector<double> markers;
@@ -33,21 +33,42 @@ std::vector<float> ApplyAudioEffects(SoundBuffer& buffer, SlicerSettings& settin
 
     // End of buffer, only copy up to the end of the visible part + current fadeout setting (or max buffer size) to enhance performance
     unsigned long long endOffset = std::min(arrayOffset + arrLen + (size_t)(buffer.getSampleRate() * settings.fadeout / 1000) * buffer.getChannelCount(), samples.size());
+    bool fakeStart = false;
 
     for (size_t i = 0; i < settings.markers.size(); i++) {
         auto markerPos = settings.markers.get(i).position + offsetSamples;
+
+        if (markerPos < arrayOffset) {
+            if (i < settings.markers.size() - 1 && settings.markers.get(i + 1).position < arrayOffset)
+                continue;
+        }
+
+        if (markers.empty()) { // Logic regarding the starting point of the new buffer, try to copy as little data as possible for optimization
+            auto candidate = markerPos;
+            auto lim = std::max((long long)0, (long long)arrayOffset - (long long)((buffer.getSampleRate() * settings.fadein / 1000) * buffer.getChannelCount()));
+            if (candidate >= lim && candidate < arrayOffset + arrLen)
+                markers.push_back(candidate);
+            else if (settings.fadeout != 0 && candidate <= arrayOffset) {
+                // Push fake marker to display fadeout properly without relying on the previous marker (which can be far away)
+                auto nextMarker = settings.markers.get(i == settings.markers.size() - 1 ? i : i + 1).position + offsetSamples;
+                fakeStart = true;
+                if (nextMarker > arrayOffset + arrLen || nextMarker < arrayOffset) { // If next marker is outside of visible area, required otherwise the list is empty and no processing is applied
+                    markers.push_back(arrayOffset);
+                }
+                else {
+                    auto fadeOutTime = ((double)(buffer.getSampleRate() * settings.fadeout / 1000) * buffer.getChannelCount());
+                    markers.push_back(std::max(std::max(0.0, nextMarker - fadeOutTime), candidate));
+                }
+            }
+        }
+        else if (i != 0 && markerPos < arrayOffset + arrLen)
+            markers.push_back(markerPos);
+
         if (markerPos > arrayOffset + arrLen) {
             if (markerPos < samples.size() && markerPos < endOffset)
                 endOffset = markerPos;
             break;
         }
-        if (markerPos < arrayOffset)
-            continue;
-        if (markers.empty()) { // Logic regarding the starting point of the new buffer, try to copy as little data as possible for optimization
-            markers.push_back(settings.markers.get(i == 0 ? 0 : i - 1).position + offsetSamples);
-        }
-        if (i != 0)
-            markers.push_back(markerPos);
     }
     if (markers.empty())
         return std::vector<float>();
@@ -62,7 +83,7 @@ std::vector<float> ApplyAudioEffects(SoundBuffer& buffer, SlicerSettings& settin
         tcb::span<float> view(&newBuf[begin], &newBuf[end - 1]);
         if (settings.selectedGateThreshold != 0)
             ApplyNoiseGate(view, gateThresholds[settings.selectedGateThreshold], buffer.getChannelCount());
-        if (settings.fadein != 0)
+        if (settings.fadein != 0 && (i != 0 || (i == 0 && !fakeStart)))
             ApplyFadein(view, settings.fadein, buffer.getSampleRate(), buffer.getChannelCount());
         if (settings.fadeout != 0)
             ApplyFadeout(view, settings.fadeout, buffer.getSampleRate(), buffer.getChannelCount());
