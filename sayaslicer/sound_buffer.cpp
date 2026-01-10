@@ -19,11 +19,11 @@ int callback(const void* input, void* output, unsigned long frameCount, const Pa
 	unsigned int channelCount = callbackData->sound->getChannelCount();
 
 	memset(out, 0, sizeof(float) * frameCount * channelCount);
-	std::vector<float> buffer;
+	float* buffer;
 	if (!callbackData->buffer)
-		buffer = callbackData->sound->getSamples();
+		buffer = callbackData->sound->getSamples().data();
 	else
-		buffer = *callbackData->buffer;
+		buffer = callbackData->buffer->data();
 
 	if (callbackData->currentPos >= callbackData->length) {
 		return paComplete;
