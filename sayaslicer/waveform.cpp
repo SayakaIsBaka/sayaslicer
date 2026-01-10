@@ -30,19 +30,22 @@ std::vector<float> ApplyAudioEffects(SoundBuffer& buffer, SlicerSettings& settin
     unsigned long long offsetSamples = (long long)settings.offset * (long long)waveformReso;
     std::vector<double> markers;
     settings.markers.sort();
-    unsigned long long endOffset = samples.size();
+
+    // End of buffer, only copy up to the end of the visible part + current fadeout setting (or max buffer size) to enhance performance
+    unsigned long long endOffset = std::min(arrayOffset + arrLen + (size_t)(buffer.getSampleRate() * settings.fadeout / 1000) * buffer.getChannelCount(), samples.size());
 
     for (size_t i = 0; i < settings.markers.size(); i++) {
         auto markerPos = settings.markers.get(i).position + offsetSamples;
         if (markerPos > arrayOffset + arrLen) {
-            if (markerPos < samples.size())
+            if (markerPos < samples.size() && markerPos < endOffset)
                 endOffset = markerPos;
             break;
         }
         if (markerPos < arrayOffset)
             continue;
-        if (markers.empty())
+        if (markers.empty()) { // Logic regarding the starting point of the new buffer, try to copy as little data as possible for optimization
             markers.push_back(settings.markers.get(i == 0 ? 0 : i - 1).position + offsetSamples);
+        }
         if (i != 0)
             markers.push_back(markerPos);
     }
