@@ -107,6 +107,8 @@ int ApplyNoiseGate(tcb::span<float> buffer, int threshold, int nbChannels) {
     auto pos = std::distance(result, buffer.rend());
     if (pos % nbChannels != 0)
         pos = pos + nbChannels - pos % nbChannels;
+    for (size_t i = pos; i < buffer.size(); i++)
+        buffer[i] = 0.0f;
     return pos;
 }
 

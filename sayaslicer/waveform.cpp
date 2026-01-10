@@ -1,5 +1,7 @@
 #include "waveform.hpp"
 
+#include "audio.hpp"
+
 using namespace i18n::literals;
 
 int MeterFormatter(double value, char* buff, int size, void* data) {
@@ -21,6 +23,51 @@ void DrawSelection(SlicerSettings& settings) {
         double endRect = (settings.selection.isSelectMode ? settings.cursorPos : settings.selection.end) / waveformReso;
         ImPlot::DragRect(0, &startRect, &yMinLimit, &endRect, &yMaxLimit, ImGui::GetStyleColorVec4(ImGuiCol_PlotHistogram), ImPlotDragToolFlags_NoInputs);
     }
+}
+
+std::vector<float> ApplyAudioEffects(SoundBuffer& buffer, SlicerSettings& settings, size_t arrayOffset, size_t arrLen) { // TODO: optimize by reducing the amount to copy on each pass
+    auto& samples = buffer.getSamples();
+    unsigned long long offsetSamples = (long long)settings.offset * (long long)waveformReso;
+    std::vector<double> markers;
+    settings.markers.sort();
+    unsigned long long endOffset = samples.size();
+
+    for (size_t i = 0; i < settings.markers.size(); i++) {
+        auto markerPos = settings.markers.get(i).position + offsetSamples;
+        if (markerPos > arrayOffset + arrLen) {
+            if (markerPos < samples.size())
+                endOffset = markerPos;
+            break;
+        }
+        if (markerPos < arrayOffset)
+            continue;
+        if (markers.empty())
+            markers.push_back(settings.markers.get(i == 0 ? 0 : i - 1).position + offsetSamples);
+        if (i != 0)
+            markers.push_back(markerPos);
+    }
+    if (markers.empty())
+        return std::vector<float>();
+
+    auto base = markers[0] > arrayOffset ? arrayOffset : markers[0];
+    std::vector<float> newBuf(samples.begin() + base, samples.begin() + endOffset);
+    for (size_t i = 0; i < markers.size(); i++) {
+        auto begin = markers[i] - base;
+        auto end = newBuf.size();
+        if (i + 1 < markers.size())
+            end = markers[i + 1] - base;
+        tcb::span<float> view(&newBuf[begin], &newBuf[end - 1]);
+        if (settings.selectedGateThreshold != 0)
+            ApplyNoiseGate(view, gateThresholds[settings.selectedGateThreshold], buffer.getChannelCount());
+        if (settings.fadein != 0)
+            ApplyFadein(view, settings.fadein, buffer.getSampleRate(), buffer.getChannelCount());
+        if (settings.fadeout != 0)
+            ApplyFadeout(view, settings.fadeout, buffer.getSampleRate(), buffer.getChannelCount());
+    }
+    if (base != arrayOffset)
+        newBuf.erase(newBuf.begin(), newBuf.begin() + (arrayOffset - base));
+    newBuf.resize(arrLen);
+    return newBuf;
 }
 
 void DisplayWaveform(SoundBuffer& buffer, SlicerSettings& settings) {
@@ -87,12 +134,23 @@ void DisplayWaveform(SoundBuffer& buffer, SlicerSettings& settings) {
 
             auto& samples = buffer.getSamples();
             ImPlot::SetNextLineStyle(ImGui::GetStyleColorVec4(ImGuiCol_PlotHistogram));
-            size_t arrLen = maxDisplayRange;
+            size_t arrLen = maxDisplayRange + settings.offset;
             size_t arrayOffset = (std::max((long long)(settings.cursorPos - leftMargin), (long long)0) / (waveformReso * numChannels)) * (waveformReso * numChannels);
             int stride = waveformReso;
             if (lastTick > sampleCount)
                 arrLen = (samples.size() - arrayOffset) / stride;
-            ImPlot::PlotLine("Waveform", &samples[arrayOffset], arrLen, 1.0, arrayOffset / (waveformReso), 0, settings.offset, stride * sizeof(float)); // Buffer stores samples as [channel1_i, channel2_i, channel1_i+1, etc.]
+
+            auto wavBuf = &samples[arrayOffset];
+            
+            // Apply audio effects to waveform
+            std::vector<float> tmp;
+            if (settings.selectedGateThreshold != 0 || settings.fadeout != 0 || settings.fadein != 0) {
+                tmp = ApplyAudioEffects(buffer, settings, arrayOffset, arrLen * stride);
+                if (!tmp.empty())
+                    wavBuf = tmp.data();
+            }
+
+            ImPlot::PlotLine("Waveform", wavBuf, arrLen, 1.0, arrayOffset / (waveformReso), 0, settings.offset, stride * sizeof(float)); // Buffer stores samples as [channel1_i, channel2_i, channel1_i+1, etc.]
 
             // Display cursor
             double curDisplayPos = settings.cursorPos / waveformReso;
