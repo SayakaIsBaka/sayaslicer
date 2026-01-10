@@ -86,6 +86,7 @@ sayaslicer uses the following libraries:
 - [imgui_markdown](https://github.com/juliettef/imgui_markdown)
 - [libiconv](https://www.gnu.org/software/libiconv/)
 - [Moonlight (ImGui theme)](https://github.com/Madam-Herta/Moonlight/)
+- [span](https://github.com/tcbrindle/span)
 
 Translations:
 - Korean (한국어): [Sobrem](https://twitter.com/SobremMusic)
