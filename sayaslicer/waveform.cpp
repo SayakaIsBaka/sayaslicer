@@ -48,17 +48,19 @@ std::vector<float> ApplyAudioEffects(SoundBuffer& buffer, SlicerSettings& settin
             auto lim = std::max((long long)0, (long long)arrayOffset - (long long)((buffer.getSampleRate() * settings.fadein / 1000) * buffer.getChannelCount()));
             if (candidate >= lim && candidate < arrayOffset + arrLen)
                 markers.push_back(candidate);
-            else if (settings.fadeout != 0 && candidate <= arrayOffset) {
+            else if ((settings.fadeout != 0 || settings.selectedGateThreshold != 0) && candidate <= arrayOffset) {
                 // Push fake marker to display fadeout properly without relying on the previous marker (which can be far away)
                 auto nextMarker = settings.markers.get(i == settings.markers.size() - 1 ? i : i + 1).position + offsetSamples;
                 fakeStart = true;
                 if (nextMarker > arrayOffset + arrLen || nextMarker < arrayOffset) { // If next marker is outside of visible area, required otherwise the list is empty and no processing is applied
                     markers.push_back(arrayOffset);
                 }
-                else {
+                else if (settings.fadeout != 0) {
                     auto fadeOutTime = ((double)(buffer.getSampleRate() * settings.fadeout / 1000) * buffer.getChannelCount());
-                    markers.push_back(std::max(std::max(0.0, nextMarker - fadeOutTime), candidate));
+                    markers.push_back(std::max(0.0, nextMarker - fadeOutTime));
                 }
+                else
+                    markers.push_back(arrayOffset);
             }
         }
         else if (i != 0 && markerPos < arrayOffset + arrLen)
@@ -81,8 +83,19 @@ std::vector<float> ApplyAudioEffects(SoundBuffer& buffer, SlicerSettings& settin
         if (i + 1 < markers.size())
             end = markers[i + 1] - base;
         tcb::span<float> view(&newBuf[begin], &newBuf[end - 1]);
-        if (settings.selectedGateThreshold != 0)
-            ApplyNoiseGate(view, gateThresholds[settings.selectedGateThreshold], buffer.getChannelCount());
+        if (settings.selectedGateThreshold != 0) { // Noise gate must be treated from the source buffer because of rendering optimizations
+            auto origNextMarker = samples.size() - 1;
+            for (auto m : settings.markers) {
+                if (m.position > markers[i] && m.position < origNextMarker) {
+                    origNextMarker = m.position;
+                    break;
+                }
+            }
+            tcb::span<float> origKey(&samples[markers[i]], &samples[origNextMarker]);
+            auto pos = ApplyNoiseGate(origKey, gateThresholds[settings.selectedGateThreshold], buffer.getChannelCount());
+            for (size_t i = pos; i < view.size(); i++)
+                view[i] = 0.0f;
+        }
         if (settings.fadein != 0 && (i != 0 || (i == 0 && !fakeStart)))
             ApplyFadein(view, settings.fadein, buffer.getSampleRate(), buffer.getChannelCount());
         if (settings.fadeout != 0)
