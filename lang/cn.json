@@ -11,6 +11,7 @@
 	"enable_b62": "62进制模式",
 	"zerocross_markers": "移动切割点至波形过零点",
 	"file": "文件",
+	"new_project": "新工程",
 	"open_project": "打开工程",
 	"save_project": "保存工程",
 	"import_audio_file": "导入音频文件",

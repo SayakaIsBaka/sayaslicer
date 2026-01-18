@@ -11,6 +11,7 @@
 	"enable_b62": "62進数モード",
 	"zerocross_markers": "ゼロクロス切断配置",
 	"file": "ファイル",
+	"new_project": "新規",
 	"open_project": "プロジェクトを開く",
 	"save_project": "プロジェクトを保存",
 	"import_audio_file": "音声ファイルを読み込む",
@@ -135,5 +136,5 @@
 	"keysound_export_error": "Errors occured when exporting some keysounds, please check the Console tab for more details",
 	"font_size": "Font size",
 	"restart_sayaslicer_font": "Restart sayaslicer for font changes to take effect!",
-	"fadein":  "Fade-in"
+	"fadein": "Fade-in"
 }

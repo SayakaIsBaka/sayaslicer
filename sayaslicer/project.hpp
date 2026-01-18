@@ -8,3 +8,4 @@
 
 void SaveProject(SlicerSettings settings);
 void OpenProject(SoundBuffer& buffer, SlicerSettings& settings, std::string path = "");
+void NewProject(SoundBuffer& buffer, SlicerSettings& settings);

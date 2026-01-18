@@ -11,6 +11,9 @@ using namespace i18n::literals;
 
 void ShowMenuFile(SoundBuffer& buffer, SlicerSettings &settings, GLFWwindow* window)
 {
+    if (ImGui::MenuItem("new_project"_t.c_str())) {
+        NewProject(buffer, settings);
+    }
     if (ImGui::MenuItem("open_project"_t.c_str(), "Ctrl+O")) {
         OpenProject(buffer, settings);
     }

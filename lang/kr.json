@@ -11,6 +11,7 @@
 	"enable_b62": "base-62 활성화",
 	"zerocross_markers": "영점 교차 마커",
 	"file": "파일",
+	"new_project": "새 파일",
 	"open_project": "열기",
 	"save_project": "저장",
 	"import_audio_file": "오디오 가져오기",

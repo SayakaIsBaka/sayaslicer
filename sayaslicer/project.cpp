@@ -37,3 +37,8 @@ void OpenProject(SoundBuffer& buffer, SlicerSettings& settings, std::string file
         InsertNotification({ ImGuiToastType::Success, 3000, "%s:\n%s", "opened_project"_t.c_str(), file.c_str()});
     }
 }
+
+void NewProject(SoundBuffer& buffer, SlicerSettings& settings) {
+    buffer = SoundBuffer();
+    settings = SlicerSettings();
+}

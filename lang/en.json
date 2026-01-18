@@ -11,6 +11,7 @@
 	"enable_b62": "Enable base-62",
 	"zerocross_markers": "Zero-cross markers",
 	"file": "File",
+	"new_project": "New project",
 	"open_project": "Open project",
 	"save_project": "Save project",
 	"import_audio_file": "Import audio file",
@@ -135,5 +136,5 @@
 	"keysound_export_error": "Errors occured when exporting some keysounds, please check the Console tab for more details",
 	"font_size": "Font size",
 	"restart_sayaslicer_font": "Restart sayaslicer for font changes to take effect!",
-	"fadein":  "Fade-in"
+	"fadein": "Fade-in"
 }
