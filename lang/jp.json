@@ -136,5 +136,7 @@
 	"keysound_export_error": "Errors occured when exporting some keysounds, please check the Console tab for more details",
 	"font_size": "Font size",
 	"restart_sayaslicer_font": "Restart sayaslicer for font changes to take effect!",
-	"fadein": "Fade-in"
+	"fadein": "Fade-in",
+	"marker_snap_success": "Moved all markers to nearest snap!",
+	"marker_snap": "Move all markers to nearest snap"
 }

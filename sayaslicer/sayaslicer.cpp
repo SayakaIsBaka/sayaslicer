@@ -58,6 +58,9 @@ void ShowMenuEdit(SoundBuffer& buffer, SlicerSettings& settings)
         ExportKeysoundList(settings, true);
     }
     ImGui::Separator();
+    if (ImGui::MenuItem("marker_snap"_t.c_str())) {
+        SnapAllMarkers(settings, buffer.getSampleCount());
+    }
     if (ImGui::MenuItem("clear_all_markers"_t.c_str(), "C")) {
         settings.markers.clear(false);
         settings.updateHistory = true;

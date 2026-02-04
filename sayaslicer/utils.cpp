@@ -165,3 +165,16 @@ void GetStartingKeysoundFromBMS(SlicerSettings& settings) {
     int lastKeysound = FromBaseToDec(wavs.back().c_str(), settings.useBase62 ? 62 : 36);
     settings.startingKeysound = lastKeysound + 1;
 }
+
+void SnapAllMarkers(SlicerSettings& settings, double maxLen) {
+    for (auto& m : settings.markers) {
+        auto diff = fmod(m.position, settings.samplesPerSnap);
+        if (diff * 2.0 > settings.samplesPerSnap)
+            m.position += std::min(settings.samplesPerSnap - diff, maxLen);
+        else
+            m.position -= diff;
+    }
+
+    settings.updateHistory = true;
+    InsertNotification({ ImGuiToastType::Success, 3000, "marker_snap_success"_t.c_str() });
+}
