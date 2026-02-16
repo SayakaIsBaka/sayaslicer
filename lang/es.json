@@ -136,7 +136,7 @@
 	"keysound_export_error": "Se ocurrieron errores al exportar algunos sonidos de tecla, favor de revisar la pestaña Console para más detalles",
 	"font_size": "Tamaño de fuente",
 	"restart_sayaslicer_font": "¡Reinicie sayaslicer para que se apliquen los cambios en la fuente!",
-	"fadein": "Fade-in",
-	"marker_snap_success": "Moved all markers to nearest snap!",
-	"marker_snap": "Move all markers to nearest snap"
+	"fadein": "Fundido de entrada",
+	"marker_snap_success": "¡Se movieron todos los marcadores al snap más cercano!",
+	"marker_snap": "Mover todos los marcadores al snap más cercano"
 }
