@@ -80,7 +80,7 @@ void ImportMidiMarkers(SoundBuffer& buffer, SlicerSettings& settings, int track,
         if (settings.midiFile[selectedTrack][i].isNoteOn()) {
             auto event = settings.midiFile[selectedTrack][i];
             auto tick = relative ? event.tick * (samplesPerBeat / tpq) : event.seconds * sampleRate * nbChannels;
-            if (settings.markers.find(tick) == -1.0) {
+            if (settings.markers.find(tick) == -1.0 && tick < buffer.getSampleCount()) {
                 settings.markers.push_back(tick);
             }
         }
