@@ -83,7 +83,10 @@ void PlayKeysound(SoundBuffer& buffer, SlicerSettings& settings, bool jumpToNext
         std::vector<float> tmpBuf(&buf[keyStart], &buf[keyEnd - 1]);
         if (settings.selectedGateThreshold != 0) {
             bufsize = ApplyNoiseGate(tmpBuf, gateThresholds[settings.selectedGateThreshold], buffer.getChannelCount());
-            tmpBuf.resize(bufsize);
+            if (bufsize)
+                tmpBuf.resize(bufsize);
+            else
+                tmpBuf.resize(1);
         }
         if (settings.fadein != 0)
             ApplyFadein(tmpBuf, settings.fadein, buffer.getSampleRate(), buffer.getChannelCount());
@@ -176,7 +179,10 @@ void WriteKeysounds(SoundBuffer& buffer, SlicerSettings& settings) {
             newBuf.insert(newBuf.end(), &bufOut[0], &bufOut[bufsize]);
             if (settings.selectedGateThreshold != 0) {
                 bufsize = ApplyNoiseGate(newBuf, gateThresholds[settings.selectedGateThreshold], buffer.getChannelCount());
-                newBuf.resize(bufsize);
+                if (bufsize)
+                    newBuf.resize(bufsize);
+                else
+                    newBuf.resize(1);
             }
             if (settings.fadein != 0)
                 ApplyFadein(newBuf, settings.fadein, buffer.getSampleRate(), buffer.getChannelCount());
