@@ -32,7 +32,10 @@ void ShowPreferencesModal(UserPreferences& pref) {
 	if (ImGui::BeginPopupModal("Preferences", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize)) {
 		ImGui::Checkbox("autodetect_starting_keysound"_t.c_str(), &pTmp.detectStartingKey);
 		ImGui::Checkbox("check_for_updates_startup"_t.c_str(), &pTmp.checkForUpdates);
-		ImGui::SliderInt("font_size"_t.c_str(), &pTmp.fontSize, 10, 20);
+		ImGui::SliderFloat("font_scale"_t.c_str(), &pTmp.fontScale, 0.5f, 2.0f, "x%.1f");
+		if (!ImGui::IsItemActive())
+			ImGui::GetStyle().FontScaleMain = pTmp.fontScale;
+
 		auto langs = GetLanguages();
 		auto langsPretty = GetLanguagesPretty();
 		auto combo_preview_value = GetLangPrettyFromId(pTmp.language);
@@ -54,8 +57,9 @@ void ShowPreferencesModal(UserPreferences& pref) {
 			ImGui::EndCombo();
 		}
 		if (ImGui::Button("save"_t.c_str())) {
-			if (pTmp.fontSize != pref.fontSize)
-				InsertNotification({ ImGuiToastType::Info, 3000, "restart_sayaslicer_font"_t.c_str() });
+			if (pTmp.fontScale != pref.fontScale) {
+				ImGui::GetStyle().FontScaleMain = pTmp.fontScale;
+			}
 			pref = pTmp;
 			pTmp = pref;
 			i18n::set_locale(pref.language);
@@ -65,6 +69,7 @@ void ShowPreferencesModal(UserPreferences& pref) {
 		ImGui::SameLine();
 		if (ImGui::Button("cancel"_t.c_str())) {
 			pTmp = pref;
+			ImGui::GetStyle().FontScaleMain = pref.fontScale;
 			i18n::set_locale(pref.language);
 			ImGui::CloseCurrentPopup();
 		}

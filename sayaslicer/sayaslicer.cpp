@@ -100,34 +100,33 @@ void ShowMainMenuBar(SoundBuffer& buffer, SlicerSettings &settings, GLFWwindow* 
     }
 }
 
-void SetupFonts(ImGuiIO& io, int fontSize) {
-    float mainFontSize = (float)fontSize;
+void SetupFonts(ImGuiIO& io, float fontScale) {
+    float mainFontSize = (float)DEFAULT_FONT_SIZE;
     float iconFontSize = mainFontSize * 2.0f / 3.0f;
+    static const ImWchar iconsRanges[] = { ICON_MIN_FA, ICON_MAX_16_FA, 0 };
 
-    ImVector<ImWchar> ranges;
-    ImFontGlyphRangesBuilder builder;
-    builder.AddText(u8"←→↑↓");
-    builder.AddRanges(io.Fonts->GetGlyphRangesJapanese());
-    builder.AddRanges(io.Fonts->GetGlyphRangesCyrillic());
-    builder.BuildRanges(&ranges);
-    io.Fonts->AddFontFromMemoryCompressedTTF(noto_compressed_data, noto_compressed_size, mainFontSize, 0, ranges.Data);
+    ImFontConfig jpConfig;
+    jpConfig.GlyphExcludeRanges = iconsRanges;
+    io.Fonts->AddFontFromMemoryCompressedTTF(noto_compressed_data, noto_compressed_size, mainFontSize);
 
     ImFontConfig krConfig;
     krConfig.MergeMode = true;
-    io.Fonts->AddFontFromMemoryCompressedTTF(notokr_compressed_data, notokr_compressed_size, mainFontSize, &krConfig, io.Fonts->GetGlyphRangesKorean());
+    krConfig.GlyphExcludeRanges = iconsRanges;
+    io.Fonts->AddFontFromMemoryCompressedTTF(notokr_compressed_data, notokr_compressed_size, mainFontSize, &krConfig);
 
     ImFontConfig scConfig;
     scConfig.MergeMode = true;
-    io.Fonts->AddFontFromMemoryCompressedTTF(notosc_compressed_data, notosc_compressed_size, mainFontSize, &scConfig, io.Fonts->GetGlyphRangesChineseFull());
+    scConfig.GlyphExcludeRanges = iconsRanges;
+    io.Fonts->AddFontFromMemoryCompressedTTF(notosc_compressed_data, notosc_compressed_size, mainFontSize, &scConfig);
 
-    static const ImWchar iconsRanges[] = { ICON_MIN_FA, ICON_MAX_16_FA, 0 };
     ImFontConfig iconsConfig;
     iconsConfig.MergeMode = true;
     iconsConfig.PixelSnapH = true;
     iconsConfig.GlyphMinAdvanceX = iconFontSize;
-    io.Fonts->AddFontFromMemoryCompressedTTF(fa_solid_900_compressed_data, fa_solid_900_compressed_size, iconFontSize, &iconsConfig, iconsRanges);
+    io.Fonts->AddFontFromMemoryCompressedTTF(fa_solid_900_compressed_data, fa_solid_900_compressed_size, iconFontSize, &iconsConfig);
 
     io.Fonts->Build();
+    ImGui::GetStyle().FontScaleMain = fontScale;
 }
 
 void SetupDock() {
@@ -523,7 +522,7 @@ int main() {
     LoadPreferences(settings.prefs);
     InitTranslations(settings.prefs.language);
 
-    SetupFonts(io, settings.prefs.fontSize);
+    SetupFonts(io, settings.prefs.fontScale);
 
 #if _WIN32
     OleInitialize(NULL);

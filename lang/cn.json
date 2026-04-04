@@ -134,7 +134,7 @@
 	"autoscroll": "自动滚屏",
 	"keysound_end_offset": "Key end offset",
 	"keysound_export_error": "Errors occured when exporting some keysounds, please check the Console tab for more details",
-	"font_size": "Font size",
+	"font_scale": "Font scale",
 	"restart_sayaslicer_font": "Restart sayaslicer for font changes to take effect!",
 	"fadein": "淡入",
 	"marker_snap_success": "Moved all markers to nearest snap!",
