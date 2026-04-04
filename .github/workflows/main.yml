@@ -23,13 +23,13 @@ jobs:
         run: sudo apt-get update && sudo apt-get install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev pkg-config
         if: matrix.os == 'ubuntu-latest'
 
-      - uses: lukka/get-cmake@v3.31.6
+      - uses: lukka/get-cmake@v4.3.0
 
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11.5
 
       - name: Run CMake and install necessary packages
-        uses: lukka/run-cmake@v10.7
+        uses: lukka/run-cmake@v10.9
         if: matrix.os != 'macos-latest'
         with:
           configurePreset: 'x64-Release'
@@ -62,7 +62,7 @@ jobs:
         run: lipomerge vcpkg_installed/arm64-osx vcpkg_installed/tmp/x64-osx vcpkg_installed/uni-osx
 
       - name: Run CMake (macOS)
-        uses: lukka/run-cmake@v10.7
+        uses: lukka/run-cmake@v10.9
         if: matrix.os == 'macos-latest'
         with:
           configurePreset: 'uni-osx-Release'
