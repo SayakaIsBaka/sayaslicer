@@ -1,3 +1,6 @@
+#include <GLFW/glfw3.h>
+#include <imgui_impl_glfw.h>
+
 #include "utils.hpp"
 
 std::string GetTempMarkerName(std::string filename, size_t idx) {
@@ -177,4 +180,8 @@ void SnapAllMarkers(SlicerSettings& settings, double maxLen) {
 
     settings.updateHistory = true;
     InsertNotification({ ImGuiToastType::Success, 3000, "marker_snap_success"_t.c_str() });
+}
+
+float GetDpiScale() {
+    return ImGui_ImplGlfw_GetContentScaleForMonitor(glfwGetPrimaryMonitor());
 }

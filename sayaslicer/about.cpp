@@ -1,4 +1,5 @@
 ﻿#include "about.hpp"
+#include "utils.hpp"
 
 using namespace i18n::literals;
 using json = nlohmann::json;
@@ -88,7 +89,8 @@ void ShowAbout(SlicerSettings& settings, Texture &logo) {
             }
             ImGui::SameLine();
             {
-                ImGui::BeginChild("AboutRight", ImVec2(225.0, 55), ImGuiChildFlags_AutoResizeY, ImGuiWindowFlags_NoBackground);
+                float dpiScale = GetDpiScale();
+                ImGui::BeginChild("AboutRight", ImVec2(225.0 * dpiScale, 55.0 * dpiScale), ImGuiChildFlags_AutoResizeY, ImGuiWindowFlags_NoBackground);
                 ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_PlotHistogram]);
                 ImGui::Text("sayaslicer");
                 ImGui::PopStyleColor();

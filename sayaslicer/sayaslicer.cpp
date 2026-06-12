@@ -536,7 +536,8 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 #endif
 
-    GLFWwindow* window = glfwCreateWindow(870, 477, "sayaslicer", nullptr, nullptr);
+    float dpiScale = GetDpiScale();
+    GLFWwindow* window = glfwCreateWindow(870 * dpiScale, 477 * dpiScale, "sayaslicer", nullptr, nullptr);
     if (window == nullptr)
         return 1;
     glfwMakeContextCurrent(window);
@@ -549,6 +550,8 @@ int main() {
         throw std::runtime_error("Error initializing PortAudio");
     }
 
+    io.ConfigDpiScaleFonts = true;
+    io.ConfigDpiScaleViewports = true;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     
     SetupImGuiStyle();

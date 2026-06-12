@@ -112,7 +112,7 @@ void DisplayWaveform(SoundBuffer& buffer, SlicerSettings& settings) {
     double marginConst = 1600.0 * maxDisplayRange / minZoom;
     double leftMargin = (buffer.getSampleCount() < marginConst * waveformReso ? 0 : marginConst) * waveformReso;
 
-    if (ImPlot::BeginPlot("##lines", ImVec2(-1, 200), ImPlotFlags_NoBoxSelect | ImPlotFlags_NoLegend)) {
+    if (ImPlot::BeginPlot("##lines", ImVec2(-1, 200 * GetDpiScale()), ImPlotFlags_NoBoxSelect | ImPlotFlags_NoLegend)) {
         double plotStart = (settings.cursorPos - leftMargin) / waveformReso;
         double plotEnd = plotStart + maxDisplayRange;
         ImPlot::SetupAxisLinks(ImAxis_X1, &plotStart, &plotEnd);

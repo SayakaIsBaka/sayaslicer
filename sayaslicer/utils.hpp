@@ -15,3 +15,4 @@ void ImportNamesFromMid2Bms(SlicerSettings& settings, std::string file = "");
 long long LoadFileUnicode(std::string path, std::vector<char>& buf);
 void GetStartingKeysoundFromBMS(SlicerSettings& settings);
 void SnapAllMarkers(SlicerSettings& settings, double maxLen);
+float GetDpiScale();
