@@ -233,6 +233,14 @@ void ProcessShortcuts(ImGuiIO& io, SoundBuffer& buffer, SlicerSettings& settings
             if (io.KeyShift) {
                 settings.cursorPos += settings.samplesPerSnap - fmod(settings.cursorPos, settings.samplesPerSnap);
             }
+            else if (io.KeyCtrl) {
+                for (int i = 0; i < settings.markers.size(); i++) {
+                    if ((float)settings.cursorPos < (float)settings.markers.get(i).position) {
+                        settings.cursorPos = settings.markers.get(i).position;
+                        break;
+                    }
+                }
+            }
             else {
                 settings.cursorPos += settings.samplesPerSnap;
             }
@@ -248,6 +256,14 @@ void ProcessShortcuts(ImGuiIO& io, SoundBuffer& buffer, SlicerSettings& settings
             double diff = fmod(settings.cursorPos, settings.samplesPerSnap);
             if (io.KeyShift && diff != 0.0) {
                 settings.cursorPos -= diff;
+            }
+            else if (io.KeyCtrl) {
+                for (int i = settings.markers.size() - 1; i >= 0; i--) {
+                    if ((float)settings.cursorPos > (float)settings.markers.get(i).position) {
+                        settings.cursorPos = settings.markers.get(i).position;
+                        break;
+                    }
+                }
             }
             else {
                 settings.cursorPos -= settings.samplesPerSnap;

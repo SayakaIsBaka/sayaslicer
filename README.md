@@ -45,6 +45,7 @@ Keyboard shortcuts are the same as woslicerII except the keyboard layout is take
 - `Enter`: preview current keysound
 - `LeftArrow / RightArrow`: move position cursor
 - `Shift + LeftArrow / Shift + RightArrow`: move position cursor (jump to closest snap)
+- `Ctrl + LeftArrow / Ctrl + RightArrow`: jump to previous / next marker
 - `UpArrow / DownArrow`: set snapping
 - `Ctrl+O`: load project
 - `Ctrl+S`: save project
