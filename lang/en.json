@@ -139,5 +139,6 @@
 	"restart_sayaslicer_font": "Restart sayaslicer for font changes to take effect!",
 	"fadein": "Fade-in",
 	"marker_snap_success": "Moved all markers to nearest snap!",
-	"marker_snap": "Move all markers to nearest snap"
+	"marker_snap": "Move all markers to nearest snap",
+	"scroll_to_marker":  "Scroll to marker"
 }

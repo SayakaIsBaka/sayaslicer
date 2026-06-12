@@ -138,5 +138,6 @@
 	"restart_sayaslicer_font": "¡Reinicie sayaslicer para que se apliquen los cambios en la fuente!",
 	"fadein": "Fundido de entrada",
 	"marker_snap_success": "¡Se movieron todos los marcadores al snap más cercano!",
-	"marker_snap": "Mover todos los marcadores al snap más cercano"
+	"marker_snap": "Mover todos los marcadores al snap más cercano",
+	"scroll_to_marker": "Scroll to marker"
 }

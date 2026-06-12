@@ -358,7 +358,38 @@ void DisplayMarkersTable(SlicerSettings& settings) {
         ImGui::TableSetupColumn("id"_t.c_str(), ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn("position"_t.c_str(), ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn("name"_t.c_str(), ImGuiTableColumnFlags_WidthStretch);
-        ImGui::TableHeadersRow();
+        ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
+
+        int scrollTo = -1;
+        for (int column = 0; column < 3; column++)
+        {
+            ImGui::TableSetColumnIndex(column);
+            const char* column_name = ImGui::TableGetColumnName(column);
+            ImGui::PushID(column);
+            ImGui::TableHeader(column_name);
+            if (column == 2) {
+                std::string hint = "scroll_to_marker"_t;
+                ImGui::SameLine();
+                ImGui::PushFont(NULL, ImGui::GetStyle().FontSizeBase * 0.7f);
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + std::max(0.0f, ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(hint.c_str()).x) - 15);
+                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10.0f, 3.400000095367432f));
+                if (ImGui::Button(hint.c_str())) {
+                    for (int i = 0; i < settings.markers.size(); i++) {
+                        if ((float)settings.cursorPos < (float)settings.markers.get(i).position) {
+                            scrollTo = i - 1 < 0 ? 0 : i - 1;
+                            break;
+                        }
+                        else if (i == settings.markers.size() - 1) { // Last one and it didn't match, aka we're past the last marker (or on it)
+                            scrollTo = i;
+                        }
+                    }
+                };
+                ImGui::PopStyleVar();
+                ImGui::PopFont();
+            }
+            ImGui::PopID();
+        }
+
         if (settings.markers.size() == 0) {
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
@@ -374,6 +405,10 @@ void DisplayMarkersTable(SlicerSettings& settings) {
             size_t idx = 0;
             for (auto& m : settings.markers) {
                 ImGui::TableNextRow();
+                if (scrollTo != -1 && idx == scrollTo) {
+                    ImGui::SetScrollY(idx * (ImGui::GetTextLineHeightWithSpacing() + ImGui::GetCurrentTable()->RowCellPaddingY));
+                    scrollTo = -1;
+                }
                 ImGui::TableSetColumnIndex(0);
                 char bufId[64];
                 size_t keysoundId = idx + settings.startingKeysound;
