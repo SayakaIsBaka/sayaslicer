@@ -165,7 +165,7 @@ void ShowSettingsPanel(SoundBuffer& buffer, SlicerSettings& settings) {
         AddScalarScroll(ImGuiDataType_Double, &settings.cursorPos, minPos, maxPos, 100);
         ImGui::DragFloat("bpm"_t.c_str(), &settings.bpm, 1, 10, 3500);
         AddScalarScroll(ImGuiDataType_Float, &settings.bpm, 10, 3500, 1);
-        ImGui::DragInt("snapping"_t.c_str(), &settings.snapping, 1, 1, 192);
+        ImGui::DragInt("snapping"_t.c_str(), &settings.snapping, 1, 1, 192, "1/%d");
         AddScalarScroll(ImGuiDataType_S32, &settings.snapping, 1, 192, 1);
         int base = settings.useBase62 ? 62 : 36;
         int maxKeysound = base * base - 1;
@@ -273,11 +273,26 @@ void ProcessShortcuts(ImGuiIO& io, SoundBuffer& buffer, SlicerSettings& settings
             buffer.stop();
         }
     }
+
     if (!io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGuiKey_UpArrow) && settings.snapping < 192) {
-        settings.snapping += 1;
+        if (io.KeyShift)
+            settings.snapping += 1;
+        else {
+            int i = 0;
+            for (; i < IM_ARRAYSIZE(mainSnaps); i++)
+                if (mainSnaps[i] > settings.snapping) break;
+            settings.snapping = mainSnaps[i];
+        }
     }
     else if (!io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGuiKey_DownArrow) && settings.snapping > 1) {
-        settings.snapping -= 1;
+        if (io.KeyShift)
+            settings.snapping -= 1;
+        else {
+            int i = IM_ARRAYSIZE(mainSnaps) - 1;
+            for (; i >= 0; i--)
+                if (mainSnaps[i] < settings.snapping) break;
+            settings.snapping = mainSnaps[i];
+        }
     }
     if (!io.WantTextInput && !io.WantCaptureKeyboard && ImGui::IsKeyPressed(ImGuiKey_Z)) {
         if (io.KeyCtrl) {
