@@ -116,7 +116,7 @@ void DisplayWaveform(SoundBuffer& buffer, SlicerSettings& settings) {
         double plotStart = (settings.cursorPos - leftMargin) / waveformReso;
         double plotEnd = plotStart + maxDisplayRange;
         ImPlot::SetupAxisLinks(ImAxis_X1, &plotStart, &plotEnd);
-        ImPlot::SetupAxisLimits(ImAxis_Y1, -1.0f, 1.0f);
+        ImPlot::SetupAxisLimits(ImAxis_Y1, -1.0f/settings.yScale, 1.0f/settings.yScale, ImGuiCond_Always);
 
         ImPlot::SetupAxis(ImAxis_Y1, "", ImPlotAxisFlags_NoGridLines | ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_Lock | ImPlotAxisFlags_NoTickMarks);
         ImPlot::SetupAxis(ImAxis_X1, "", ImPlotAxisFlags_Foreground | ImPlotAxisFlags_NoTickLabels);
@@ -186,8 +186,8 @@ void DisplayWaveform(SoundBuffer& buffer, SlicerSettings& settings) {
                 if (!tmp.empty())
                     wavBuf = tmp.data();
             }
-
-            ImPlot::PlotLine("Waveform", wavBuf, arrLen, 1.0, arrayOffset / (waveformReso), 0, settings.offset, stride * sizeof(float)); // Buffer stores samples as [channel1_i, channel2_i, channel1_i+1, etc.]
+            int downsample = (int)std::max(settings.maxDisplayRange/minZoom, 1.0); // for performance reasons when zoomed out
+            ImPlot::PlotLine("Waveform", wavBuf, arrLen / downsample, downsample, arrayOffset / (waveformReso), 0, settings.offset, downsample * stride * sizeof(float)); // Buffer stores samples as [channel1_i, channel2_i, channel1_i+1, etc.]
 
             // Display cursor
             double curDisplayPos = settings.cursorPos / waveformReso;
