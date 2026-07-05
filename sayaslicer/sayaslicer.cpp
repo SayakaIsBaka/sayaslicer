@@ -157,8 +157,8 @@ void ShowSettingsPanel(SoundBuffer& buffer, SlicerSettings& settings) {
         static float yScaleLog = 0;
 
         ImGui::SeparatorText("general"_t.c_str());
-        ImGui::SliderFloat("x-zoom"_t.c_str(), &zoom, -120, 60);
-        AddScalarScroll(ImGuiDataType_Float, &zoom, -120, 60, 1);
+        ImGui::SliderFloat("x-zoom"_t.c_str(), &zoom, -60, 60);
+        AddScalarScroll(ImGuiDataType_Float, &zoom, -60, 60, 1);
         if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
             zoom = 0;
         }
