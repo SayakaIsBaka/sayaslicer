@@ -157,13 +157,13 @@ void ShowSettingsPanel(SoundBuffer& buffer, SlicerSettings& settings) {
         static float yScaleLog = 0;
 
         ImGui::SeparatorText("general"_t.c_str());
-        ImGui::SliderFloat("x-zoom"_t.c_str(), &zoom, -60, 60);
+        ImGui::SliderFloat("zoom"_t.c_str(), &zoom, -60, 60);
         AddScalarScroll(ImGuiDataType_Float, &zoom, -60, 60, 1);
         if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
             zoom = 0;
         }
         settings.maxDisplayRange = minZoom * pow(2, -zoom/12);
-        ImGui::SliderFloat("y-scale"_t.c_str(), &yScaleLog, -30, 60);
+        ImGui::SliderFloat("y_scale"_t.c_str(), &yScaleLog, -30, 60);
         AddScalarScroll(ImGuiDataType_Float, &yScaleLog, -30, 60, 1);
         if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
             yScaleLog = 0;
@@ -562,7 +562,7 @@ int main() {
 #endif
 
     float dpiScale = GetDpiScale();
-    GLFWwindow* window = glfwCreateWindow(870 * dpiScale, 477 * dpiScale, "sayaslicer", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(870 * dpiScale, 480 * dpiScale, "sayaslicer", nullptr, nullptr);
     if (window == nullptr)
         return 1;
     glfwMakeContextCurrent(window);

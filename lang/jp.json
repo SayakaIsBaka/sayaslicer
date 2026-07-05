@@ -2,6 +2,7 @@
 	"_lang": "日本語",
 	"general": "基本設定",
 	"zoom": "ズーム",
+	"y_scale": "Y軸スケール",
 	"offset": "ずらし",
 	"position": "位置",
 	"bpm": "BPM",
