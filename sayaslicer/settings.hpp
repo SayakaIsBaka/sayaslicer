@@ -28,6 +28,7 @@ public:
 	bool openMidiModalTemp = false;
 	UserPreferences prefs;
 	float maxDisplayRange = 1.0;
+	float yScale = 1.0;
 	bool openAboutModalTemp = false;
 	int keysoundOffsetEnd = 0;
 

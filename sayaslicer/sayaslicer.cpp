@@ -154,11 +154,21 @@ void ShowSettingsPanel(SoundBuffer& buffer, SlicerSettings& settings) {
         double minPos = 0;
         double maxPos = buffer.getSampleCount();
         static float zoom = 0;
+        static float yScaleLog = 0;
 
         ImGui::SeparatorText("general"_t.c_str());
-        ImGui::SliderFloat("zoom"_t.c_str(), &zoom, 0, minZoom - waveformReso * 2.0);
-        AddScalarScroll(ImGuiDataType_Float, &zoom, 0, minZoom - waveformReso * 2.0, 200);
-        settings.maxDisplayRange = minZoom - zoom;
+        ImGui::SliderFloat("zoom"_t.c_str(), &zoom, -60, 60);
+        AddScalarScroll(ImGuiDataType_Float, &zoom, -60, 60, 1);
+        if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
+            zoom = 0;
+        }
+        settings.maxDisplayRange = minZoom * pow(2, -zoom/12);
+        ImGui::SliderFloat("y_scale"_t.c_str(), &yScaleLog, -30, 60);
+        AddScalarScroll(ImGuiDataType_Float, &yScaleLog, -30, 60, 1);
+        if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
+            yScaleLog = 0;
+        }
+        settings.yScale = pow(2, yScaleLog/12);
         ImGui::DragInt("offset"_t.c_str(), &settings.offset, 1, 0, 1000);
         AddScalarScroll(ImGuiDataType_S32, &settings.offset, 0, 1000, 10);
         ImGui::DragScalar("position"_t.c_str(), ImGuiDataType_Double, &settings.cursorPos, 1, &minPos, &maxPos);
@@ -552,7 +562,7 @@ int main() {
 #endif
 
     float dpiScale = GetDpiScale();
-    GLFWwindow* window = glfwCreateWindow(870 * dpiScale, 477 * dpiScale, "sayaslicer", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(870 * dpiScale, 480 * dpiScale, "sayaslicer", nullptr, nullptr);
     if (window == nullptr)
         return 1;
     glfwMakeContextCurrent(window);
