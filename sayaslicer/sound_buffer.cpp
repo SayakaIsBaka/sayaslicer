@@ -149,6 +149,7 @@ bool SoundBuffer::writeFile(std::filesystem::path path, unsigned int sampleRate,
 void SoundBuffer::play(unsigned long long samplePos, unsigned long long length, const float* buffer) {
 	if (stream != NULL)
 		Pa_CloseStream(stream);
+	
 	struct callbackData* data = (struct callbackData*)calloc(1, sizeof(struct callbackData));
 	if (!data)
 		throw std::runtime_error("Cannot allocate PortAudio user data (this should not happen)");

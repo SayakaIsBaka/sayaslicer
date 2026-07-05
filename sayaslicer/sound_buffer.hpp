@@ -11,12 +11,12 @@ private:
 	unsigned int sampleRate = 0;
 	float duration = 0.0f;
 	PaStream* stream = NULL;
+	unsigned long long startPlayPos = 0;
+	unsigned long long relativePlayPos = 0;
 
 	void play(unsigned long long samplePos, unsigned long long length, const float* buffer);
 
 public:
-	unsigned long long startPlayPos = 0;
-	unsigned long long relativePlayPos = 0;
 
 	~SoundBuffer();
 
