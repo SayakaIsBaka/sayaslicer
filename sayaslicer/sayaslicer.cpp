@@ -371,22 +371,6 @@ void ProcessShortcuts(ImGuiIO& io, SoundBuffer& buffer, SlicerSettings& settings
     }
 }
 
-void AddMarkerAtKeysoundPlayPosition(SoundBuffer& buffer, SlicerSettings& settings, bool jumpToMarker) {
-    if (!buffer.isPlaying()) return;
-    auto placePosition = buffer.getLastKnownPlayPos();
-    buffer.stop();
-    double e = settings.markers.find(placePosition);
-    if (e == -1.0) {
-        settings.markers.push_back(placePosition);
-    }
-    settings.updateHistory = true;
-
-    if (jumpToMarker) {
-        settings.cursorPos = placePosition;
-        PlayKeysound(buffer, settings, false);
-    }
-}
-
 void DisplayMarkersTable(SlicerSettings& settings) {
     ImVec2 outer_size = ImVec2(0.0f, ImGui::GetTextLineHeightWithSpacing() * 8);
     if (ImGui::BeginTable("markerstable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY, outer_size))
