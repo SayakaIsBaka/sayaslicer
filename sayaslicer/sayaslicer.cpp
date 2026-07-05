@@ -363,6 +363,28 @@ void ProcessShortcuts(ImGuiIO& io, SoundBuffer& buffer, SlicerSettings& settings
         size_t endPos = settings.samplesPerSnap * (int)(buffer.getSampleCount() / settings.samplesPerSnap);
         settings.cursorPos = endPos - settings.samplesPerSnap * (endPos > 0 && (size_t)(endPos - buffer.getSampleCount()) == 0);
     }
+    if (!io.WantTextInput && !io.WantCaptureKeyboard && !io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Q, false)) {
+        AddMarkerAtKeysoundPlayPosition(buffer, settings, false);
+    }
+    if (!io.WantTextInput && !io.WantCaptureKeyboard && !io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_W, false)) {
+        AddMarkerAtKeysoundPlayPosition(buffer, settings, true);
+    }
+}
+
+void AddMarkerAtKeysoundPlayPosition(SoundBuffer& buffer, SlicerSettings& settings, bool jumpToMarker) {
+    if (!buffer.isPlaying()) return;
+    auto placePosition = buffer.getLastKnownPlayPos();
+    buffer.stop();
+    double e = settings.markers.find(placePosition);
+    if (e == -1.0) {
+        settings.markers.push_back(placePosition);
+    }
+    settings.updateHistory = true;
+
+    if (jumpToMarker) {
+        settings.cursorPos = placePosition;
+        PlayKeysound(buffer, settings, false);
+    }
 }
 
 void DisplayMarkersTable(SlicerSettings& settings) {

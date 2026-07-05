@@ -92,9 +92,11 @@ void PlayKeysound(SoundBuffer& buffer, SlicerSettings& settings, bool jumpToNext
             ApplyFadein(tmpBuf, settings.fadein, buffer.getSampleRate(), buffer.getChannelCount());
         if (settings.fadeout != 0)
             ApplyFadeout(tmpBuf, settings.fadeout, buffer.getSampleRate(), buffer.getChannelCount());
+        buffer.setStartPlayPos(keyStart);
         buffer.play(tmpBuf);
     }
     else {
+        buffer.setStartPlayPos(keyStart);
         buffer.play(keyStart, bufsize);
     }
 
