@@ -11,10 +11,13 @@ private:
 	unsigned int sampleRate = 0;
 	float duration = 0.0f;
 	PaStream* stream = NULL;
+	unsigned long long startPlayPos = 0;
+	unsigned long long relativePlayPos = 0;
 
 	void play(unsigned long long samplePos, unsigned long long length, const float* buffer);
 
 public:
+
 	~SoundBuffer();
 
 	float getDuration();
@@ -27,6 +30,9 @@ public:
 	void play(std::vector<float>& buffer);
 	bool isPlaying();
 	void stop();
+	void setStartPlayPos(unsigned long long value);
+	void updatePlayProgress(unsigned long long value);
+	unsigned long long getLastKnownPlayPos();
 
 	static bool writeFile(std::filesystem::path path, unsigned int sampleRate, unsigned int channelCount, float *buffer, size_t bufSize);
 };

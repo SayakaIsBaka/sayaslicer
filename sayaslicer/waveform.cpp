@@ -189,6 +189,11 @@ void DisplayWaveform(SoundBuffer& buffer, SlicerSettings& settings) {
             int downsample = (int)std::max(settings.maxDisplayRange/minZoom, 1.0); // for performance reasons when zoomed out
             ImPlot::PlotLine("Waveform", wavBuf, arrLen / downsample, downsample, arrayOffset / (waveformReso), 0, settings.offset, downsample * stride * sizeof(float)); // Buffer stores samples as [channel1_i, channel2_i, channel1_i+1, etc.]
 
+            if (buffer.isPlaying()) {
+                double tmp = buffer.getLastKnownPlayPos() / waveformReso;
+                ImPlot::DragLineX(555, &tmp, ImVec4(1, 1, 1, 0.25), 0.25, ImPlotDragToolFlags_NoInputs);
+            }
+
             // Display cursor
             double curDisplayPos = settings.cursorPos / waveformReso;
             ImPlot::DragLineX(555, &curDisplayPos, ImGui::GetStyleColorVec4(ImGuiCol_PlotLines), 0.5, ImPlotDragToolFlags_NoInputs);

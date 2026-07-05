@@ -6,8 +6,9 @@
 #include <clip/clip.h>
 #include <sstream>
 #include <iconv.h>
-#include "settings.hpp"
 #include "base_convert.hpp"
+class SlicerSettings;
+class SoundBuffer;
 
 std::string GetTempMarkerName(std::string filename, size_t idx);
 void ExportKeysoundList(SlicerSettings settings, bool writeToFile);
@@ -16,3 +17,4 @@ long long LoadFileUnicode(std::string path, std::vector<char>& buf);
 void GetStartingKeysoundFromBMS(SlicerSettings& settings);
 void SnapAllMarkers(SlicerSettings& settings, double maxLen);
 float GetDpiScale();
+void AddMarkerAtKeysoundPlayPosition(SoundBuffer& buffer, SlicerSettings& settings, bool jumpToMarker);

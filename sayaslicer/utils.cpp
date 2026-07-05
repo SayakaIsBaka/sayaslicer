@@ -2,6 +2,9 @@
 #include <imgui_impl_glfw.h>
 
 #include "utils.hpp"
+#include "settings.hpp"
+#include "sound_buffer.hpp"
+#include "audio.hpp"
 
 std::string GetTempMarkerName(std::string filename, size_t idx) {
     std::string suffix = "_";
@@ -184,4 +187,20 @@ void SnapAllMarkers(SlicerSettings& settings, double maxLen) {
 
 float GetDpiScale() {
     return ImGui_ImplGlfw_GetContentScaleForMonitor(glfwGetPrimaryMonitor());
+}
+
+void AddMarkerAtKeysoundPlayPosition(SoundBuffer& buffer, SlicerSettings& settings, bool jumpToMarker) {
+    if (!buffer.isPlaying()) return;
+    auto placePosition = buffer.getLastKnownPlayPos();
+    buffer.stop();
+    double e = settings.markers.find(placePosition);
+    if (e == -1.0) {
+        settings.markers.push_back(placePosition);
+    }
+    settings.updateHistory = true;
+
+    if (jumpToMarker) {
+        settings.cursorPos = placePosition;
+        PlayKeysound(buffer, settings, false);
+    }
 }

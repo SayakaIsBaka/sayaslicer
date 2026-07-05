@@ -26,6 +26,7 @@ int callback(const void* input, void* output, unsigned long frameCount, const Pa
 		buffer = callbackData->buffer->data();
 
 	if (callbackData->currentPos >= callbackData->length) {
+		callbackData->sound->updatePlayProgress(callbackData->length);
 		return paComplete;
 	}
 
@@ -39,9 +40,11 @@ int callback(const void* input, void* output, unsigned long frameCount, const Pa
 	memcpy(out, &buffer[callbackData->samplePos + callbackData->currentPos], numSamplesToCopy * sizeof(float));
 
 	if (complete) {
+		callbackData->sound->updatePlayProgress(callbackData->length);
 		return paComplete;
 	}
 	callbackData->currentPos += numSamplesToCopy;
+	callbackData->sound->updatePlayProgress(callbackData->currentPos);
 	return paContinue;
 }
 
@@ -146,7 +149,7 @@ bool SoundBuffer::writeFile(std::filesystem::path path, unsigned int sampleRate,
 void SoundBuffer::play(unsigned long long samplePos, unsigned long long length, const float* buffer) {
 	if (stream != NULL)
 		Pa_CloseStream(stream);
-
+	
 	struct callbackData* data = (struct callbackData*)calloc(1, sizeof(struct callbackData));
 	if (!data)
 		throw std::runtime_error("Cannot allocate PortAudio user data (this should not happen)");
@@ -180,9 +183,25 @@ void SoundBuffer::play(std::vector<float>& buffer) {
 }
 
 bool SoundBuffer::isPlaying() {
+	if (stream == NULL) return false;
 	return Pa_IsStreamActive(stream);
 }
 
 void SoundBuffer::stop() {
+	if (stream == NULL) return;
 	Pa_AbortStream(stream);
 }
+
+void SoundBuffer::setStartPlayPos(unsigned long long value) {
+	this->startPlayPos = value;
+	this->relativePlayPos = 0;
+}
+
+void SoundBuffer::updatePlayProgress(unsigned long long value) {
+	this->relativePlayPos = value;
+}
+
+unsigned long long SoundBuffer::getLastKnownPlayPos() {
+	return this->startPlayPos + this->relativePlayPos;
+}
+
