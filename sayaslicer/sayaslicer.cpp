@@ -577,10 +577,6 @@ int main() {
     ImGui::CreateContext();
     auto &io = ImGui::GetIO();
 
-    if (Pa_Initialize() != paNoError) {
-        throw std::runtime_error("Error initializing PortAudio");
-    }
-
     io.ConfigDpiScaleFonts = true;
     io.ConfigDpiScaleViewports = true;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
@@ -717,10 +713,6 @@ int main() {
     RevokeDragDrop(handle);
     OleUninitialize();
 #endif
-
-    if (Pa_Terminate() != paNoError) {
-        throw std::runtime_error("Error terminating PortAudio");
-    }
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();

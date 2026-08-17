@@ -113,7 +113,7 @@ void ShowAbout(SlicerSettings& settings, Texture &logo) {
 ___
   * [Dear ImGui](https://github.com/ocornut/imgui)
   * [GLFW](https://github.com/glfw/glfw)
-  * [PortAudio](https://github.com/PortAudio/portaudio)
+  * [miniaudio](https://github.com/mackron/miniaudio)
   * [libsndfile](https://github.com/libsndfile/libsndfile)
   * [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h)
   * [implot](https://github.com/epezent/implot)

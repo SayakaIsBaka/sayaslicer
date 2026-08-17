@@ -41,7 +41,6 @@
 #include <filesystem>
 #include <iostream>
 #include <fstream>
-#include <portaudio.h>
 #include <stdexcept>
 
 #if _WIN32

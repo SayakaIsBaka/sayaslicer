@@ -13,7 +13,6 @@ find_package(tinyfiledialogs CONFIG REQUIRED)
 find_package(cereal CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(cpr CONFIG REQUIRED)
-find_package(portaudio CONFIG REQUIRED)
 find_package(SndFile CONFIG REQUIRED)
 find_package(Iconv)
 
@@ -23,6 +22,23 @@ CheckGitSetup()
 
 set(CLIP_EXAMPLES OFF CACHE BOOL "Compile clip examples")
 set(CLIP_TESTS OFF CACHE BOOL "Compile clip tests")
+
+include(FetchContent)
+FetchContent_Declare(
+    miniaudio
+    URL https://github.com/mackron/miniaudio/archive/refs/tags/0.11.25.zip
+    URL_MD5 09736fdb2c05f393a69ac3029af81a48
+)
+FetchContent_MakeAvailable(miniaudio)
+target_compile_definitions(miniaudio PUBLIC
+    MA_NO_DECODING
+    MA_NO_ENCODING
+    MA_NO_WAV
+    MA_NO_FLAC
+    MA_NO_MP3
+    MA_NO_RESOURCE_MANAGER
+    MA_NO_GENERATION
+)
 
 # Incluez les sous-projets.
 add_subdirectory ("include/clip")

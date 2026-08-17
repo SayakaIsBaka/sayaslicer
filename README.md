@@ -73,7 +73,7 @@ The following features are less likely to be implemented but might be done depen
 sayaslicer uses the following libraries:
 - [Dear ImGui](https://github.com/ocornut/imgui)
 - [GLFW](https://github.com/glfw/glfw)
-- [PortAudio](https://github.com/PortAudio/portaudio)
+- [miniaudio](https://github.com/mackron/miniaudio)
 - [libsndfile](https://github.com/libsndfile/libsndfile)
 - [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h)
 - [implot](https://github.com/epezent/implot)

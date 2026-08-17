@@ -19,7 +19,6 @@
     "nlohmann-json",
     "tinyfiledialogs",
     "libiconv",
-    "portaudio",
     {
       "name": "libsndfile",
       "features": [

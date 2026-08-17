@@ -13,9 +13,9 @@ struct callbackData {
 	SoundBuffer *sound;
 };
 
-int callback(const void* input, void* output, unsigned long frameCount, const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void* userData) {
-	float* out = (float*)output;
-	struct callbackData* callbackData = (struct callbackData*)userData;
+void callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount) {
+	float* out = (float*)pOutput;
+	struct callbackData* callbackData = (struct callbackData*)pDevice->pUserData;
 	unsigned int channelCount = callbackData->sound->getChannelCount();
 
 	memset(out, 0, sizeof(float) * frameCount * channelCount);
@@ -27,7 +27,8 @@ int callback(const void* input, void* output, unsigned long frameCount, const Pa
 
 	if (callbackData->currentPos >= callbackData->length) {
 		callbackData->sound->updatePlayProgress(callbackData->length);
-		return paComplete;
+		callbackData->sound->setPlaying(false);
+		return;
 	}
 
 	unsigned long long numSamplesToCopy = frameCount * channelCount;
@@ -39,24 +40,29 @@ int callback(const void* input, void* output, unsigned long frameCount, const Pa
 
 	memcpy(out, &buffer[callbackData->samplePos + callbackData->currentPos], numSamplesToCopy * sizeof(float));
 
-	if (complete) {
-		callbackData->sound->updatePlayProgress(callbackData->length);
-		return paComplete;
-	}
 	callbackData->currentPos += numSamplesToCopy;
 	callbackData->sound->updatePlayProgress(callbackData->currentPos);
-	return paContinue;
+
+	if (complete) {
+		callbackData->sound->setPlaying(false);
+		return;
+	}
+	
+	(void)pInput;
 }
 
-void streamFinishedCallback(void* userData) {
-	if (((struct callbackData*)userData)->buffer)
-		delete ((struct callbackData*)userData)->buffer;
-	free(userData);
+void notificationCallback(const ma_device_notification* pNotification) {
+	if (pNotification->type == ma_device_notification_type_stopped) {
+		struct callbackData* callbackData = (struct callbackData*)pNotification->pDevice->pUserData;
+		if (callbackData->buffer)
+			delete callbackData->buffer;
+		callbackData->sound->setPlaying(false);
+		free(callbackData);
+	}
 }
 
 SoundBuffer::~SoundBuffer() {
-	if (stream != NULL)
-		Pa_CloseStream(stream);
+	ma_device_uninit(&stream);
 }
 
 unsigned int SoundBuffer::getChannelCount() {
@@ -94,8 +100,8 @@ int SoundBuffer::loadFromFile(std::string path) {
 	if (sf_error(file) != SF_ERR_NO_ERROR)
 		return -2;
 
-	if (this->stream != NULL)
-		Pa_CloseStream(stream);
+	ma_device_uninit(&stream);
+	this->playing = false;
 
 	this->channelCount = info.channels;
 	this->sampleRate = info.samplerate;
@@ -147,12 +153,12 @@ bool SoundBuffer::writeFile(std::filesystem::path path, unsigned int sampleRate,
 }
 
 void SoundBuffer::play(unsigned long long samplePos, unsigned long long length, const float* buffer) {
-	if (stream != NULL)
-		Pa_CloseStream(stream);
+	ma_device_uninit(&stream);
+	playing = false;
 	
 	struct callbackData* data = (struct callbackData*)calloc(1, sizeof(struct callbackData));
 	if (!data)
-		throw std::runtime_error("Cannot allocate PortAudio user data (this should not happen)");
+		throw std::runtime_error("Cannot allocate miniaudio user data (this should not happen)");
 	data->samplePos = samplePos;
 	data->length = length;
 	data->currentPos = 0;
@@ -161,17 +167,23 @@ void SoundBuffer::play(unsigned long long samplePos, unsigned long long length, 
 	if (buffer)
 		data->buffer = new std::vector<float>(buffer, buffer + length);
 
-	if (Pa_OpenDefaultStream(&stream, 0, channelCount, paFloat32, sampleRate, 512, callback, data) != paNoError) {
-		throw std::runtime_error("Error opening PortAudio stream");
+	ma_device_config deviceConfig = ma_device_config_init(ma_device_type_playback);
+	deviceConfig.playback.format = ma_format_f32;
+	deviceConfig.playback.channels = channelCount;
+	deviceConfig.sampleRate = sampleRate;
+	deviceConfig.dataCallback = callback;
+	deviceConfig.notificationCallback = notificationCallback;
+	deviceConfig.pUserData = data;
+
+	if (ma_device_init(NULL, &deviceConfig, &stream) != MA_SUCCESS) {
+		throw std::runtime_error("Error opening miniaudio device");
 	}
 
-	if (Pa_SetStreamFinishedCallback(stream, streamFinishedCallback) != paNoError) {
-		throw std::runtime_error("Error setting PortAudio stream finished callback");
+	if (ma_device_start(&stream) != MA_SUCCESS) {
+		throw std::runtime_error("Error starting miniaudio device");
 	}
 
-	if (Pa_StartStream(stream) != paNoError) {
-		throw std::runtime_error("Error starting PortAudio stream");
-	}
+	playing = true;
 }
 
 void SoundBuffer::play(unsigned long long samplePos, unsigned long long length) {
@@ -183,13 +195,12 @@ void SoundBuffer::play(std::vector<float>& buffer) {
 }
 
 bool SoundBuffer::isPlaying() {
-	if (stream == NULL) return false;
-	return Pa_IsStreamActive(stream);
+	return ma_device_is_started(&stream) && playing;
 }
 
 void SoundBuffer::stop() {
-	if (stream == NULL) return;
-	Pa_AbortStream(stream);
+	ma_device_stop(&stream);
+	playing = false;
 }
 
 void SoundBuffer::setStartPlayPos(unsigned long long value) {
@@ -199,6 +210,10 @@ void SoundBuffer::setStartPlayPos(unsigned long long value) {
 
 void SoundBuffer::updatePlayProgress(unsigned long long value) {
 	this->relativePlayPos = value;
+}
+
+void SoundBuffer::setPlaying(bool value) {
+	this->playing = value;
 }
 
 unsigned long long SoundBuffer::getLastKnownPlayPos() {
