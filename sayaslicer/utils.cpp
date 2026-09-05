@@ -109,13 +109,13 @@ void ImportNamesFromMid2Bms(SlicerSettings& settings, std::string file) {
         if (f.is_open() && f.good()) {
             std::string line;
             for (int i = 0; i < 3 && f.good(); i++) {
-                f >> line;
+                std::getline(f, line);
             }
             while (f.good()) {
-                f >> line;
+                std::getline(f, line);
                 if (line == "//") {
                     for (int i = 0; i < 3 && f.good(); i++) {
-                        f >> line;
+                        std::getline(f, line);
                     }
                 }
                 else {
