@@ -28,6 +28,8 @@ std::filesystem::path GetBmsFilePath(std::string audioFile, bool enforceOneFile)
         auto ext = entry.path().extension().string();
         std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) { return std::tolower(c); }); // To lowercase
         if (std::find(std::begin(bmsExtensions), std::end(bmsExtensions), ext) != std::end(bmsExtensions)) {
+            if (entry.path().filename() == "___TempBMS.bms")
+                continue; // Skip iBMSC temporary file
             if (enforceOneFile && !selectedPath.empty())
                 throw std::invalid_argument("More than one BMS file found");
             selectedPath = entry.path();
